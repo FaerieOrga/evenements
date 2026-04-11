@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Association GN — Événements</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .event { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
+    .subscribe-btn { background: #4CAF50; color: white; border: none; padding: 8px 16px; cursor: pointer; }
+    .waitlist-btn { background: #FF9800; color: white; border: none; padding: 8px 16px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Événements à venir</h1>
+  <div id="events-container"></div>
+
+  <script>
+    // Récupère les événements depuis le script Google Apps Script
+    fetch('TON_URL_DU_WEB_APP/exec?action=getEvenements')
+      .then(response => response.json())
+      .then(data => {
+        const container = document.getElementById('events-container');
+        data.evenements.forEach(event => {
+          const eventDiv = document.createElement('div');
+          eventDiv.className = 'event';
+          eventDiv.innerHTML = `
+            <h3>${event.Titre}</h3>
+            <p>Date: ${event.Date}</p>
+            <p>Lieu: ${event.Lieu}</p>
+            <p>Organisateurs: ${event.Organisateurs}</p>
+            <p>Type: ${event.Type}</p>
+            <p>Places: ${event.Jauge}</p>
+            <button class="subscribe-btn" onclick="subscribe(${event.ID})">S'inscrire</button>
+            <button class="waitlist-btn" onclick="addToWaitlist(${event.ID})">Liste d'attente</button>
+          `;
+          container.appendChild(eventDiv);
+        });
+      });
+
+    function subscribe(eventId) {
+      // Logique pour inscrire l'utilisateur à l'événement
+      alert('Inscription à l\'événement ' + eventId);
+    }
+
+    function addToWaitlist(eventId) {
+      // Logique pour ajouter à la liste d'attente
+      alert('Ajout à la liste d\'attente pour l\'événement ' + eventId);
+    }
+  </script>
+</body>
+</html>
