@@ -850,7 +850,7 @@ async function doLogin() {
   updateHeaderUserZone();
   await loadPublicEvents();
   showToast(`✦ Bienvenue !`);
-  if (state.pendingEventId !== null) {
+  if (state.pendingEventId !== null && !state.mesInscriptions.includes(state.pendingEventId)) {
     openModal('modal-inscription');
     document.getElementById('modal-insc-titre').textContent = state.pendingEventTitre;
     document.getElementById('modal-insc-detail').textContent =
