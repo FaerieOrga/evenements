@@ -834,17 +834,29 @@ async function loadPublicEvents() {
   try {
     const now = new Date().toISOString();
     const { data: events } = await sb.from('evenements').select('*').order('date_debut', { ascending: true });
-    state.events = events || [];
+    
+    // On récupère TOUTES les inscriptions pour compter les vrais gens
+    const { data: allInscriptions } = await sb.from('inscriptions').select('event_id');
+    
+    state.events = (events || []).map(ev => {
+      // On compte combien de fois l'ID de cet événement apparaît dans les inscriptions
+      const occupées = (allInscriptions || []).filter(i => i.event_id === ev.id).length;
+      // On force le calcul des places dispo réelles
+      ev.places_reelles_dispo = ev.places_totales - occupées;
+      return ev;
+    });
 
     if (state.user) {
-      // On charge les inscriptions OFFICIELLES
       const { data: inscr } = await sb.from('inscriptions').select('event_id').eq('user_id', state.user.id);
       state.mesInscriptions = (inscr || []).map(i => i.event_id);
-
-      // On charge les inscriptions en LISTE D'ATTENTE
-      const { data: attente } = await sb.from('liste_attente').select('event_id').eq('user_id', state.user.id);
-      state.maListeAttente = (attente || []).map(i => i.event_id); // Ajoute cette ligne dans state au début du script
+      
+      const { data: attente } = await sb.from('liste_attente').select('user_id').eq('event_id', state.user.id);
+      state.maListeAttente = (attente || []).map(i => i.user_id); 
     }
+
+    renderPublicEvents(state.events);
+  } catch(e) { console.error(e); }
+}
 
     renderPublicEvents(state.events);
   } catch(e) { console.error(e); }
@@ -860,7 +872,7 @@ function renderPublicEvents(list) {
 
   grid.innerHTML = list.map(ev => {
     const placesTot   = ev.places_totales    || 0;
-    const placesDispo = ev.places_disponibles || 0;
+   const placesDispo = ev.places_reelles_dispo;
     const pct         = placesTot > 0 ? Math.round((1 - placesDispo / placesTot) * 100) : 100;
     const complet     = placesDispo <= 0;
     
