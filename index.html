@@ -813,33 +813,6 @@ async function confirmInscription() {
         throw errInscr;
       }
 
-async function confirmInscription() {
-  const btn = document.querySelector('#modal-inscription .btn');
-  try {
-    btn.disabled = true; // Empêche le double clic
-    
-    if (state.pendingEventDispo > 0) {
-      const { error: errInscr } = await sb.from('inscriptions').insert({
-  event_id: state.pendingEventId,
-  user_id:  state.user.id
-});
-if (errInscr) {
-  if (String(errInscr.code) === '23505') {
-    showMsg('ok-insc', '✦ Vous êtes déjà inscrit·e à cet événement.', 'success');
-    return;
-  }
-  throw errInscr;
-}
-      
-      if (errInscr) {
-        // Si l'erreur est un doublon (code 23505 en SQL ou message contenant "already")
-        if (errInscr.message.includes('unique') || errInscr.code === '23505') {
-          showMsg('err-insc', '✦ Vous êtes déjà inscrit·e à cet événement !');
-          return;
-        }
-        throw errInscr;
-      }
-
       // Mise à jour des places
       await sb.from('evenements')
         .update({ places_disponibles: state.pendingEventDispo - 1 })
