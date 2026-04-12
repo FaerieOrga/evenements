@@ -900,40 +900,62 @@ function handleInscriptionClick(eventId, titre, placesDispo) {
 }
 
 function ouvrirConfirmInscription() {
-  document.getElementById('modal-insc-titre').textContent = state.pendingEventTitre;
-  document.getElementById('modal-insc-detail').textContent =
-    state.pendingEventDispo > 0
-      ? `Il reste ${state.pendingEventDispo} place(s). Confirmez-vous votre inscription ?`
-      : "Cet événement est complet. Souhaitez-vous rejoindre la liste d'attente ?";
+  const detail = document.getElementById('modal-insc-detail');
+  const titre = document.getElementById('modal-insc-titre');
+  const footer = document.querySelector('#modal-inscription div[style*="display:flex"]');
+  
+  titre.textContent = state.pendingEventTitre;
+  
+  if (state.pendingEventDispo > 0) {
+    detail.innerHTML = `Il reste <strong>${state.pendingEventDispo} place(s)</strong>.<br>Que souhaitez-vous faire ?`;
+    footer.innerHTML = `
+      <button class="btn" onclick="confirmInscription('officielle')">S'inscrire</button>
+      <button class="btn-ghost" onclick="confirmInscription('attente')">Liste d'attente</button>
+      <button class="btn-ghost" onclick="closeModal('modal-inscription')">Annuler</button>
+    `;
+  } else {
+    detail.innerHTML = `L'événement est <strong>complet</strong>. Voulez-vous rejoindre la liste d'attente ?`;
+    footer.innerHTML = `
+      <button class="btn" onclick="confirmInscription('attente')">Rejoindre la liste d'attente</button>
+      <button class="btn-ghost" onclick="closeModal('modal-inscription')">Annuler</button>
+    `;
+  }
+  
   hideMsg('err-insc'); hideMsg('ok-insc');
   openModal('modal-inscription');
 }
 
-async function confirmInscription() {
+async function confirmInscription(typeChoisi) {
   try {
-    if (state.pendingEventDispo > 0) {
-      const { error: errInscr } = await sb.from('inscriptions').insert({ event_id: state.pendingEventId, user_id: state.user.id });
-      if (errInscr) {
-        if (String(errInscr.code) === '23505') {
-          showMsg('ok-insc', '✦ Vous êtes déjà inscrit·e à cet événement.', 'success');
-          return;
-        }
-        throw errInscr;
-      }
-      await sb.from('evenements').update({ places_disponibles: state.pendingEventDispo - 1 }).eq('id', state.pendingEventId);
+    if (typeChoisi === 'officielle') {
+      const { error } = await sb.from('inscriptions').insert({ 
+        event_id: state.pendingEventId, 
+        user_id: state.user.id 
+      });
+      if (error) throw error;
+      
+      // On décompte une place
+      await sb.from('evenements')
+        .update({ places_disponibles: state.pendingEventDispo - 1 })
+        .eq('id', state.pendingEventId);
+        
       showToast('✦ Inscription confirmée !');
     } else {
-      const { error } = await sb.from('liste_attente').insert({ event_id: state.pendingEventId, user_id: state.user.id });
+      // Choix ou obligation : Liste d'attente
+      const { error } = await sb.from('liste_attente').insert({ 
+        event_id: state.pendingEventId, 
+        user_id: state.user.id 
+      });
       if (error) throw error;
       showToast("⚠ Ajouté·e à la liste d'attente");
     }
+
     closeModal('modal-inscription');
     await loadPublicEvents();
   } catch(e) {
-    showMsg('err-insc', e.message || 'Une erreur est survenue.');
+    showMsg('err-insc', e.message.includes('23505') ? 'Déjà inscrit·e !' : e.message);
   }
 }
-
 async function seDesinscrire(eventId, placesDispo) {
   if (!confirm('Confirmer la désinscription ?')) return;
   
