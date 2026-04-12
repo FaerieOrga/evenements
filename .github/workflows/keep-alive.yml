@@ -10,4 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Supabase
-        run: curl -s "https://zutgjwnmolzwkbkdzfko.supabase.co/rest/v1/evenements?select=id&limit=1" -H "apikey: sb_publishable_E_81QRnHPOXTDcxLv9l2wQ_dpqspXFf" -H "Authorization: Bearer sb_publishable_E_81QRnHPOXTDcxLv9l2wQ_dpqspXFf" && echo "Ping OK"
+        env:
+          SUPABASE_KEY: sb_publishable_E_81QRnHPOXTDcxLv9l2wQ_dpqspXFf
+        run: |
+          curl -s "https://zutgjwnmolzwkbkdzfko.supabase.co/rest/v1/evenements?select=id&limit=1" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY"
+          echo "Ping OK"
