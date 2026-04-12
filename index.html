@@ -851,7 +851,11 @@ async function doLogin() {
 async function doRegister() {
   const btn = document.querySelector('#form-inscription .btn-full');
   const originalText = btn.textContent;
-  
+
+  // On change le texte du bouton pour montrer que ça travaille
+  btn.textContent = "Chargement...";
+  btn.disabled = true;
+
   const prenom = document.getElementById('reg-prenom').value.trim();
   const nom    = document.getElementById('reg-nom').value.trim();
   const email  = document.getElementById('reg-email').value.trim();
@@ -859,23 +863,30 @@ async function doRegister() {
 
   if (!prenom || !nom || !email || !mdp) { 
     showMsg('err-reg', 'Tous les champs sont obligatoires.'); 
+    btn.textContent = originalText;
+    btn.disabled = false;
     return; 
   }
 
-  try {
-    // 1. On indique visuellement que c'est en cours
-    btn.disabled = true;
-    btn.textContent = "Magie en cours...";
-    hideMsg('err-reg');
-    hideMsg('ok-reg');
+  hideMsg('err-reg');
 
-    const { data, error } = await sb.auth.signUp({
-      email, 
-      password: mdp,
-      options: { data: { prenom, nom } }
-    });
+  const { error } = await sb.auth.signUp({
+    email, password: mdp,
+    options: { data: { prenom, nom } }
+  });
 
-    if (error) throw error;
+  if (error) { 
+    showMsg('err-reg', error.message); 
+    btn.textContent = originalText;
+    btn.disabled = false;
+    return; 
+  }
+
+  // Si ça marche, on affiche le message
+  showMsg('ok-reg', '✦ Compte créé ! Vérifiez votre e-mail (ou demandez à l\'admin de valider).', 'success');
+  btn.textContent = originalText;
+  btn.disabled = false;
+}
 
     // 2. Succès
     showMsg('ok-reg', '✦ Compte créé ! Vérifiez vos e-mails pour confirmer.', 'success');
