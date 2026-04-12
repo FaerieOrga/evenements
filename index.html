@@ -1125,18 +1125,53 @@ function renderOrgaTable(list) {
   tbody.innerHTML = list.map(ev => `<tr><td><strong>${ev.titre}</strong></td><td>${ev.date_debut ? new Date(ev.date_debut).toLocaleString('fr-FR') : '—'}</td><td>${ev.lieu || '—'}</td><td>${ev.type || '—'}</td><td>${ev.places_disponibles}/${ev.places_totales}</td><td><button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">👁 Voir</button> <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏ Modif</button></td></tr>`).join('');
 }
 
+  async function retirerParticipant(eventId, userId, table, titre) {
+  if (!confirm('Voulez-vous vraiment retirer ce joueur ?')) return;
+  try {
+    const { error } = await sb.from(table).delete().eq('event_id', eventId).eq('user_id', userId);
+    if (error) throw error;
+    
+    showToast('✦ Joueur retiré');
+    // On met à jour la liste ouverte et le tableau orga derrière
+    voirParticipants(eventId, titre);
+    loadOrgaEvents();
+  } catch (e) {
+    alert("Erreur : " + e.message);
+  }
+}
+  
 async function voirParticipants(eventId, titre) {
-  document.getElementById('view-event-titre').textContent = titre; const content = document.getElementById('liste-participants-content'); content.innerHTML = 'Chargement...'; openModal('modal-liste-participants');
+  document.getElementById('view-event-titre').textContent = titre; 
+  const content = document.getElementById('liste-participants-content'); 
+  content.innerHTML = 'Chargement...'; 
+  openModal('modal-liste-participants');
+  
   try {
     const { data: inscr } = await sb.from('inscriptions').select('user_id').eq('event_id', eventId);
     const { data: attente } = await sb.from('liste_attente').select('user_id').eq('event_id', eventId);
     const { data: profils } = await sb.from('profils').select('id, prenom, nom');
-    const annuaire = {}; if (profils) profils.forEach(p => annuaire[p.id] = `${p.prenom} ${p.nom}`);
     
-    let html = '<h3>⚔ Inscrits officiels</h3><ul>';
-    html += (inscr && inscr.length > 0) ? inscr.map(i => `<li>👤 ${annuaire[i.user_id] || `Joueur Inconnu (${i.user_id.substring(0,5)})`}</li>`).join('') : '<li>Personne</li>';
-    html += '</ul><br><h3>⏳ Liste d\'attente</h3><ul>';
-    html += (attente && attente.length > 0) ? attente.map(a => `<li>👤 ${annuaire[a.user_id] || `Joueur Inconnu (${a.user_id.substring(0,5)})`}</li>`).join('') : '<li>Vide</li>';
+    const annuaire = {}; 
+    if (profils) profils.forEach(p => annuaire[p.id] = `${p.prenom} ${p.nom}`);
+    
+    let html = '<h3 style="margin-bottom:10px;">⚔ Inscrits officiels</h3><ul style="list-style:none; padding:0; margin-bottom:20px;">';
+    html += (inscr && inscr.length > 0) ? inscr.map(i => {
+      const nom = annuaire[i.user_id] || `Joueur Inconnu (${i.user_id.substring(0,5)})`;
+      return `<li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:6px; background:rgba(154,123,47,0.1); border-radius:3px;">
+                <span>👤 ${nom}</span>
+                <button class="btn-ghost" style="padding:2px 8px; color:var(--red-blood); border-color:var(--red-blood);" onclick="retirerParticipant('${eventId}', '${i.user_id}', 'inscriptions', '${titre.replace(/'/g,"\\'")}')">✕</button>
+              </li>`;
+    }).join('') : '<li style="padding:6px;">Personne</li>';
+
+    html += '</ul><h3 style="margin-bottom:10px;">⏳ Liste d\'attente</h3><ul style="list-style:none; padding:0;">';
+    html += (attente && attente.length > 0) ? attente.map(a => {
+      const nom = annuaire[a.user_id] || `Joueur Inconnu (${a.user_id.substring(0,5)})`;
+      return `<li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:6px; background:rgba(154,123,47,0.1); border-radius:3px;">
+                <span>👤 ${nom}</span>
+                <button class="btn-ghost" style="padding:2px 8px; color:var(--red-blood); border-color:var(--red-blood);" onclick="retirerParticipant('${eventId}', '${a.user_id}', 'liste_attente', '${titre.replace(/'/g,"\\'")}')">✕</button>
+              </li>`;
+    }).join('') : '<li style="padding:6px;">Vide</li>';
+    
     content.innerHTML = html + '</ul>';
   } catch (e) { content.innerHTML = "Erreur : " + e.message; }
 }
