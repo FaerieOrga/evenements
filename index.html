@@ -1384,30 +1384,44 @@ function renderOrgaTable(list) {
   async function voirParticipants(eventId, titre) {
   document.getElementById('view-event-titre').textContent = titre;
   const content = document.getElementById('liste-participants-content');
-  content.innerHTML = 'Chargement...';
+  content.innerHTML = 'Chargement des troupes...';
   openModal('modal-liste-participants');
 
   try {
-    // On récupère les inscriptions + les données des profils en une seule fois
-    const { data: inscr } = await sb.from('inscriptions').select('user_id, profils(prenom, nom)').eq('event_id', eventId);
-    const { data: attente } = await sb.from('liste_attente').select('user_id, profils(prenom, nom)').eq('event_id', eventId);
+    // On récupère tout
+    const { data: inscr, error: err1 } = await sb.from('inscriptions').select('user_id, profils(prenom, nom)').eq('event_id', eventId);
+    const { data: attente, error: err2 } = await sb.from('liste_attente').select('user_id, profils(prenom, nom)').eq('event_id', eventId);
 
-    let html = '<h3>⚔ Inscrits officiels</h3><ul>';
-    html += (inscr && inscr.length > 0) 
-      ? inscr.map(i => `<li>👤 ${i.profils?.prenom || 'Inconnu'} ${i.profils?.nom || ''}</li>`).join('') 
-      : '<li>Personne</li>';
+    if (err1 || err2) throw (err1 || err2);
 
-    html += '</ul><br><h3>⏳ Liste d\'attente</h3><ul>';
-    html += (attente && attente.length > 0) 
-      ? attente.map(a => `<li>👤 ${a.profils?.prenom || 'Inconnu'} ${a.profils?.nom || ''}</li>`).join('') 
-      : '<li>Vide</li>';
+    let html = '<h3>⚔ Inscrits officiels</h3><ul style="list-style:none; padding:0; margin:10px 0;">';
+    if (inscr && inscr.length > 0) {
+      html += inscr.map(i => {
+        const nomComplet = i.profils ? `${i.profils.prenom} ${i.profils.nom}` : `Joueur (${i.user_id.substring(0,8)})`;
+        return `<li style="margin-bottom:5px;">👤 ${nomComplet}</li>`;
+      }).join('');
+    } else {
+      html += '<li>Personne pour le moment</li>';
+    }
+    html += '</ul><br>';
+
+    html += '<h3>⏳ Liste d\'attente</h3><ul style="list-style:none; padding:0; margin:10px 0;">';
+    if (attente && attente.length > 0) {
+      html += attente.map(a => {
+        const nomComplet = a.profils ? `${a.profils.prenom} ${a.profils.nom}` : `Joueur (${a.user_id.substring(0,8)})`;
+        return `<li style="margin-bottom:5px;">👤 ${nomComplet}</li>`;
+      }).join('');
+    } else {
+      html += '<li>Vide</li>';
+    }
+    html += '</ul>';
 
     content.innerHTML = html;
   } catch (e) {
-    content.innerHTML = "Erreur de lecture.";
+    console.error("Erreur Orga:", e);
+    content.innerHTML = `<div style="color:var(--red-blood)">Erreur de lecture : ${e.message}</div>`;
   }
 }
-
 function filterOrgaEvents(q) {
   renderOrgaTable(state.orgaEvents.filter(ev => (ev.titre + (ev.lieu || '') + (ev.type || '')).toLowerCase().includes(q.toLowerCase())));
 }
