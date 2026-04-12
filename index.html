@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -110,6 +110,15 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 0 2px rgba(154,123,47,0.2);
 }
 textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
+
+ /* Empêche le fond bleu de la saisie automatique */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--gold);
+  -webkit-box-shadow: 0 0 0px 1000px #1a120b inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
 
 /* ── BOUTONS ── */
 .btn {
@@ -535,7 +544,15 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
         <div id="header-user-zone"></div>
       </div>
       <div class="filter-bar">
-        <input type="text" id="filter-search" placeholder="Rechercher un événement…" oninput="filterEvents()" autocomplete="new-password" spellcheck="false" onfocus="this.value=''">
+        <input 
+  type="text" 
+  id="search-input" 
+  placeholder="Rechercher un événement..." 
+  oninput="filterEvents()"
+  autocomplete="one-time-code"
+  name="search-fantasy-unique-id"
+  spellcheck="false"
+>
         <select id="filter-type" onchange="filterEvents()">
           <option value="">Tous les types</option>
           <option value="Assemblée générale">Assemblée générale</option>
