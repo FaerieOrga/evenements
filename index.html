@@ -1247,29 +1247,28 @@ async function doLogin() {
 
 async function doRegister() {
   const btn = document.querySelector('#form-inscription .btn-full');
-  if (btn.disabled) return;
   const prenom = document.getElementById('reg-prenom').value.trim();
   const nom    = document.getElementById('reg-nom').value.trim();
   const email  = document.getElementById('reg-email').value.trim();
   const mdp    = document.getElementById('reg-mdp').value;
+
   if (!prenom || !nom || !email || !mdp) { showMsg('err-reg', 'Tous les champs sont obligatoires.'); return; }
+
   try {
     btn.disabled = true;
-    btn.textContent = "Magie en cours...";
-    hideMsg('err-reg');
-    const { error } = await sb.auth.signUp({ email, password: mdp, options: { data: { prenom, nom } } });
+    const { data, error } = await sb.auth.signUp({ email, password: mdp, options: { data: { prenom, nom } } });
     if (error) throw error;
-    showMsg('ok-reg', '✦ Bienvenue ! Connexion en cours...', 'success');
-    setTimeout(async () => { await doLoginDirect(email, mdp); }, 1500);
+
+    // --- AJOUT ICI : On crée le profil dans la table profils ---
+    await sb.from('profils').insert({ id: data.user.id, prenom, nom });
+    
+    showMsg('ok-reg', '✦ Compte créé !', 'success');
+    setTimeout(() => doLoginDirect(email, mdp), 1000);
   } catch (err) {
-    let message = err.message;
-    if (message.includes("429")) message = "Trop de tentatives. Attendez 5 min.";
-    showMsg('err-reg', message);
+    showMsg('err-reg', err.message);
     btn.disabled = false;
-    btn.textContent = "Créer mon compte";
   }
 }
-
 async function doLoginDirect(email, password) {
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
   if (!error) {
@@ -1385,33 +1384,27 @@ function renderOrgaTable(list) {
   async function voirParticipants(eventId, titre) {
   document.getElementById('view-event-titre').textContent = titre;
   const content = document.getElementById('liste-participants-content');
-  content.innerHTML = 'Chargement des troupes...';
+  content.innerHTML = 'Chargement...';
   openModal('modal-liste-participants');
 
   try {
-    // On force la récupération
-    const { data: inscr, error: err1 } = await sb.from('inscriptions').select('user_id').eq('event_id', eventId);
-    const { data: attente, error: err2 } = await sb.from('liste_attente').select('user_id').eq('event_id', eventId);
-
-    if (err1 || err2) throw (err1 || err2);
-
-    console.log("Inscrits trouvés:", inscr); // Pour vérifier dans ta console F12
+    // On récupère les inscriptions + les données des profils en une seule fois
+    const { data: inscr } = await sb.from('inscriptions').select('user_id, profils(prenom, nom)').eq('event_id', eventId);
+    const { data: attente } = await sb.from('liste_attente').select('user_id, profils(prenom, nom)').eq('event_id', eventId);
 
     let html = '<h3>⚔ Inscrits officiels</h3><ul>';
     html += (inscr && inscr.length > 0) 
-      ? inscr.map(i => `<li>👤 Joueur ID: ${i.user_id.substring(0,8)}...</li>`).join('') 
-      : '<li>Personne pour le moment</li>';
-    
+      ? inscr.map(i => `<li>👤 ${i.profils?.prenom || 'Inconnu'} ${i.profils?.nom || ''}</li>`).join('') 
+      : '<li>Personne</li>';
+
     html += '</ul><br><h3>⏳ Liste d\'attente</h3><ul>';
     html += (attente && attente.length > 0) 
-      ? attente.map(a => `<li>👤 Joueur ID: ${a.user_id.substring(0,8)}...</li>`).join('') 
+      ? attente.map(a => `<li>👤 ${a.profils?.prenom || 'Inconnu'} ${a.profils?.nom || ''}</li>`).join('') 
       : '<li>Vide</li>';
-    html += '</ul>';
 
     content.innerHTML = html;
   } catch (e) {
-    console.error(e);
-    content.innerHTML = "Erreur de chargement des participants.";
+    content.innerHTML = "Erreur de lecture.";
   }
 }
 
