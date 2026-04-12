@@ -802,9 +802,6 @@ async function confirmInscription() {
         event_id: state.pendingEventId,
         user_id:  state.user.id
       });
-      console.log('errInscr:', errInscr);
-      console.log('code:', errInscr?.code);
-      console.log('type code:', typeof errInscr?.code);
       if (errInscr) {
         if (String(errInscr.code) === '23505') {
           showMsg('ok-insc', '✦ Vous êtes déjà inscrit·e à cet événement.', 'success');
@@ -812,15 +809,11 @@ async function confirmInscription() {
         }
         throw errInscr;
       }
-
-      // Mise à jour des places
       await sb.from('evenements')
         .update({ places_disponibles: state.pendingEventDispo - 1 })
         .eq('id', state.pendingEventId);
-
       showToast('✦ Inscription confirmée !');
     } else {
-      // Gestion liste d'attente
       const { error } = await sb.from('liste_attente').insert({
         event_id: state.pendingEventId,
         user_id:  state.user.id
@@ -828,15 +821,10 @@ async function confirmInscription() {
       if (error) throw error;
       showToast("⚠ Ajouté·e à la liste d'attente");
     }
-
-    // --- ACTIONS DE SORTIE ---
-    closeModal('modal-inscription'); // On ferme enfin la fenêtre !
-    await loadPublicEvents();        // On rafraîchit la liste (le bouton passera en "Inscrit")
-    
+    closeModal('modal-inscription');
+    await loadPublicEvents();
   } catch(e) {
     showMsg('err-insc', e.message || 'Une erreur est survenue.');
-  } finally {
-    btn.disabled = false;
   }
 }
 
