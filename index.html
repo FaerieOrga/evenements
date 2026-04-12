@@ -783,25 +783,49 @@ function openConfirmInscription() {
 }
 
 async function confirmInscription() {
+  const btn = document.querySelector('#modal-inscription .btn');
   try {
+    btn.disabled = true; // Empêche le double clic
+    
     if (state.pendingEventDispo > 0) {
       const { error: errInscr } = await sb.from('inscriptions').insert({
         event_id: state.pendingEventId,
         user_id:  state.user.id
       });
-      if (errInscr) throw errInscr;
-      await sb.from('evenements').update({ places_disponibles: state.pendingEventDispo - 1 }).eq('id', state.pendingEventId);
-      showMsg('ok-insc', '✦ Inscription confirmée !', 'success');
+      
+      if (errInscr) {
+        // Si l'erreur est un doublon (code 23505 en SQL ou message contenant "already")
+        if (errInscr.message.includes('unique') || errInscr.code === '23505') {
+          showMsg('err-insc', '✦ Vous êtes déjà inscrit·e à cet événement !');
+          return;
+        }
+        throw errInscr;
+      }
+
+      // Mise à jour des places
+      await sb.from('evenements')
+        .update({ places_disponibles: state.pendingEventDispo - 1 })
+        .eq('id', state.pendingEventId);
+
       showToast('✦ Inscription confirmée !');
     } else {
-      const { error } = await sb.from('liste_attente').insert({ event_id: state.pendingEventId, user_id: state.user.id });
+      // Gestion liste d'attente
+      const { error } = await sb.from('liste_attente').insert({
+        event_id: state.pendingEventId,
+        user_id:  state.user.id
+      });
       if (error) throw error;
-      showMsg('ok-insc', "⚠ Ajouté·e à la liste d'attente.", 'success');
-      showToast("⚠ Liste d'attente");
+      showToast("⚠ Ajouté·e à la liste d'attente");
     }
-    await loadPublicEvents();
+
+    // --- ACTIONS DE SORTIE ---
+    closeModal('modal-inscription'); // On ferme enfin la fenêtre !
+    await loadPublicEvents();        // On rafraîchit la liste (le bouton passera en "Inscrit")
+    
   } catch(e) {
     showMsg('err-insc', e.message || 'Une erreur est survenue.');
+  } finally {
+    btn.disabled = false;
   }
 }
 
