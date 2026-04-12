@@ -1099,7 +1099,7 @@ async function doLoginDirect(email, password) {
   if (!error) { state.user = data.user; closeModal('modal-auth'); updateHeaderUserZone(); await loadPublicEvents(); }
 }
 
-async function logoutJoueur() { await sb.auth.signOut(); state.user = null; state.mesInscriptions = []; document.getElementById('joueur-screen').style.display = 'none'; document.getElementById('public-screen').style.display = ''; updateHeaderUserZone(); renderPublicEvents(state.events); }
+async function logoutJoueur() { await sb.auth.signOut(); state.user = null; state.mesInscriptions = []; state.maListeAttente = []; document.getElementById('joueur-screen').style.display = 'none'; document.getElementById('public-screen').style.display = ''; updateHeaderUserZone(); renderPublicEvents(state.events); }
 
 function updateHeaderUserZone() {
   const zone = document.getElementById('header-user-zone');
