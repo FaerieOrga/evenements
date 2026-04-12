@@ -812,9 +812,16 @@ async function confirmInscription() {
     
     if (state.pendingEventDispo > 0) {
       const { error: errInscr } = await sb.from('inscriptions').insert({
-        event_id: state.pendingEventId,
-        user_id:  state.user.id
-      });
+  event_id: state.pendingEventId,
+  user_id:  state.user.id
+});
+if (errInscr) {
+  if (errInscr.code === '23505') {
+    showMsg('ok-insc', '✦ Vous êtes déjà inscrit·e à cet événement.', 'success');
+    return;
+  }
+  throw errInscr;
+}
       
       if (errInscr) {
         // Si l'erreur est un doublon (code 23505 en SQL ou message contenant "already")
