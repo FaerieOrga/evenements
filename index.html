@@ -691,10 +691,8 @@ async function loadPublicEvents() {
       .select('*')
       .or(`date_debut.gte.${now},date.gte.${new Date().toISOString().split('T')[0]}`)
       .order('date_debut', { ascending: true, nullsFirst: false });
-
     if (error) throw error;
     state.events = data || [];
-
     if (state.user) {
       const { data: inscr } = await sb
         .from('inscriptions')
@@ -702,8 +700,11 @@ async function loadPublicEvents() {
         .eq('user_id', state.user.id);
       state.mesInscriptions = (inscr || []).map(i => i.event_id);
     }
-
-    renderPublicEvents(state.events);
+    // Vider le champ après les extensions, puis afficher
+    setTimeout(() => {
+      document.getElementById('filter-search').value = '';
+      renderPublicEvents(state.events);
+    }, 600);
   } catch(e) {
     grid.innerHTML = `<div class="empty-state" style="color:var(--red-blood)">Impossible de charger les événements.</div>`;
     console.error(e);
@@ -1131,10 +1132,12 @@ document.querySelectorAll('.modal-overlay').forEach(el => {
 //  INIT
 // ════════════════════════════════════════════════════
 window.addEventListener('load', async () => {
-  // Vider les champs de recherche au cas où le navigateur les aurait remplis
-  document.getElementById('filter-search').value = '';
-  document.getElementById('orga-search').value = '';
-  
+  // Forcer le vidage même après les extensions
+  setTimeout(() => {
+    document.getElementById('filter-search').value = '';
+    document.getElementById('orga-search').value = '';
+  }, 500);
+
   const { data: { session } } = await sb.auth.getSession();
   if (session) state.user = session.user;
   updateHeaderUserZone();
