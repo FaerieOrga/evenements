@@ -947,36 +947,24 @@ function openOrgaLogin() {
 
 async function doLoginOrga() {
   const pwd = document.getElementById('orga-pwd').value;
-  const errEl = document.getElementById('err-orga');
-
+  // Vérification du mot de passe
   if (pwd !== ORGA_PASSWORD) { 
     showMsg('err-orga', 'Mot de passe incorrect.'); 
     return; 
   }
 
+  // 1. Fermer la modale
+  closeModal('modal-orga-auth');
+  
+  // 2. Basculer les écrans immédiatement
+  document.getElementById('public-screen').style.display = 'none';
+  document.getElementById('orga-screen').style.display   = 'block';
+
+  // 3. Charger les données en arrière-plan
   try {
-    hideMsg('err-orga');
-    // On ferme la modale d'abord
-    closeModal('modal-orga-auth');
-    
-    // On charge les données
     await loadOrgaEvents();
-    
-    // On bascule les écrans
-    const publicSc = document.getElementById('public-screen');
-    const orgaSc = document.getElementById('orga-screen');
-    
-    if (publicSc && orgaSc) {
-      publicSc.style.display = 'none';
-      orgaSc.style.display   = 'block'; // On force le block au cas où
-      showToast("⚔ Accès Maître de Jeu activé");
-    } else {
-      console.error("Écrans introuvables :", { publicSc, orgaSc });
-      alert("Erreur de structure : l'écran organisateur est introuvable dans le HTML.");
-    }
-  } catch (error) {
-    console.error("Erreur login orga:", error);
-    showMsg('err-orga', "Erreur lors du chargement des données.");
+  } catch (e) {
+    console.error("Erreur de chargement des données orga:", e);
   }
 }
 
