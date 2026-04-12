@@ -1084,7 +1084,7 @@ async function doRegister() {
   try {
     const { data, error } = await sb.auth.signUp({ email, password: mdp, options: { data: { prenom, nom } } });
     if (error) throw error;
-    await sb.from('profils').insert({ id: data.user.id, prenom, nom });
+    await sb.from('profils').upsert({ id: data.user.id, prenom, nom });
     showMsg('ok-reg', '✦ Compte créé !', 'success');
     setTimeout(() => doLoginDirect(email, mdp), 1000);
   } catch (err) { showMsg('err-reg', err.message); }
