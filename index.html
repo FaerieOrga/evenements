@@ -849,20 +849,54 @@ async function doLogin() {
 }
 
 async function doRegister() {
+  const btn = document.querySelector('#form-inscription .btn-full');
+  const originalText = btn.textContent;
+  
   const prenom = document.getElementById('reg-prenom').value.trim();
   const nom    = document.getElementById('reg-nom').value.trim();
   const email  = document.getElementById('reg-email').value.trim();
   const mdp    = document.getElementById('reg-mdp').value;
-  if (!prenom || !nom || !email || !mdp) { showMsg('err-reg', 'Tous les champs sont obligatoires.'); return; }
-  hideMsg('err-reg');
-  const { error } = await sb.auth.signUp({
-    email, password: mdp,
-    options: { data: { prenom, nom } }
-  });
-  if (error) { showMsg('err-reg', error.message); return; }
-  showMsg('ok-reg', '✦ Compte créé ! Vérifiez votre e-mail pour confirmer, puis connectez-vous.', 'success');
-  document.getElementById('login-email').value = email;
-  setTimeout(() => switchAuthTab('connexion'), 2000);
+
+  if (!prenom || !nom || !email || !mdp) { 
+    showMsg('err-reg', 'Tous les champs sont obligatoires.'); 
+    return; 
+  }
+
+  try {
+    // 1. On indique visuellement que c'est en cours
+    btn.disabled = true;
+    btn.textContent = "Magie en cours...";
+    hideMsg('err-reg');
+    hideMsg('ok-reg');
+
+    const { data, error } = await sb.auth.signUp({
+      email, 
+      password: mdp,
+      options: { data: { prenom, nom } }
+    });
+
+    if (error) throw error;
+
+    // 2. Succès
+    showMsg('ok-reg', '✦ Compte créé ! Vérifiez vos e-mails pour confirmer.', 'success');
+    document.getElementById('reg-email').value = ""; // On vide pour la sécurité
+    document.getElementById('reg-mdp').value = "";
+    
+    // On redirige vers la connexion après 3 secondes
+    setTimeout(() => switchAuthTab('connexion'), 3000);
+
+  } catch (err) {
+    // 3. Gestion d'erreur (dont la 429)
+    let message = err.message;
+    if (message.includes("429")) {
+      message = "Trop de tentatives. Attendez quelques minutes avant de réessayer.";
+    }
+    showMsg('err-reg', message);
+  } finally {
+    // 4. On remet le bouton à la normale
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
 }
 
 async function logoutJoueur() {
