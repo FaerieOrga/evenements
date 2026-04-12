@@ -1131,6 +1131,10 @@ document.querySelectorAll('.modal-overlay').forEach(el => {
 //  INIT
 // ════════════════════════════════════════════════════
 window.addEventListener('load', async () => {
+  // Vider les champs de recherche au cas où le navigateur les aurait remplis
+  document.getElementById('filter-search').value = '';
+  document.getElementById('orga-search').value = '';
+  
   const { data: { session } } = await sb.auth.getSession();
   if (session) state.user = session.user;
   updateHeaderUserZone();
