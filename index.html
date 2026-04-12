@@ -638,18 +638,31 @@ const state = {
 // ════════════════════════════════════════════════════
 //  API
 // ════════════════════════════════════════════════════
-async function gs(action, params = {}) {
-  const url = new URL(GS_URL);
-  url.searchParams.set('action', action);
-  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
-  const res = await fetch(url.toString());
-  return res.json();
+function gs(action, params = {}) {
+  return new Promise((resolve, reject) => {
+    const cbName = 'cb_' + Math.random().toString(36).slice(2);
+    const url = new URL(GS_URL);
+    url.searchParams.set('action', action);
+    url.searchParams.set('callback', cbName);
+    for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+
+    window[cbName] = (data) => {
+      delete window[cbName];
+      document.getElementById('gs-script')?.remove();
+      resolve(data);
+    };
+
+    const script = document.createElement('script');
+    script.id = 'gs-script';
+    script.src = url.toString();
+    script.onerror = () => reject(new Error('Erreur réseau'));
+    document.body.appendChild(script);
+  });
 }
+
 async function gsPost(action, data) {
-  const url = new URL(GS_URL);
-  url.searchParams.set('action', action);
-  const res = await fetch(url.toString(), { method: 'POST', body: JSON.stringify(data) });
-  return res.json();
+  // Les POST passent via GET avec les données encodées en paramètre
+  return gs(action, { _data: JSON.stringify(data) });
 }
 
 // ════════════════════════════════════════════════════
