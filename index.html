@@ -849,34 +849,35 @@ function toLocalInput(iso) {
 async function loadPublicEvents() {
   const grid = document.getElementById('public-events-grid');
   try {
-    const now = new Date().toISOString();
-    const { data: events } = await sb.from('evenements').select('*').order('date_debut', { ascending: true });
+    const { data: events } = await sb.from('evenements').select('*').order('date_debut', { ascending: true }); [cite: 111, 113]
     
     // On récupère TOUTES les inscriptions pour compter les vrais gens
-    const { data: allInscriptions } = await sb.from('inscriptions').select('event_id');
+    const { data: allInscriptions } = await sb.from('inscriptions').select('event_id'); [cite: 114]
     
     state.events = (events || []).map(ev => {
       // On compte combien de fois l'ID de cet événement apparaît dans les inscriptions
-      const occupées = (allInscriptions || []).filter(i => i.event_id === ev.id).length;
+      const occupées = (allInscriptions || []).filter(i => i.event_id === ev.id).length; [cite: 115]
       // On force le calcul des places dispo réelles
-      ev.places_reelles_dispo = ev.places_totales - occupées;
+      ev.places_reelles_dispo = ev.places_totales - occupées; [cite: 115]
       return ev;
     });
 
     if (state.user) {
-      const { data: inscr } = await sb.from('inscriptions').select('event_id').eq('user_id', state.user.id);
-      state.mesInscriptions = (inscr || []).map(i => i.event_id);
+      const { data: inscr } = await sb.from('inscriptions').select('event_id').eq('user_id', state.user.id); [cite: 116]
+      state.mesInscriptions = (inscr || []).map(i => i.event_id); [cite: 117]
       
-      const { data: attente } = await sb.from('liste_attente').select('user_id').eq('event_id', state.user.id);
-      state.maListeAttente = (attente || []).map(i => i.user_id); 
+      const { data: attente } = await sb.from('liste_attente').select('event_id').eq('user_id', state.user.id); [cite: 118]
+      // CORRECTION : On stocke l'ID de l'événement pour vérifier si l'utilisateur est en attente
+      state.maListeAttente = (attente || []).map(i => i.event_id); [cite: 118]
     }
 
-    renderPublicEvents(state.events);
-  } catch(e) { console.error(e); }
-}
+    // On lance l'affichage une fois les données prêtes
+    renderPublicEvents(state.events); [cite: 119]
 
-    renderPublicEvents(state.events);
-  } catch(e) { console.error(e); }
+  } catch(e) { 
+    console.error("Erreur de chargement:", e); [cite: 119]
+    if (grid) grid.innerHTML = `<div class="empty-state">Erreur de chargement des données.</div>`; [cite: 119]
+  }
 }
   
 function renderPublicEvents(list) {
@@ -939,8 +940,9 @@ function renderPublicEvents(list) {
 }
 
 function filterEvents() {
-  const q    = document.getElementById('filter-search').value.toLowerCase();
+  const q    = document.getElementById('search-input').value.toLowerCase();
   const type = document.getElementById('filter-type').value;
+  
   renderPublicEvents(state.events.filter(ev =>
     (!q || ev.titre.toLowerCase().includes(q) || (ev.lieu || '').toLowerCase().includes(q)) &&
     (!type || ev.type === type)
