@@ -506,6 +506,18 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
   .orga-table th:nth-child(3), .orga-table td:nth-child(3),
   .orga-table th:nth-child(4), .orga-table td:nth-child(4) { display: none; }
 }
+
+  .badge-attente {
+  background: rgba(154, 123, 47, 0.12);
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  border-radius: 2px;
+  letter-spacing: 1px;
+}
+  
 </style>
 </head>
 <body>
@@ -714,6 +726,16 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
     <div class="msg-success" id="ok-insc"></div>
   </div>
 </div>
+  
+<div class="modal-overlay" id="modal-liste-participants">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-liste-participants')">✕</button>
+    <div class="modal-title">Participants - <span id="view-event-titre"></span></div>
+    <div id="liste-participants-content" style="font-family:'Crimson Text', serif; min-height: 100px;">
+      </div>
+  </div>
+</div>
+  
 
 <!-- ══ MODAL CRÉER / MODIFIER ÉVÉNEMENT ══ -->
 <div class="modal-overlay" id="modal-event">
@@ -809,43 +831,59 @@ function toLocalInput(iso) {
 // ════════════════════════════════════════════════════
 async function loadPublicEvents() {
   const grid = document.getElementById('public-events-grid');
-  grid.innerHTML = '<div class="empty-state">Chargement…</div>';
   try {
     const now = new Date().toISOString();
-    const { data, error } = await sb
-      .from('evenements')
-      .select('*')
-      .or(`date_debut.gte.${now},date.gte.${new Date().toISOString().split('T')[0]}`)
-      .order('date_debut', { ascending: true, nullsFirst: false });
-    if (error) throw error;
-    state.events = data || [];
+    const { data: events } = await sb.from('evenements').select('*').order('date_debut', { ascending: true });
+    state.events = events || [];
+
     if (state.user) {
+      // On charge les inscriptions OFFICIELLES
       const { data: inscr } = await sb.from('inscriptions').select('event_id').eq('user_id', state.user.id);
       state.mesInscriptions = (inscr || []).map(i => i.event_id);
-    }
-    setTimeout(() => {
-      document.getElementById('filter-search').value = '';
-      renderPublicEvents(state.events);
-    }, 600);
-  } catch(e) {
-    grid.innerHTML = `<div class="empty-state" style="color:var(--red-blood)">Impossible de charger les événements.</div>`;
-  }
-}
 
+      // On charge les inscriptions en LISTE D'ATTENTE
+      const { data: attente } = await sb.from('liste_attente').select('event_id').eq('user_id', state.user.id);
+      state.maListeAttente = (attente || []).map(i => i.event_id); // Ajoute cette ligne dans state au début du script
+    }
+
+    renderPublicEvents(state.events);
+  } catch(e) { console.error(e); }
+}
+  
 function renderPublicEvents(list) {
   const grid = document.getElementById('public-events-grid');
-  if (!list.length) { grid.innerHTML = '<div class="empty-state">Aucun événement à venir pour l\'instant.</div>'; return; }
+  
+  if (!list.length) { 
+    grid.innerHTML = '<div class="empty-state">Aucun événement à venir pour l\'instant.</div>'; 
+    return; 
+  }
+
   grid.innerHTML = list.map(ev => {
     const placesTot   = ev.places_totales    || 0;
     const placesDispo = ev.places_disponibles || 0;
-    const pct     = placesTot > 0 ? Math.round((1 - placesDispo / placesTot) * 100) : 100;
-    const complet = placesDispo <= 0;
-    const inscrit = state.mesInscriptions.includes(ev.id);
+    const pct         = placesTot > 0 ? Math.round((1 - placesDispo / placesTot) * 100) : 100;
+    const complet     = placesDispo <= 0;
+    
+    // Vérification des statuts du joueur
+    const inscrit   = state.mesInscriptions.includes(ev.id);
+    const enAttente = state.maListeAttente && state.maListeAttente.includes(ev.id);
+
+    // Formatage des dates
     const debut = ev.date_debut ? formatDatetime(ev.date_debut) : (ev.date ? new Date(ev.date).toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'}) : '—');
     const fin   = ev.date_fin ? formatDatetime(ev.date_fin) : null;
-    let btnHtml = inscrit
-      ? `<span class="badge-inscrit">✦ Inscrit·e</span>`
-      : `<button class="btn btn-sm${complet ? ' btn-danger' : ''}" onclick="handleInscriptionClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${placesDispo})">${complet ? "Liste d'attente" : "S'inscrire"}</button>`;
+
+    // Détermination du bouton ou du badge à afficher
+    let btnHtml = '';
+    if (inscrit) {
+      btnHtml = `<span class="badge-inscrit">✦ Inscrit·e</span>`;
+    } else if (enAttente) {
+      btnHtml = `<span class="badge-attente">⏳ En attente</span>`;
+    } else {
+      const btnClass = 'btn btn-sm' + (complet ? ' btn-danger' : '');
+      const btnLabel = complet ? "Liste d'attente" : "S'inscrire";
+      btnHtml = `<button class="${btnClass}" onclick="handleInscriptionClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${placesDispo})">${btnLabel}</button>`;
+    }
+
     return `
     <div class="event-card">
       <div class="event-card-header">
@@ -863,7 +901,7 @@ function renderPublicEvents(list) {
         <div class="jauge-wrap">
           <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
           <span class="jauge-text">${placesDispo} / ${placesTot} place${placesTot > 1 ? 's' : ''}</span>
-          ${complet && !inscrit ? '<span class="badge-attente">COMPLET</span>' : ''}
+          ${complet && !inscrit && !enAttente ? '<span class="badge-attente" style="background:rgba(139,26,26,0.12); color:var(--red-blood); border-color:var(--red-blood);">COMPLET</span>' : ''}
         </div>
         ${btnHtml}
       </div>
@@ -1336,9 +1374,36 @@ function renderOrgaTable(list) {
       <td><strong style="font-family:'Cinzel',serif;font-size:0.88rem">${ev.titre}</strong></td>
       <td>${debut}</td><td>${ev.lieu || '—'}</td><td>${ev.type || '—'}</td>
       <td>${ev.places_disponibles}/${ev.places_totales}</td>
-      <td><button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏ Modifier</button></td>
+      <td>
+        <button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">👁 Voir</button>
+        <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏ Modif</button>
+      </td>
     </tr>`;
   }).join('');
+}
+
+  async function voirParticipants(eventId, titre) {
+  document.getElementById('view-event-titre').textContent = titre;
+  const content = document.getElementById('liste-participants-content');
+  content.innerHTML = 'Chargement des troupes...';
+  openModal('modal-liste-participants');
+
+  try {
+    // 1. On récupère les inscriptions + les profils
+    const { data: inscr } = await sb.from('inscriptions').select('user_id').eq('event_id', eventId);
+    const { data: attente } = await sb.from('liste_attente').select('user_id').eq('event_id', eventId);
+
+    let html = '<h3>⚔ Inscrits officiels</h3><ul>';
+    html += (inscr?.length) ? inscr.map(i => `<li>👤 ID: ${i.user_id.substring(0,8)}...</li>`).join('') : '<li>Personne pour le moment</li>';
+    html += '</ul><br><h3>⏳ Liste d\'attente</h3><ul>';
+    html += (attente?.length) ? attente.map(a => `<li>👤 ID: ${a.user_id.substring(0,8)}...</li>`).join('') : '<li>Vide</li>';
+    html += '</ul>';
+
+    content.innerHTML = html;
+  } catch (e) {
+    console.error(e);
+    content.innerHTML = "Erreur de chargement des participants.";
+  }
 }
 
 function filterOrgaEvents(q) {
