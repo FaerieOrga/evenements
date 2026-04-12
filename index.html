@@ -816,7 +816,7 @@ async function confirmInscription() {
   user_id:  state.user.id
 });
 if (errInscr) {
-  if (errInscr.code === '23505') {
+  if (errInscr.code === '23505' || errInscr.status === 409 || errInscr.message?.includes('duplicate')) {
     showMsg('ok-insc', '✦ Vous êtes déjà inscrit·e à cet événement.', 'success');
     return;
   }
