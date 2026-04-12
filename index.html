@@ -431,7 +431,7 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
         <div id="header-user-zone"></div>
       </div>
       <div class="filter-bar">
-        <input type="search" id="orga-search" placeholder="Filtrer…" style="max-width:220px;margin-left:auto" oninput="filterOrgaEvents(this.value)" autocomplete="off">
+        <input type="text" id="filter-search" placeholder="Rechercher un événement…" oninput="filterEvents()" autocomplete="new-password" spellcheck="false">
         <select id="filter-type" onchange="filterEvents()">
           <option value="">Tous les types</option>
           <option value="Assemblée générale">Assemblée générale</option>
@@ -473,7 +473,7 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
       <div style="font-family:'Cinzel',serif;font-size:1.3rem;font-weight:700;letter-spacing:2px;margin-bottom:22px;color:var(--ink);">⚔ Gestion des Événements</div>
       <div class="orga-toolbar">
         <button class="btn btn-sm" onclick="openModalCreateEvent()">+ Nouvel événement</button>
-        <input type="text" id="orga-search" placeholder="Filtrer…" style="max-width:220px;margin-left:auto" oninput="filterOrgaEvents(this.value)">
+       <input type="text" id="orga-search" placeholder="Filtrer…" style="max-width:220px;margin-left:auto" oninput="filterOrgaEvents(this.value)" autocomplete="new-password">
       </div>
       <table class="orga-table">
         <thead>
