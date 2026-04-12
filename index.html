@@ -853,8 +853,8 @@ function renderPublicEvents(list) {
         <div class="event-card-type">${ev.type || '—'}</div>
       </div>
       <div class="event-card-body">
-        <div class="event-info-item"><span class="event-info-label">Début</span><span class="event-info-val">📅 ${debut}</span></div>
-        ${fin ? `<div class="event-info-item"><span class="event-info-label">Fin</span><span class="event-info-val">🏁 ${fin}</span></div>` : '<div></div>'}
+        <div class="event-info-item"><span class="event-info-label">Début</span><span class="event-info-val"> ${debut}</span></div>
+        ${fin ? `<div class="event-info-item"><span class="event-info-label">Fin</span><span class="event-info-val"> ${fin}</span></div>` : '<div></div>'}
         <div class="event-info-item"><span class="event-info-label">Lieu</span><span class="event-info-val">📍 ${ev.lieu || '—'}</span></div>
         <div class="event-info-item"><span class="event-info-label">Organisateurs</span><span class="event-info-val">${ev.organisateurs || '—'}</span></div>
       </div>
