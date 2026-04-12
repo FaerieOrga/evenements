@@ -93,7 +93,7 @@ label {
   text-transform: uppercase;
 }
 input[type="text"], input[type="email"], input[type="password"],
-input[type="date"], input[type="number"], select, textarea {
+input[type="date"], input[type="datetime-local"], input[type="number"], select, textarea {
   width: 100%;
   background: rgba(242,232,201,0.6);
   border: 1px solid var(--border);
@@ -109,7 +109,7 @@ input:focus, select:focus, textarea:focus {
   border-color: var(--gold);
   box-shadow: 0 0 0 2px rgba(154,123,47,0.2);
 }
-textarea { min-height: 90px; resize: vertical; line-height: 1.7; }
+textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
 
 /* ── BOUTONS ── */
 .btn {
@@ -266,12 +266,23 @@ textarea { min-height: 90px; resize: vertical; line-height: 1.7; }
   color: var(--ink-light);
 }
 .event-info-val { font-family: 'Crimson Text', serif; font-size: 0.97rem; color: var(--ink); }
+
+/* Description */
+.event-description {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 0.97rem;
+  color: var(--ink);
+  line-height: 1.75;
+  padding: 0 20px 14px;
+  border-bottom: 1px solid rgba(107,76,30,0.15);
+}
+
 .event-card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px 14px;
-  border-top: 1px solid rgba(107,76,30,0.2);
   gap: 10px;
   flex-wrap: wrap;
 }
@@ -339,7 +350,7 @@ textarea { min-height: 90px; resize: vertical; line-height: 1.7; }
   overflow-y: auto;
   position: relative;
 }
-.modal-box-wide { max-width: 620px; }
+.modal-box-wide { max-width: 660px; }
 .modal-title {
   font-family: 'Cinzel', serif;
   font-size: 1.2rem;
@@ -423,16 +434,8 @@ textarea { min-height: 90px; resize: vertical; line-height: 1.7; }
         <input type="text" id="filter-search" placeholder="Rechercher un événement…" oninput="filterEvents()">
         <select id="filter-type" onchange="filterEvents()">
           <option value="">Tous les types</option>
-          <option value="Assemblée générale">Assemblée générale</option>
-          <option value="Atelier">Atelier craft/couture/bricolage</option>
           <option value="GN">GN</option>
-          <option value="Jeepform">Jeepform</option>
-          <option value="Jeu de rôles sur table">Jeu de rôles sur table</option>
-          <option value="Jeu de société">Jeu de société</option>
-          <option value="Jeu sportif immersif">Jeu sportif immersif</option>
-          <option value="Jeu immersif">Jeu immersif</option>
-          <option value="Rangement/inventaire/bricolage">Rangement/inventaire/bricolage</option>
-          <option value="Repas">Repas</option>
+          <option value="Atelier">Atelier</option>
           <option value="Réunion">Réunion</option>
           <option value="Autre">Autre</option>
         </select>
@@ -451,7 +454,9 @@ textarea { min-height: 90px; resize: vertical; line-height: 1.7; }
   <div id="orga-screen" style="display:none">
     <div class="logout-bar">
       <span>⚔ Organisateur — Événements de Faérie</span>
-      <button class="btn btn-sm" onclick="logoutOrga()">Déconnexion</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" onclick="logoutOrga()">← Retour à l'accueil</button>
+      </div>
     </div>
     <div class="parchment">
       <div style="font-family:'Cinzel',serif;font-size:1.3rem;font-weight:700;letter-spacing:2px;margin-bottom:22px;color:var(--ink);">⚔ Gestion des Événements</div>
@@ -461,7 +466,7 @@ textarea { min-height: 90px; resize: vertical; line-height: 1.7; }
       </div>
       <table class="orga-table">
         <thead>
-          <tr><th>Titre</th><th>Date</th><th>Lieu</th><th>Type</th><th>Places</th><th>Actions</th></tr>
+          <tr><th>Titre</th><th>Début</th><th>Lieu</th><th>Type</th><th>Places</th><th>Actions</th></tr>
         </thead>
         <tbody id="orga-events-body">
           <tr><td colspan="6" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement…</td></tr>
@@ -482,7 +487,6 @@ textarea { min-height: 90px; resize: vertical; line-height: 1.7; }
       <button class="active" id="tab-connexion" onclick="switchAuthTab('connexion')">Se connecter</button>
       <button id="tab-inscription" onclick="switchAuthTab('inscription')">Créer un compte</button>
     </div>
-    <!-- Connexion -->
     <div id="form-connexion">
       <div class="form-group">
         <label>Adresse e-mail</label>
@@ -496,7 +500,6 @@ textarea { min-height: 90px; resize: vertical; line-height: 1.7; }
       <div class="msg-error"   id="err-login"></div>
       <div class="msg-success" id="ok-login"></div>
     </div>
-    <!-- Inscription -->
     <div id="form-inscription" style="display:none">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="form-group">
@@ -564,35 +567,36 @@ textarea { min-height: 90px; resize: vertical; line-height: 1.7; }
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
       <div class="form-group">
-        <label>Date</label>
-        <input type="date" id="e-date">
+        <label>Début</label>
+        <input type="datetime-local" id="e-date-debut">
+      </div>
+      <div class="form-group">
+        <label>Fin</label>
+        <input type="datetime-local" id="e-date-fin">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="form-group">
+        <label>Lieu</label>
+        <input type="text" id="e-lieu" placeholder="Adresse ou lieu-dit">
       </div>
       <div class="form-group">
         <label>Type</label>
         <select id="e-type">
-         <option value="">Tous les types</option>
-          <option value="Assemblée générale">Assemblée générale</option>
-          <option value="Atelier">Atelier craft/couture/bricolage</option>
           <option value="GN">GN</option>
-          <option value="Jeepform">Jeepform</option>
-          <option value="Jeu de rôles sur table">Jeu de rôles sur table</option>
-          <option value="Jeu de société">Jeu de société</option>
-          <option value="Jeu sportif immersif">Jeu sportif immersif</option>
-          <option value="Jeu immersif">Jeu immersif</option>
-          <option value="Rangement/inventaire/bricolage">Rangement/inventaire/bricolage</option>
-          <option value="Repas">Repas</option>
+          <option value="Atelier">Atelier</option>
           <option value="Réunion">Réunion</option>
           <option value="Autre">Autre</option>
         </select>
       </div>
     </div>
     <div class="form-group">
-      <label>Lieu</label>
-      <input type="text" id="e-lieu" placeholder="Adresse ou lieu-dit">
-    </div>
-    <div class="form-group">
       <label>Organisateurs</label>
       <input type="text" id="e-organisateurs" placeholder="Noms séparés par des virgules">
+    </div>
+    <div class="form-group">
+      <label>Description / Notes</label>
+      <textarea id="e-description" placeholder="Informations, programme, consignes…"></textarea>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
       <div class="form-group">
@@ -618,7 +622,7 @@ textarea { min-height: 90px; resize: vertical; line-height: 1.7; }
 // ════════════════════════════════════════════════════
 const SUPABASE_URL  = 'https://zutgjwnmolzwkbkdzfko.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_E_81QRnHPOXTDcxLv9l2wQ_dpqspXFf';
-const ORGA_PASSWORD = 'Faerie2024!'; // ← change ce mot de passe
+const ORGA_PASSWORD = 'faerie2024'; // ← change ce mot de passe
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -636,23 +640,39 @@ const state = {
 };
 
 // ════════════════════════════════════════════════════
+//  HELPERS DATE
+// ════════════════════════════════════════════════════
+function formatDatetime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'long', year: 'numeric' })
+    + ' à ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function toLocalInput(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// ════════════════════════════════════════════════════
 //  CHARGEMENT ÉVÉNEMENTS
 // ════════════════════════════════════════════════════
 async function loadPublicEvents() {
   const grid = document.getElementById('public-events-grid');
   grid.innerHTML = '<div class="empty-state">Chargement…</div>';
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const now = new Date().toISOString();
     const { data, error } = await sb
       .from('evenements')
       .select('*')
-      .gte('date', today)
-      .order('date', { ascending: true });
+      .or(`date_debut.gte.${now},date.gte.${new Date().toISOString().split('T')[0]}`)
+      .order('date_debut', { ascending: true, nullsFirst: false });
 
     if (error) throw error;
     state.events = data || [];
 
-    // Charger les inscriptions de l'utilisateur connecté
     if (state.user) {
       const { data: inscr } = await sb
         .from('inscriptions')
@@ -680,7 +700,10 @@ function renderPublicEvents(list) {
     const pct     = placesTot > 0 ? Math.round((1 - placesDispo / placesTot) * 100) : 100;
     const complet = placesDispo <= 0;
     const inscrit = state.mesInscriptions.includes(ev.id);
-    const dateStr = new Date(ev.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+
+    // Dates
+    const debut = ev.date_debut ? formatDatetime(ev.date_debut) : (ev.date ? new Date(ev.date).toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'}) : '—');
+    const fin   = ev.date_fin   ? formatDatetime(ev.date_fin)   : null;
 
     let btnHtml = '';
     if (inscrit) {
@@ -699,9 +722,13 @@ function renderPublicEvents(list) {
       </div>
       <div class="event-card-body">
         <div class="event-info-item">
-          <span class="event-info-label">Date</span>
-          <span class="event-info-val">📅 ${dateStr}</span>
+          <span class="event-info-label">Début</span>
+          <span class="event-info-val">📅 ${debut}</span>
         </div>
+        ${fin ? `<div class="event-info-item">
+          <span class="event-info-label">Fin</span>
+          <span class="event-info-val">🏁 ${fin}</span>
+        </div>` : '<div></div>'}
         <div class="event-info-item">
           <span class="event-info-label">Lieu</span>
           <span class="event-info-val">📍 ${ev.lieu || '—'}</span>
@@ -711,6 +738,7 @@ function renderPublicEvents(list) {
           <span class="event-info-val">${ev.organisateurs || '—'}</span>
         </div>
       </div>
+      ${ev.description ? `<div class="event-description">${ev.description}</div>` : ''}
       <div class="event-card-footer">
         <div class="jauge-wrap">
           <div class="jauge-bar">
@@ -770,33 +798,24 @@ function openConfirmInscription() {
 async function confirmInscription() {
   try {
     if (state.pendingEventDispo > 0) {
-      // Inscrire
       const { error: errInscr } = await sb.from('inscriptions').insert({
         event_id: state.pendingEventId,
         user_id:  state.user.id
       });
       if (errInscr) throw errInscr;
-
-      // Décrémenter les places
-      const { error: errUpd } = await sb.rpc('decrementer_places', { event_id: state.pendingEventId });
-      // Si pas de RPC, faire un update direct
-      if (errUpd) {
-        await sb.from('evenements')
-          .update({ places_disponibles: state.pendingEventDispo - 1 })
-          .eq('id', state.pendingEventId);
-      }
-
+      await sb.from('evenements')
+        .update({ places_disponibles: state.pendingEventDispo - 1 })
+        .eq('id', state.pendingEventId);
       showMsg('ok-insc', '✦ Inscription confirmée !', 'success');
       showToast('✦ Inscription confirmée !');
     } else {
-      // Liste d'attente
       const { error } = await sb.from('liste_attente').insert({
         event_id: state.pendingEventId,
         user_id:  state.user.id
       });
       if (error) throw error;
-      showMsg('ok-insc', '⚠ Ajouté·e à la liste d\'attente.', 'success');
-      showToast('⚠ Liste d\'attente');
+      showMsg('ok-insc', "⚠ Ajouté·e à la liste d'attente.", 'success');
+      showToast("⚠ Liste d'attente");
     }
     await loadPublicEvents();
   } catch(e) {
@@ -837,8 +856,7 @@ async function doRegister() {
   if (!prenom || !nom || !email || !mdp) { showMsg('err-reg', 'Tous les champs sont obligatoires.'); return; }
   hideMsg('err-reg');
   const { error } = await sb.auth.signUp({
-    email,
-    password: mdp,
+    email, password: mdp,
     options: { data: { prenom, nom } }
   });
   if (error) { showMsg('err-reg', error.message); return; }
@@ -878,7 +896,7 @@ function openAuthModal() {
 }
 
 // ════════════════════════════════════════════════════
-//  AUTH ORGA (mot de passe simple)
+//  AUTH ORGA
 // ════════════════════════════════════════════════════
 function openOrgaLogin() {
   document.getElementById('orga-pwd').value = '';
@@ -906,7 +924,7 @@ function logoutOrga() {
 async function loadOrgaEvents() {
   const tbody = document.getElementById('orga-events-body');
   tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement…</td></tr>';
-  const { data, error } = await sb.from('evenements').select('*').order('date', { ascending: true });
+  const { data, error } = await sb.from('evenements').select('*').order('date_debut', { ascending: true, nullsFirst: false });
   if (error) { tbody.innerHTML = `<tr><td colspan="6" style="color:var(--red-blood);padding:20px">Erreur : ${error.message}</td></tr>`; return; }
   state.orgaEvents = data || [];
   renderOrgaTable(state.orgaEvents);
@@ -919,11 +937,11 @@ function renderOrgaTable(list) {
     return;
   }
   tbody.innerHTML = list.map(ev => {
-    const dateStr = new Date(ev.date).toLocaleDateString('fr-FR');
+    const debut = ev.date_debut ? new Date(ev.date_debut).toLocaleString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : (ev.date || '—');
     return `
     <tr>
       <td><strong style="font-family:'Cinzel',serif;font-size:0.88rem">${ev.titre}</strong></td>
-      <td>${dateStr}</td>
+      <td>${debut}</td>
       <td>${ev.lieu || '—'}</td>
       <td>${ev.type || '—'}</td>
       <td>${ev.places_disponibles}/${ev.places_totales}</td>
@@ -945,8 +963,9 @@ function filterOrgaEvents(q) {
 function openModalCreateEvent() {
   document.getElementById('modal-event-title').textContent = '+ Nouvel événement';
   document.getElementById('e-id').value = '';
-  ['e-titre','e-lieu','e-organisateurs'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('e-date').value = '';
+  ['e-titre','e-lieu','e-organisateurs','e-description'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('e-date-debut').value = '';
+  document.getElementById('e-date-fin').value   = '';
   document.getElementById('e-type').value = 'GN';
   document.getElementById('e-places-totales').value = '20';
   document.getElementById('row-places-dispo').style.display = 'none';
@@ -958,12 +977,14 @@ function openModalEditEvent(id) {
   const ev = state.orgaEvents.find(e => e.id === id);
   if (!ev) return;
   document.getElementById('modal-event-title').textContent = '✏ Modifier l\'événement';
-  document.getElementById('e-id').value    = ev.id;
-  document.getElementById('e-titre').value = ev.titre;
-  document.getElementById('e-date').value  = ev.date;
-  document.getElementById('e-lieu').value  = ev.lieu || '';
-  document.getElementById('e-organisateurs').value = ev.organisateurs || '';
-  document.getElementById('e-type').value  = ev.type || 'GN';
+  document.getElementById('e-id').value           = ev.id;
+  document.getElementById('e-titre').value        = ev.titre;
+  document.getElementById('e-date-debut').value   = toLocalInput(ev.date_debut);
+  document.getElementById('e-date-fin').value     = toLocalInput(ev.date_fin);
+  document.getElementById('e-lieu').value         = ev.lieu || '';
+  document.getElementById('e-organisateurs').value= ev.organisateurs || '';
+  document.getElementById('e-type').value         = ev.type || 'GN';
+  document.getElementById('e-description').value  = ev.description || '';
   document.getElementById('e-places-totales').value = ev.places_totales || '';
   document.getElementById('e-places-dispo').value   = ev.places_disponibles || '';
   document.getElementById('row-places-dispo').style.display = '';
@@ -974,20 +995,29 @@ function openModalEditEvent(id) {
 async function saveEvent() {
   const id            = document.getElementById('e-id').value;
   const titre         = document.getElementById('e-titre').value.trim();
-  const date          = document.getElementById('e-date').value;
+  const date_debut    = document.getElementById('e-date-debut').value;
+  const date_fin      = document.getElementById('e-date-fin').value || null;
   const lieu          = document.getElementById('e-lieu').value.trim();
   const organisateurs = document.getElementById('e-organisateurs').value.trim();
   const type          = document.getElementById('e-type').value;
+  const description   = document.getElementById('e-description').value.trim() || null;
   const places_totales = parseInt(document.getElementById('e-places-totales').value) || 0;
-  if (!titre || !date) { showMsg('err-event', 'Titre et date sont obligatoires.'); return; }
+
+  if (!titre || !date_debut) { showMsg('err-event', 'Titre et date de début sont obligatoires.'); return; }
   hideMsg('err-event');
+
+  // Extraire la date seule pour le champ `date` existant
+  const date = date_debut.split('T')[0];
 
   let error;
   if (id) {
     const places_disponibles = parseInt(document.getElementById('e-places-dispo').value) || 0;
-    ({ error } = await sb.from('evenements').update({ titre, date, lieu, organisateurs, type, places_totales, places_disponibles }).eq('id', id));
+    ({ error } = await sb.from('evenements')
+      .update({ titre, date, date_debut, date_fin, lieu, organisateurs, type, description, places_totales, places_disponibles })
+      .eq('id', id));
   } else {
-    ({ error } = await sb.from('evenements').insert({ titre, date, lieu, organisateurs, type, places_totales, places_disponibles: places_totales }));
+    ({ error } = await sb.from('evenements')
+      .insert({ titre, date, date_debut, date_fin, lieu, organisateurs, type, description, places_totales, places_disponibles: places_totales }));
   }
 
   if (error) { showMsg('err-event', error.message); return; }
@@ -1025,7 +1055,6 @@ document.querySelectorAll('.modal-overlay').forEach(el => {
 //  INIT
 // ════════════════════════════════════════════════════
 window.addEventListener('load', async () => {
-  // Récupérer la session existante
   const { data: { session } } = await sb.auth.getSession();
   if (session) state.user = session.user;
   updateHeaderUserZone();
