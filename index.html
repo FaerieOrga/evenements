@@ -816,8 +816,7 @@ async function confirmInscription() {
   user_id:  state.user.id
 });
 if (errInscr) {
-  const msg = JSON.stringify(errInscr).toLowerCase();
-  if (msg.includes('409') || msg.includes('duplicate') || msg.includes('conflict') || msg.includes('23505')) {
+  if (String(errInscr.code) === '23505') {
     showMsg('ok-insc', '✦ Vous êtes déjà inscrit·e à cet événement.', 'success');
     return;
   }
