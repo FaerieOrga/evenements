@@ -850,11 +850,9 @@ async function doLogin() {
 
 async function doRegister() {
   const btn = document.querySelector('#form-inscription .btn-full');
-  const originalText = btn.textContent;
-
-  // On change le texte du bouton pour montrer que ça travaille
-  btn.textContent = "Chargement...";
-  btn.disabled = true;
+  
+  // 1. Protection : Si le bouton est déjà désactivé, on ne fait rien
+  if (btn.disabled) return;
 
   const prenom = document.getElementById('reg-prenom').value.trim();
   const nom    = document.getElementById('reg-nom').value.trim();
@@ -863,27 +861,56 @@ async function doRegister() {
 
   if (!prenom || !nom || !email || !mdp) { 
     showMsg('err-reg', 'Tous les champs sont obligatoires.'); 
-    btn.textContent = originalText;
-    btn.disabled = false;
     return; 
   }
 
-  hideMsg('err-reg');
+  try {
+    // 2. On verrouille le bouton et on change l'apparence
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.textContent = "Magie en cours...";
+    btn.style.opacity = "0.7";
+    btn.style.cursor = "not-allowed";
 
-  const { error } = await sb.auth.signUp({
-    email, password: mdp,
-    options: { data: { prenom, nom } }
-  });
+    hideMsg('err-reg');
 
-  if (error) { 
-    showMsg('err-reg', error.message); 
-    btn.textContent = originalText;
+    const { data, error } = await sb.auth.signUp({
+      email, 
+      password: mdp,
+      options: { data: { prenom, nom } }
+    });
+
+    if (error) throw error;
+
+    // 3. Succès : Comme tu as désactivé "Confirm Email", on peut connecter direct !
+    showMsg('ok-reg', '✦ Bienvenue dans la Faérie ! Connexion...', 'success');
+    
+    // Petite pause pour laisser l'utilisateur lire le message de succès
+    setTimeout(async () => {
+        // On tente de le connecter automatiquement
+        await doLoginDirect(email, mdp);
+    }, 1500);
+
+  } catch (err) {
+    showMsg('err-reg', err.message);
+    // En cas d'erreur, on redonne la main à l'utilisateur
     btn.disabled = false;
-    return; 
+    btn.textContent = "Créer mon compte";
+    btn.style.opacity = "1";
+    btn.style.cursor = "pointer";
   }
+}
 
-  // Si ça marche, on affiche le message
-showMsg('ok-reg', '✦ Compte créé ! ATTENTION : Vous devez cliquer sur le lien envoyé sur votre boite e-mail pour activer votre compte avant de pouvoir vous connecter. Pensez à regarder dans vos spam', 'success');
+// Fonction utilitaire pour connecter juste après l'inscription
+async function doLoginDirect(email, password) {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (!error) {
+        state.user = data.user;
+        closeModal('modal-auth');
+        updateHeaderUserZone();
+        await loadPublicEvents();
+        showToast(`✦ Bienvenue ${state.user.user_metadata.prenom} !`);
+    }
 }
 
     // 2. Succès
