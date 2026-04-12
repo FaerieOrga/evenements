@@ -1074,10 +1074,8 @@ async function doLogin() {
   if (!email || !mdp) return;
   const { data, error } = await sb.auth.signInWithPassword({ email, password: mdp });
   if (error) {
-  if (error) {
   showMsg('err-login', 'Email ou mot de passe incorrect. Si vous n\'avez pas encore de compte, cliquez sur "Créer un compte".');
   return;
-}
 }
   state.user = data.user; closeModal('modal-auth'); updateHeaderUserZone(); await loadPublicEvents();
   if (state.pendingEventId && !state.mesInscriptions.includes(state.pendingEventId)) ouvrirConfirmInscription();
