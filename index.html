@@ -795,15 +795,23 @@ function handleInscriptionClick(eventId, titre, placesDispo) {
   }
 }
 
-function openConfirmInscription() {
-  document.getElementById('modal-insc-titre').textContent = state.pendingEventTitre;
-  document.getElementById('modal-insc-detail').textContent =
-    state.pendingEventDispo > 0
-      ? `Il reste ${state.pendingEventDispo} place(s). Confirmez-vous votre inscription ?`
-      : "Cet événement est complet. Souhaitez-vous rejoindre la liste d'attente ?";
-  hideMsg('err-insc'); hideMsg('ok-insc');
-  openModal('modal-inscription');
-}
+async function confirmInscription() {
+  try {
+    if (state.pendingEventDispo > 0) {
+      const { error: errInscr } = await sb.from('inscriptions').insert({
+        event_id: state.pendingEventId,
+        user_id:  state.user.id
+      });
+      console.log('errInscr:', errInscr);
+      console.log('code:', errInscr?.code);
+      console.log('type code:', typeof errInscr?.code);
+      if (errInscr) {
+        if (String(errInscr.code) === '23505') {
+          showMsg('ok-insc', '✦ Vous êtes déjà inscrit·e à cet événement.', 'success');
+          return;
+        }
+        throw errInscr;
+      }
 
 async function confirmInscription() {
   const btn = document.querySelector('#modal-inscription .btn');
