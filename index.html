@@ -827,6 +827,41 @@ const state = {
   currentOrgaUserId: null
 };
 
+  // --- BLOC DE CHARGEMENT ET FILTRAGE ---
+async function loadPublicEvents() {
+  const grid = document.getElementById('public-events-grid');
+  try {
+    const { data: events } = await sb.from('evenements').select('*').order('date_debut', { ascending: true });
+    const { data: allInscriptions } = await sb.from('inscriptions').select('event_id');
+    
+    state.events = (events || []).map(ev => {
+      const n = (allInscriptions || []).filter(i => i.event_id === ev.id).length;
+      ev.places_reelles_dispo = ev.places_totales - n;
+      return ev;
+    });
+
+    if (state.user) {
+      const { data: inscr } = await sb.from('inscriptions').select('event_id').eq('user_id', state.user.id);
+      state.mesInscriptions = (inscr || []).map(i => i.event_id);
+      const { data: att } = await sb.from('liste_attente').select('event_id').eq('user_id', state.user.id);
+      state.maListeAttente = (att || []).map(i => i.event_id);
+    }
+    renderPublicEvents(state.events);
+  } catch(e) { 
+    console.error(e); 
+    if (grid) grid.innerHTML = "Erreur de chargement.";
+  }
+}
+
+function filterEvents() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const type = document.getElementById('filter-type').value;
+  renderPublicEvents(state.events.filter(ev =>
+    (!q || ev.titre.toLowerCase().includes(q)) && (!type || ev.type === type)
+  ));
+}
+// --- FIN DU BLOC ---
+
 // ════════════════════════════════════════════════════
 //  HELPERS DATE
 // ════════════════════════════════════════════════════
