@@ -1384,32 +1384,41 @@ function renderOrgaTable(list) {
   async function voirParticipants(eventId, titre) {
   document.getElementById('view-event-titre').textContent = titre;
   const content = document.getElementById('liste-participants-content');
-  content.innerHTML = 'Chargement des troupes...';
+  content.innerHTML = 'Chargement...';
   openModal('modal-liste-participants');
 
   try {
-    // On récupère tout
-    const { data: inscr, error: err1 } = await sb.from('inscriptions').select('user_id, profils(prenom, nom)').eq('event_id', eventId);
-    const { data: attente, error: err2 } = await sb.from('liste_attente').select('user_id, profils(prenom, nom)').eq('event_id', eventId);
+    // 1. On récupère les IDs d'abord (simple lecture)
+    const { data: inscr } = await sb.from('inscriptions').select('user_id').eq('event_id', eventId);
+    const { data: attente } = await sb.from('liste_attente').select('user_id').eq('event_id', eventId);
+    
+    // 2. On récupère TOUS les profils existants pour faire la correspondance
+    const { data: profils } = await sb.from('profils').select('id, prenom, nom');
+    const annuaire = {};
+    if (profils) {
+      profils.forEach(p => {
+        annuaire[p.id] = `${p.prenom} ${p.nom}`;
+      });
+    }
 
-    if (err1 || err2) throw (err1 || err2);
-
-    let html = '<h3>⚔ Inscrits officiels</h3><ul style="list-style:none; padding:0; margin:10px 0;">';
+    // 3. Construction du HTML manuelle
+    let html = '<h3 style="font-family:Cinzel,serif; font-size:1rem; margin-bottom:10px;">⚔ Inscrits officiels</h3><ul style="list-style:none; padding-left:10px;">';
+    
     if (inscr && inscr.length > 0) {
       html += inscr.map(i => {
-        const nomComplet = i.profils ? `${i.profils.prenom} ${i.profils.nom}` : `Joueur (${i.user_id.substring(0,8)})`;
-        return `<li style="margin-bottom:5px;">👤 ${nomComplet}</li>`;
+        const nom = annuaire[i.user_id] || `👤 Joueur Inconnu (${i.user_id.substring(0,5)})`;
+        return `<li style="margin-bottom:5px;">${nom}</li>`;
       }).join('');
     } else {
       html += '<li>Personne pour le moment</li>';
     }
-    html += '</ul><br>';
-
-    html += '<h3>⏳ Liste d\'attente</h3><ul style="list-style:none; padding:0; margin:10px 0;">';
+    
+    html += '</ul><br><h3 style="font-family:Cinzel,serif; font-size:1rem; margin-bottom:10px;">⏳ Liste d\'attente</h3><ul style="list-style:none; padding-left:10px;">';
+    
     if (attente && attente.length > 0) {
       html += attente.map(a => {
-        const nomComplet = a.profils ? `${a.profils.prenom} ${a.profils.nom}` : `Joueur (${a.user_id.substring(0,8)})`;
-        return `<li style="margin-bottom:5px;">👤 ${nomComplet}</li>`;
+        const nom = annuaire[a.user_id] || `👤 Joueur Inconnu (${a.user_id.substring(0,5)})`;
+        return `<li style="margin-bottom:5px;">${nom}</li>`;
       }).join('');
     } else {
       html += '<li>Vide</li>';
@@ -1419,9 +1428,10 @@ function renderOrgaTable(list) {
     content.innerHTML = html;
   } catch (e) {
     console.error("Erreur Orga:", e);
-    content.innerHTML = `<div style="color:var(--red-blood)">Erreur de lecture : ${e.message}</div>`;
+    content.innerHTML = "Erreur technique : " + e.message;
   }
 }
+  
 function filterOrgaEvents(q) {
   renderOrgaTable(state.orgaEvents.filter(ev => (ev.titre + (ev.lieu || '') + (ev.type || '')).toLowerCase().includes(q.toLowerCase())));
 }
