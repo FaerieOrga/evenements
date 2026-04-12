@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Événements de Faérie — Dates</title>
+<title>Événements de Faérie</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -45,6 +45,7 @@ body::before {
   padding: 20px 16px 60px;
 }
 
+/* ── PARCHMENT ── */
 .parchment {
   background: var(--parchment) var(--bg-img) center/cover;
   border: 3px solid var(--border);
@@ -65,53 +66,30 @@ body::before {
 .parchment::before { top: 10px; left: 14px; }
 .parchment::after  { bottom: 10px; right: 14px; }
 
-/* ── LOGIN ── */
-#login-screen { text-align: center; padding: 20px 0; }
-.login-title {
-  font-family: 'Cinzel', serif;
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--ink);
-  text-shadow: 1px 1px 0 var(--gold-light);
-  margin-bottom: 6px;
-  letter-spacing: 2px;
+/* ── EN-TÊTE PUBLIC ── */
+.site-header {
+  text-align: center;
+  padding: 32px 0 24px;
 }
-.login-subtitle {
+.site-title {
+  font-family: 'Cinzel', serif;
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--parchment);
+  text-shadow: 0 2px 12px rgba(0,0,0,0.7), 1px 1px 0 var(--gold);
+  letter-spacing: 3px;
+  margin-bottom: 6px;
+}
+.site-subtitle {
   font-family: 'IM Fell English', serif;
   font-style: italic;
-  color: var(--ink-light);
+  color: var(--gold-light);
   font-size: 1.1rem;
-  margin-bottom: 30px;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.6);
 }
-.divider { border: none; border-top: 1px solid var(--gold); margin: 20px 0; opacity: 0.6; }
-.divider-ornament { text-align: center; color: var(--gold); font-size: 1.1rem; margin: -12px 0 20px; }
-
-.tab-switch {
-  display: flex;
-  gap: 0;
-  margin-bottom: 28px;
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  overflow: hidden;
-}
-.tab-switch button {
-  flex: 1;
-  padding: 10px;
-  background: rgba(160,120,40,0.1);
-  border: none;
-  border-right: 1px solid var(--border);
-  font-family: 'Cinzel', serif;
-  font-size: 0.85rem;
-  letter-spacing: 1px;
-  color: var(--ink-light);
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-}
-.tab-switch button:last-child { border-right: none; }
-.tab-switch button.active { background: var(--gold); color: #fff; font-weight: 600; }
 
 /* ── FORMS ── */
-.form-group { margin-bottom: 18px; text-align: left; }
+.form-group { margin-bottom: 16px; text-align: left; }
 label {
   display: block;
   font-family: 'Cinzel', serif;
@@ -121,7 +99,7 @@ label {
   margin-bottom: 5px;
   text-transform: uppercase;
 }
-input[type="text"], input[type="email"], input[type="password"], input[type="url"],
+input[type="text"], input[type="email"], input[type="password"],
 input[type="date"], input[type="number"], select, textarea {
   width: 100%;
   background: rgba(242,232,201,0.6);
@@ -138,7 +116,7 @@ input:focus, select:focus, textarea:focus {
   border-color: var(--gold);
   box-shadow: 0 0 0 2px rgba(154,123,47,0.2);
 }
-textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
+textarea { min-height: 90px; resize: vertical; line-height: 1.7; }
 
 /* ── BOUTONS ── */
 .btn {
@@ -160,7 +138,7 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
 .btn-sm    { padding: 6px 16px; font-size: 0.75rem; }
 .btn-danger { background: var(--red-blood); border-color: var(--red-blood); color: #fff; }
 .btn-danger:hover { background: #6b0f0f; }
-.btn-orga { background: var(--red-blood); }
+.btn-orga { background: var(--red-blood); border-color: var(--red-blood); }
 .btn-orga:hover { background: #6b0f0f; }
 .btn-ghost {
   background: transparent;
@@ -210,45 +188,45 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
 }
 .logout-bar span { font-family: 'Cinzel', serif; font-size: 0.78rem; letter-spacing: 1px; }
 
-/* ── DASHBOARD TITRE ── */
-.dashboard-title {
-  font-family: 'Cinzel', serif;
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: var(--ink);
-  margin-bottom: 6px;
-}
-.dashboard-subtitle {
-  font-family: 'IM Fell English', serif;
-  font-style: italic;
-  color: var(--ink-light);
-  margin-bottom: 28px;
-  font-size: 1rem;
-}
-
-/* ── SECTION TITLE ── */
-.section-title {
-  font-family: 'IM Fell English', serif;
-  font-size: 1.4rem;
-  color: var(--ink);
-  margin-bottom: 20px;
+/* ── ONGLETS AUTH ── */
+.tab-switch {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  overflow: hidden;
 }
-.section-title::before { content: '➤'; color: var(--gold); font-size: 1rem; }
+.tab-switch button {
+  flex: 1;
+  padding: 10px;
+  background: rgba(160,120,40,0.1);
+  border: none;
+  border-right: 1px solid var(--border);
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  color: var(--ink-light);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.tab-switch button:last-child { border-right: none; }
+.tab-switch button.active { background: var(--gold); color: #fff; font-weight: 600; }
+
+/* ── FILTRE ── */
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+.filter-bar input, .filter-bar select { flex: 1; min-width: 140px; max-width: 260px; }
 
 /* ── CARTES ÉVÉNEMENTS ── */
-.events-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
+.events-grid { display: flex; flex-direction: column; gap: 18px; }
 .event-card {
   border: 1px solid var(--border);
   background: rgba(255,255,255,0.12);
-  padding: 0;
   transition: box-shadow 0.2s, transform 0.15s;
   position: relative;
   overflow: hidden;
@@ -311,30 +289,12 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
   flex-wrap: wrap;
 }
 
-/* Jauge de places */
+/* Jauge */
 .jauge-wrap { display: flex; align-items: center; gap: 8px; }
-.jauge-bar {
-  width: 120px;
-  height: 6px;
-  background: rgba(107,76,30,0.2);
-  border-radius: 3px;
-  overflow: hidden;
-}
-.jauge-fill {
-  height: 100%;
-  background: var(--gold);
-  border-radius: 3px;
-  transition: width 0.4s;
-}
+.jauge-bar { width: 120px; height: 6px; background: rgba(107,76,30,0.2); border-radius: 3px; overflow: hidden; }
+.jauge-fill { height: 100%; background: var(--gold); border-radius: 3px; transition: width 0.4s; }
 .jauge-fill.complet { background: var(--red-blood); }
-.jauge-text {
-  font-family: 'Cinzel', serif;
-  font-size: 0.72rem;
-  color: var(--ink-light);
-  white-space: nowrap;
-}
-
-/* Badge liste attente */
+.jauge-text { font-family: 'Cinzel', serif; font-size: 0.72rem; color: var(--ink-light); white-space: nowrap; }
 .badge-attente {
   background: rgba(139,26,26,0.12);
   border: 1px solid var(--red-blood);
@@ -366,7 +326,7 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
 .modal-overlay {
   display: none;
   position: fixed; inset: 0;
-  background: rgba(10,5,2,0.75);
+  background: rgba(10,5,2,0.78);
   z-index: 100;
   align-items: center;
   justify-content: center;
@@ -378,13 +338,21 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
   border: 2px solid var(--border);
   box-shadow: 0 0 0 1px var(--gold), 0 12px 48px rgba(0,0,0,0.6);
   padding: 30px 34px;
-  max-width: 600px;
+  max-width: 520px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
 }
-.modal-title { font-family: 'Cinzel', serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; color: var(--ink); }
+.modal-box-wide { max-width: 620px; }
+.modal-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: var(--ink);
+  text-align: center;
+}
 .modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 1.4rem; color: var(--ink-light); cursor: pointer; }
 
 /* ── TOAST ── */
@@ -407,15 +375,23 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
 }
 .toast.show { opacity: 1; transform: translateY(0); }
 
-/* ── FILTRE ── */
-.filter-bar {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
+/* ── PIED DE PAGE ── */
+.site-footer {
+  text-align: center;
+  margin-top: 36px;
+  padding-bottom: 10px;
 }
-.filter-bar input, .filter-bar select { flex: 1; min-width: 140px; max-width: 260px; }
+.footer-orga-link {
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  color: rgba(200,180,140,0.3);
+  cursor: pointer;
+  border: none;
+  background: none;
+  transition: color 0.2s;
+}
+.footer-orga-link:hover { color: var(--gold-light); }
 
 /* ── ÉTAT VIDE ── */
 .empty-state {
@@ -429,69 +405,32 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
 
 @media (max-width: 600px) {
   .parchment { padding: 22px 18px; }
-  .modal-box { max-width: 100%; }
+  .modal-box { padding: 22px 18px; }
   .event-card-body { grid-template-columns: 1fr 1fr; }
-  .login-title { font-size: 1.6rem; }
-  .orga-table th:nth-child(3),
-  .orga-table td:nth-child(3),
-  .orga-table th:nth-child(4),
-  .orga-table td:nth-child(4) { display: none; }
+  .site-title { font-size: 1.7rem; }
+  .orga-table th:nth-child(3), .orga-table td:nth-child(3),
+  .orga-table th:nth-child(4), .orga-table td:nth-child(4) { display: none; }
 }
 </style>
 </head>
 <body>
 <div id="app">
 
-  <!-- ══ LOGIN ══ -->
-  <div id="login-screen">
-    <div class="parchment">
-      <div class="login-title">⚔ Événements de Faérie ⚔</div>
-      <div class="login-subtitle">Gestion des dates</div>
-      <hr class="divider">
-      <div class="divider-ornament">✦ ✦ ✦</div>
-      <div class="tab-switch">
-        <button class="active" onclick="switchLogin('joueur', this)">Joueur·euse</button>
-        <button onclick="switchLogin('orga', this)">Organisateur</button>
-      </div>
-
-      <!-- Formulaire joueur -->
-      <div id="form-joueur">
-        <div class="form-group">
-          <label>Adresse e-mail</label>
-          <input type="email" id="login-email" placeholder="votre@email.com" onkeydown="if(event.key==='Enter') doLoginJoueur()">
-        </div>
-        <div class="form-group">
-          <label>Mot de passe</label>
-          <input type="password" id="login-mdp" placeholder="••••••••" onkeydown="if(event.key==='Enter') doLoginJoueur()">
-        </div>
-        <button class="btn btn-full" onclick="doLoginJoueur()">Accéder aux événements</button>
-        <div class="msg-error" id="err-joueur"></div>
-      </div>
-
-      <!-- Formulaire orga -->
-      <div id="form-orga" style="display:none">
-        <div class="form-group">
-          <label>Mot de passe organisateur</label>
-          <input type="password" id="login-orga-pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter') doLoginOrga()">
-        </div>
-        <button class="btn btn-orga btn-full" onclick="doLoginOrga()">Accès organisateur</button>
-        <div class="msg-error" id="err-orga"></div>
-      </div>
+  <!-- ══ PAGE PUBLIQUE ══ -->
+  <div id="public-screen">
+    <div class="site-header">
+      <div class="site-title">⚔ Événements de Faérie ⚔</div>
+      <div class="site-subtitle">Les prochaines aventures vous attendent</div>
     </div>
-  </div>
 
-  <!-- ══ VUE JOUEUR ══ -->
-  <div id="joueur-screen" style="display:none">
-    <div class="logout-bar">
-      <span id="joueur-label">Joueur·euse</span>
-      <button class="btn btn-sm" onclick="logout()">Déconnexion</button>
-    </div>
     <div class="parchment">
-      <div class="dashboard-title">Événements à venir</div>
-      <div class="dashboard-subtitle">Consultez et inscrivez-vous aux prochaines aventures</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+        <div style="font-family:'Cinzel',serif;font-size:1.05rem;font-weight:600;letter-spacing:2px;color:var(--ink)">Événements à venir</div>
+        <div id="header-user-zone"></div>
+      </div>
 
       <div class="filter-bar">
-        <input type="text" id="filter-search" placeholder="Rechercher…" oninput="filterEvents()">
+        <input type="text" id="filter-search" placeholder="Rechercher un événement…" oninput="filterEvents()">
         <select id="filter-type" onchange="filterEvents()">
           <option value="">Tous les types</option>
           <option value="GN">GN</option>
@@ -501,20 +440,24 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
         </select>
       </div>
 
-      <div class="events-grid" id="joueur-events-grid">
+      <div class="events-grid" id="public-events-grid">
         <div class="empty-state">Chargement des événements…</div>
       </div>
+    </div>
+
+    <div class="site-footer">
+      <button class="footer-orga-link" onclick="openOrgaLogin()">⚔ Accès organisateur</button>
     </div>
   </div>
 
   <!-- ══ VUE ORGA ══ -->
   <div id="orga-screen" style="display:none">
     <div class="logout-bar">
-      <span>⚔ Vue Organisateur — Événements</span>
-      <button class="btn btn-sm" onclick="logout()">Déconnexion</button>
+      <span>⚔ Organisateur — Événements de Faérie</span>
+      <button class="btn btn-sm" onclick="logoutOrga()">Déconnexion</button>
     </div>
     <div class="parchment">
-      <div style="font-family:'Cinzel',serif;font-size:1.4rem;font-weight:700;letter-spacing:2px;margin-bottom:24px;color:var(--ink);">⚔ Gestion des Événements</div>
+      <div style="font-family:'Cinzel',serif;font-size:1.3rem;font-weight:700;letter-spacing:2px;margin-bottom:22px;color:var(--ink);">⚔ Gestion des Événements</div>
       <div class="orga-toolbar">
         <button class="btn btn-sm" onclick="openModalCreateEvent()">+ Nouvel événement</button>
         <input type="text" id="orga-search" placeholder="Filtrer…" style="max-width:220px;margin-left:auto" oninput="filterOrgaEvents(this.value)">
@@ -522,12 +465,7 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
       <table class="orga-table">
         <thead>
           <tr>
-            <th>Titre</th>
-            <th>Date</th>
-            <th>Lieu</th>
-            <th>Type</th>
-            <th>Places</th>
-            <th>Actions</th>
+            <th>Titre</th><th>Date</th><th>Lieu</th><th>Type</th><th>Places</th><th>Actions</th>
           </tr>
         </thead>
         <tbody id="orga-events-body">
@@ -539,11 +477,94 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
 
 </div>
 
-<!-- ══ MODALES ══ -->
-
-<!-- Créer / Modifier événement -->
-<div class="modal-overlay" id="modal-event">
+<!-- ══ MODAL AUTH (connexion / création de compte) ══ -->
+<div class="modal-overlay" id="modal-auth">
   <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-auth')">✕</button>
+    <div class="modal-title" id="modal-auth-titre">Rejoindre Faérie</div>
+
+    <!-- Message contextuel affiché quand déclenché par "S'inscrire" -->
+    <div id="auth-context" style="display:none;font-family:'IM Fell English',serif;font-style:italic;text-align:center;color:var(--ink-light);font-size:1rem;margin-bottom:16px;padding:10px 14px;border:1px solid var(--border);border-radius:2px;background:rgba(154,123,47,0.08)"></div>
+
+    <div class="tab-switch">
+      <button class="active" id="tab-connexion" onclick="switchAuthTab('connexion')">Se connecter</button>
+      <button id="tab-inscription" onclick="switchAuthTab('inscription')">Créer un compte</button>
+    </div>
+
+    <!-- Connexion -->
+    <div id="form-connexion">
+      <div class="form-group">
+        <label>Adresse e-mail</label>
+        <input type="email" id="login-email" placeholder="votre@email.com" onkeydown="if(event.key==='Enter') doLogin()">
+      </div>
+      <div class="form-group">
+        <label>Mot de passe</label>
+        <input type="password" id="login-mdp" placeholder="••••••••" onkeydown="if(event.key==='Enter') doLogin()">
+      </div>
+      <button class="btn btn-full" onclick="doLogin()">Se connecter</button>
+      <div class="msg-error"   id="err-login"></div>
+      <div class="msg-success" id="ok-login"></div>
+    </div>
+
+    <!-- Création de compte -->
+    <div id="form-inscription" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label>Prénom</label>
+          <input type="text" id="reg-prenom" placeholder="Votre prénom">
+        </div>
+        <div class="form-group">
+          <label>Nom</label>
+          <input type="text" id="reg-nom" placeholder="Votre nom">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Adresse e-mail</label>
+        <input type="email" id="reg-email" placeholder="votre@email.com">
+      </div>
+      <div class="form-group">
+        <label>Mot de passe</label>
+        <input type="password" id="reg-mdp" placeholder="••••••••" onkeydown="if(event.key==='Enter') doRegister()">
+      </div>
+      <button class="btn btn-full" onclick="doRegister()">Créer mon compte</button>
+      <div class="msg-error"   id="err-reg"></div>
+      <div class="msg-success" id="ok-reg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL LOGIN ORGA ══ -->
+<div class="modal-overlay" id="modal-orga-auth">
+  <div class="modal-box" style="max-width:400px">
+    <button class="modal-close" onclick="closeModal('modal-orga-auth')">✕</button>
+    <div class="modal-title">⚔ Accès Organisateur</div>
+    <div class="form-group">
+      <label>Mot de passe organisateur</label>
+      <input type="password" id="orga-pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter') doLoginOrga()">
+    </div>
+    <button class="btn btn-orga btn-full" onclick="doLoginOrga()">Accéder</button>
+    <div class="msg-error" id="err-orga"></div>
+  </div>
+</div>
+
+<!-- ══ MODAL CONFIRMATION INSCRIPTION ══ -->
+<div class="modal-overlay" id="modal-inscription">
+  <div class="modal-box" style="max-width:460px;text-align:center">
+    <button class="modal-close" onclick="closeModal('modal-inscription')">✕</button>
+    <div class="modal-title" id="modal-insc-titre">Inscription</div>
+    <div id="modal-insc-detail" style="font-family:'IM Fell English',serif;font-style:italic;font-size:1.05rem;margin-bottom:24px;color:var(--ink-light)"></div>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button class="btn" onclick="confirmInscription()">Confirmer</button>
+      <button class="btn-ghost" onclick="closeModal('modal-inscription')">Annuler</button>
+    </div>
+    <div class="msg-error"   id="err-insc"></div>
+    <div class="msg-success" id="ok-insc"></div>
+  </div>
+</div>
+
+<!-- ══ MODAL CRÉER / MODIFIER ÉVÉNEMENT (orga) ══ -->
+<div class="modal-overlay" id="modal-event">
+  <div class="modal-box modal-box-wide">
     <button class="modal-close" onclick="closeModal('modal-event')">✕</button>
     <div class="modal-title" id="modal-event-title">+ Nouvel événement</div>
     <input type="hidden" id="e-id">
@@ -585,23 +606,8 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
       </div>
     </div>
     <button class="btn btn-full" style="margin-top:6px" onclick="saveEvent()">Enregistrer</button>
-    <div class="msg-error" id="err-event"></div>
+    <div class="msg-error"   id="err-event"></div>
     <div class="msg-success" id="ok-event"></div>
-  </div>
-</div>
-
-<!-- Confirmation inscription -->
-<div class="modal-overlay" id="modal-inscription">
-  <div class="modal-box" style="max-width:480px;text-align:center">
-    <button class="modal-close" onclick="closeModal('modal-inscription')">✕</button>
-    <div class="modal-title" id="modal-insc-titre">Inscription</div>
-    <div style="font-family:'IM Fell English',serif;font-style:italic;font-size:1.05rem;margin-bottom:24px;color:var(--ink-light)" id="modal-insc-detail"></div>
-    <div style="display:flex;gap:12px;justify-content:center">
-      <button class="btn" onclick="confirmInscription()">Confirmer</button>
-      <button class="btn-ghost" onclick="closeModal('modal-inscription')">Annuler</button>
-    </div>
-    <div class="msg-error" id="err-insc"></div>
-    <div class="msg-success" id="ok-insc"></div>
   </div>
 </div>
 
@@ -609,29 +615,29 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
 <div class="toast" id="toast"></div>
 
 <script>
-// ════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 //  CONFIG
-// ════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 const GS_URL = 'https://script.google.com/a/macros/xn--farie-csa.fr/s/AKfycbxjV5UDfna9nfWMGAVch3Ie89kjdEVdd95yeqPgJQyTyCJPAACxRdPaGyGE_py8KySRUw/exec';
 
-// ════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 //  STATE
-// ════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 const state = {
-  role: null,
   userId: null,
   nom: null,
   prenom: null,
   email: null,
   events: [],
-  filteredEvents: [],
   orgaEvents: [],
-  pendingEventId: null
+  pendingEventId: null,
+  pendingEventTitre: null,
+  pendingEventDispo: null
 };
 
-// ════════════════════════════════════════════
-//  APPELS API
-// ════════════════════════════════════════════
+// ════════════════════════════════════════════════════
+//  API
+// ════════════════════════════════════════════════════
 async function gs(action, params = {}) {
   const url = new URL(GS_URL);
   url.searchParams.set('action', action);
@@ -639,99 +645,44 @@ async function gs(action, params = {}) {
   const res = await fetch(url.toString());
   return res.json();
 }
-
 async function gsPost(action, data) {
   const url = new URL(GS_URL);
   url.searchParams.set('action', action);
-  const res = await fetch(url.toString(), {
-    method: 'POST',
-    body: JSON.stringify(data)
-  });
+  const res = await fetch(url.toString(), { method: 'POST', body: JSON.stringify(data) });
   return res.json();
 }
 
-// ════════════════════════════════════════════
-//  LOGIN
-// ════════════════════════════════════════════
-function switchLogin(mode, btn) {
-  document.querySelectorAll('.tab-switch button').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('form-joueur').style.display = mode === 'joueur' ? '' : 'none';
-  document.getElementById('form-orga').style.display   = mode === 'orga'   ? '' : 'none';
-}
-
-async function doLoginJoueur() {
-  const email = document.getElementById('login-email').value.trim();
-  const mdp   = document.getElementById('login-mdp').value;
-  if (!email || !mdp) { showMsg('err-joueur', 'Remplissez tous les champs.'); return; }
-  hideMsg('err-joueur');
-  try {
-    const r = await gs('loginJoueur', { email, motDePasse: mdp });
-    if (r.success) {
-      state.role   = 'joueur';
-      state.userId = r.userId;
-      state.nom    = r.nom;
-      state.prenom = r.prenom;
-      state.email  = email;
-      document.getElementById('joueur-label').textContent = `⚔ ${r.prenom} ${r.nom}`;
-      await loadJoueurEvents();
-      show('joueur-screen');
-      hide('login-screen');
-    } else {
-      showMsg('err-joueur', r.error || 'Email ou mot de passe incorrect.');
-    }
-  } catch(e) { showMsg('err-joueur', 'Erreur réseau : ' + e.message); }
-}
-
-async function doLoginOrga() {
-  const pwd = document.getElementById('login-orga-pwd').value;
-  hideMsg('err-orga');
-  try {
-    const cfg = await gs('getConfig');
-    if (cfg && pwd === cfg.motDePasseAdmin) {
-      state.role = 'orga';
-      await loadOrgaEvents();
-      show('orga-screen');
-      hide('login-screen');
-    } else {
-      showMsg('err-orga', 'Mot de passe incorrect.');
-    }
-  } catch(e) { showMsg('err-orga', 'Erreur réseau : ' + e.message); }
-}
-
-function logout() {
-  state.role = null; state.userId = null;
-  hide('joueur-screen'); hide('orga-screen');
-  show('login-screen');
-}
-
-// ════════════════════════════════════════════
-//  VUE JOUEUR — chargement + rendu
-// ════════════════════════════════════════════
-async function loadJoueurEvents() {
-  const grid = document.getElementById('joueur-events-grid');
+// ════════════════════════════════════════════════════
+//  PAGE PUBLIQUE
+// ════════════════════════════════════════════════════
+async function loadPublicEvents() {
+  const grid = document.getElementById('public-events-grid');
   grid.innerHTML = '<div class="empty-state">Chargement…</div>';
   try {
     const r = await gs('getEvenements');
     state.events = (r && r.evenements) ? r.evenements : [];
-    state.filteredEvents = [...state.events];
-    renderJoueurEvents(state.filteredEvents);
+    renderPublicEvents(state.events);
   } catch(e) {
-    grid.innerHTML = `<div class="empty-state" style="color:var(--red-blood)">Erreur : ${e.message}</div>`;
+    grid.innerHTML = `<div class="empty-state" style="color:var(--red-blood)">Impossible de charger les événements.</div>`;
   }
 }
 
-function renderJoueurEvents(list) {
-  const grid = document.getElementById('joueur-events-grid');
+function renderPublicEvents(list) {
+  const grid = document.getElementById('public-events-grid');
   if (!list.length) {
     grid.innerHTML = '<div class="empty-state">Aucun événement à venir pour l\'instant.</div>';
     return;
   }
   grid.innerHTML = list.map(ev => {
-    const placesTot  = Number(ev.Places_totales) || 0;
+    const placesTot   = Number(ev.Places_totales)    || 0;
     const placesDispo = Number(ev.Places_disponibles) || 0;
-    const pct = placesTot > 0 ? Math.round((1 - placesDispo / placesTot) * 100) : 100;
+    const pct    = placesTot > 0 ? Math.round((1 - placesDispo / placesTot) * 100) : 100;
     const complet = placesDispo <= 0;
+    const connecte = !!state.userId;
+    const btnLabel = complet
+      ? "Liste d'attente"
+      : (connecte ? "S'inscrire" : "S'inscrire");
+    const btnClass = 'btn btn-sm' + (complet ? ' btn-danger' : '');
     return `
     <div class="event-card">
       <div class="event-card-header">
@@ -760,8 +711,8 @@ function renderJoueurEvents(list) {
           <span class="jauge-text">${placesDispo} / ${placesTot} place${placesTot > 1 ? 's' : ''}</span>
           ${complet ? '<span class="badge-attente">COMPLET</span>' : ''}
         </div>
-        <button class="btn btn-sm${complet ? ' btn-danger' : ''}" onclick="openInscription(${ev.ID}, '${ev.Titre.replace(/'/g, "\\'")}', ${placesDispo})">
-          ${complet ? "Liste d'attente" : "S'inscrire"}
+        <button class="${btnClass}" onclick="handleInscriptionClick(${ev.ID}, '${ev.Titre.replace(/'/g,"\\'")}', ${placesDispo})">
+          ${btnLabel}
         </button>
       </div>
     </div>`;
@@ -771,23 +722,41 @@ function renderJoueurEvents(list) {
 function filterEvents() {
   const q    = document.getElementById('filter-search').value.toLowerCase();
   const type = document.getElementById('filter-type').value;
-  state.filteredEvents = state.events.filter(ev => {
+  const filtered = state.events.filter(ev => {
     const matchQ    = !q || ev.Titre.toLowerCase().includes(q) || (ev.Lieu || '').toLowerCase().includes(q);
     const matchType = !type || ev.Type === type;
     return matchQ && matchType;
   });
-  renderJoueurEvents(state.filteredEvents);
+  renderPublicEvents(filtered);
 }
 
-// ════════════════════════════════════════════
-//  INSCRIPTION
-// ════════════════════════════════════════════
-function openInscription(eventId, titre, placesDispo) {
-  state.pendingEventId = eventId;
-  document.getElementById('modal-insc-titre').textContent = titre;
+// ════════════════════════════════════════════════════
+//  CLIC "S'INSCRIRE"
+// ════════════════════════════════════════════════════
+function handleInscriptionClick(eventId, titre, placesDispo) {
+  state.pendingEventId    = eventId;
+  state.pendingEventTitre = titre;
+  state.pendingEventDispo = placesDispo;
+
+  if (!state.userId) {
+    // Non connecté → ouvrir auth avec message contextuel
+    const ctx = document.getElementById('auth-context');
+    ctx.style.display = '';
+    ctx.textContent = `Pour vous inscrire à « ${titre} », connectez-vous ou créez un compte.`;
+    document.getElementById('modal-auth-titre').textContent = 'Connexion requise';
+    switchAuthTab('connexion');
+    hideMsg('err-login'); hideMsg('ok-login'); hideMsg('err-reg'); hideMsg('ok-reg');
+    openModal('modal-auth');
+  } else {
+    openConfirmInscription();
+  }
+}
+
+function openConfirmInscription() {
+  document.getElementById('modal-insc-titre').textContent = state.pendingEventTitre;
   document.getElementById('modal-insc-detail').textContent =
-    placesDispo > 0
-      ? `Il reste ${placesDispo} place(s). Confirmez-vous votre inscription ?`
+    state.pendingEventDispo > 0
+      ? `Il reste ${state.pendingEventDispo} place(s). Confirmez-vous votre inscription ?`
       : "Cet événement est complet. Souhaitez-vous rejoindre la liste d'attente ?";
   hideMsg('err-insc'); hideMsg('ok-insc');
   openModal('modal-inscription');
@@ -798,20 +767,139 @@ async function confirmInscription() {
     const r = await gsPost('subscribeToEvent', { userId: state.userId, eventId: state.pendingEventId });
     if (r.success) {
       showMsg('ok-insc', '✦ ' + r.success, 'success');
-      showToast('✦ Inscription confirmée');
-      await loadJoueurEvents();
+      showToast('✦ Inscription confirmée !');
+      await loadPublicEvents();
     } else if (r.warning) {
       showMsg('ok-insc', '⚠ ' + r.warning, 'success');
       showToast('⚠ ' + r.warning);
+      await loadPublicEvents();
     } else {
       showMsg('err-insc', r.error || 'Une erreur est survenue.');
     }
   } catch(e) { showMsg('err-insc', 'Erreur : ' + e.message); }
 }
 
-// ════════════════════════════════════════════
-//  VUE ORGA — chargement + rendu
-// ════════════════════════════════════════════
+// ════════════════════════════════════════════════════
+//  AUTH JOUEUR — CONNEXION
+// ════════════════════════════════════════════════════
+function switchAuthTab(tab) {
+  document.getElementById('tab-connexion').classList.toggle('active', tab === 'connexion');
+  document.getElementById('tab-inscription').classList.toggle('active', tab === 'inscription');
+  document.getElementById('form-connexion').style.display   = tab === 'connexion'  ? '' : 'none';
+  document.getElementById('form-inscription').style.display = tab === 'inscription' ? '' : 'none';
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const mdp   = document.getElementById('login-mdp').value;
+  if (!email || !mdp) { showMsg('err-login', 'Remplissez tous les champs.'); return; }
+  hideMsg('err-login');
+  try {
+    const r = await gs('loginJoueur', { email, motDePasse: mdp });
+    if (r.success) {
+      state.userId = r.userId;
+      state.nom    = r.nom;
+      state.prenom = r.prenom;
+      state.email  = email;
+      closeModal('modal-auth');
+      updateHeaderUserZone();
+      renderPublicEvents(state.events);
+      showToast(`✦ Bienvenue, ${r.prenom} !`);
+      if (state.pendingEventId !== null) openConfirmInscription();
+    } else {
+      showMsg('err-login', r.error || 'Email ou mot de passe incorrect.');
+    }
+  } catch(e) { showMsg('err-login', 'Erreur réseau : ' + e.message); }
+}
+
+// ════════════════════════════════════════════════════
+//  AUTH JOUEUR — CRÉATION DE COMPTE
+// ════════════════════════════════════════════════════
+async function doRegister() {
+  const prenom = document.getElementById('reg-prenom').value.trim();
+  const nom    = document.getElementById('reg-nom').value.trim();
+  const email  = document.getElementById('reg-email').value.trim();
+  const mdp    = document.getElementById('reg-mdp').value;
+  if (!prenom || !nom || !email || !mdp) { showMsg('err-reg', 'Tous les champs sont obligatoires.'); return; }
+  hideMsg('err-reg');
+  try {
+    const r = await gs('registerUser', { email, motDePasse: mdp, nom, prenom });
+    if (r.success) {
+      showMsg('ok-reg', '✦ Compte créé ! Vous pouvez maintenant vous connecter.', 'success');
+      document.getElementById('login-email').value = email;
+      setTimeout(() => switchAuthTab('connexion'), 1800);
+    } else {
+      showMsg('err-reg', r.error || 'Erreur lors de la création du compte.');
+    }
+  } catch(e) { showMsg('err-reg', 'Erreur réseau : ' + e.message); }
+}
+
+// ════════════════════════════════════════════════════
+//  ZONE UTILISATEUR (coin haut droit du parchment)
+// ════════════════════════════════════════════════════
+function updateHeaderUserZone() {
+  const zone = document.getElementById('header-user-zone');
+  if (state.userId) {
+    zone.innerHTML = `
+      <span style="font-family:'Cinzel',serif;font-size:0.8rem;color:var(--ink-light);letter-spacing:1px;">
+        ✦ ${state.prenom} ${state.nom}
+      </span>
+      <button class="btn-ghost" onclick="logoutJoueur()" style="margin-left:8px">Déconnexion</button>`;
+  } else {
+    zone.innerHTML = `<button class="btn btn-sm" onclick="openAuthModal()">Se connecter</button>`;
+  }
+}
+
+function openAuthModal() {
+  document.getElementById('auth-context').style.display = 'none';
+  document.getElementById('modal-auth-titre').textContent = 'Rejoindre Faérie';
+  state.pendingEventId = null;
+  switchAuthTab('connexion');
+  hideMsg('err-login'); hideMsg('ok-login'); hideMsg('err-reg'); hideMsg('ok-reg');
+  openModal('modal-auth');
+}
+
+function logoutJoueur() {
+  state.userId = null; state.nom = null; state.prenom = null; state.email = null;
+  state.pendingEventId = null;
+  updateHeaderUserZone();
+  renderPublicEvents(state.events);
+  showToast('À bientôt !');
+}
+
+// ════════════════════════════════════════════════════
+//  AUTH ORGA
+// ════════════════════════════════════════════════════
+function openOrgaLogin() {
+  document.getElementById('orga-pwd').value = '';
+  hideMsg('err-orga');
+  openModal('modal-orga-auth');
+}
+
+async function doLoginOrga() {
+  const pwd = document.getElementById('orga-pwd').value;
+  hideMsg('err-orga');
+  try {
+    const cfg = await gs('getConfig');
+    if (cfg && pwd === cfg.motDePasseAdmin) {
+      closeModal('modal-orga-auth');
+      await loadOrgaEvents();
+      document.getElementById('public-screen').style.display = 'none';
+      document.getElementById('orga-screen').style.display   = '';
+    } else {
+      showMsg('err-orga', 'Mot de passe incorrect.');
+    }
+  } catch(e) { showMsg('err-orga', 'Erreur réseau : ' + e.message); }
+}
+
+function logoutOrga() {
+  document.getElementById('orga-screen').style.display   = 'none';
+  document.getElementById('public-screen').style.display = '';
+}
+
+// ════════════════════════════════════════════════════
+//  VUE ORGA
+// ════════════════════════════════════════════════════
 async function loadOrgaEvents() {
   const tbody = document.getElementById('orga-events-body');
   tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement…</td></tr>';
@@ -837,31 +925,27 @@ function renderOrgaTable(list) {
       <td>${ev.Lieu || '—'}</td>
       <td>${ev.Type || '—'}</td>
       <td>${ev.Jauge || `${ev.Places_disponibles}/${ev.Places_totales}`}</td>
-      <td style="display:flex;gap:6px;flex-wrap:wrap">
-        <button class="btn btn-sm" onclick="openModalEditEvent(${ev.ID})">✏ Modifier</button>
-      </td>
+      <td><button class="btn btn-sm" onclick="openModalEditEvent(${ev.ID})">✏ Modifier</button></td>
     </tr>
   `).join('');
 }
 
 function filterOrgaEvents(q) {
   const filtered = state.orgaEvents.filter(ev =>
-    (ev.Titre + ev.Lieu + ev.Type).toLowerCase().includes(q.toLowerCase())
+    (ev.Titre + (ev.Lieu || '') + (ev.Type || '')).toLowerCase().includes(q.toLowerCase())
   );
   renderOrgaTable(filtered);
 }
 
-// ════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 //  MODAL ÉVÉNEMENT (créer / modifier)
-// ════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 function openModalCreateEvent() {
   document.getElementById('modal-event-title').textContent = '+ Nouvel événement';
   document.getElementById('e-id').value = '';
-  document.getElementById('e-titre').value = '';
-  document.getElementById('e-date').value  = '';
-  document.getElementById('e-lieu').value  = '';
-  document.getElementById('e-organisateurs').value = '';
-  document.getElementById('e-type').value  = 'GN';
+  ['e-titre','e-lieu','e-organisateurs'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('e-date').value = '';
+  document.getElementById('e-type').value = 'GN';
   document.getElementById('e-places-totales').value = '20';
   document.getElementById('row-places-dispo').style.display = 'none';
   hideMsg('err-event'); hideMsg('ok-event');
@@ -874,8 +958,7 @@ function openModalEditEvent(id) {
   document.getElementById('modal-event-title').textContent = '✏ Modifier l\'événement';
   document.getElementById('e-id').value    = ev.ID;
   document.getElementById('e-titre').value = ev.Titre;
-  // Convertir date FR → ISO pour input[type=date]
-  const parts = ev.Date.split('/');
+  const parts = (ev.Date || '').split('/');
   document.getElementById('e-date').value  = parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : '';
   document.getElementById('e-lieu').value  = ev.Lieu || '';
   document.getElementById('e-organisateurs').value = ev.Organisateurs || '';
@@ -888,17 +971,15 @@ function openModalEditEvent(id) {
 }
 
 async function saveEvent() {
-  const id           = document.getElementById('e-id').value;
-  const titre        = document.getElementById('e-titre').value.trim();
-  const date         = document.getElementById('e-date').value;
-  const lieu         = document.getElementById('e-lieu').value.trim();
-  const organisateurs= document.getElementById('e-organisateurs').value.trim();
-  const typeJeu      = document.getElementById('e-type').value;
-  const placesTotales= parseInt(document.getElementById('e-places-totales').value) || 0;
-
+  const id            = document.getElementById('e-id').value;
+  const titre         = document.getElementById('e-titre').value.trim();
+  const date          = document.getElementById('e-date').value;
+  const lieu          = document.getElementById('e-lieu').value.trim();
+  const organisateurs = document.getElementById('e-organisateurs').value.trim();
+  const typeJeu       = document.getElementById('e-type').value;
+  const placesTotales = parseInt(document.getElementById('e-places-totales').value) || 0;
   if (!titre || !date) { showMsg('err-event', 'Titre et date sont obligatoires.'); return; }
   hideMsg('err-event');
-
   try {
     let r;
     if (id) {
@@ -917,13 +998,10 @@ async function saveEvent() {
   } catch(e) { showMsg('err-event', 'Erreur : ' + e.message); }
 }
 
-// ════════════════════════════════════════════
+// ════════════════════════════════════════════════════
 //  UTILITAIRES UI
-// ════════════════════════════════════════════
-function show(id) { document.getElementById(id).style.display = ''; }
-function hide(id) { document.getElementById(id).style.display = 'none'; }
-
-function openModal(id) { document.getElementById(id).classList.add('open'); }
+// ════════════════════════════════════════════════════
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
 function showMsg(id, txt, type = 'error') {
@@ -944,12 +1022,19 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
 }
 
-// Fermer modale en cliquant l'overlay
 document.querySelectorAll('.modal-overlay').forEach(el => {
   el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+// ════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════
+window.addEventListener('load', () => {
+  updateHeaderUserZone();
+  loadPublicEvents();
 });
 </script>
 </body>
