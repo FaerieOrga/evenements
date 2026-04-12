@@ -873,11 +873,6 @@ async function loadPublicEvents() {
 
     // On lance l'affichage une fois les données prêtes
     renderPublicEvents(state.events); [cite: 119]
-
-  } catch(e) { 
-    console.error("Erreur de chargement:", e); [cite: 119]
-    if (grid) grid.innerHTML = `<div class="empty-state">Erreur de chargement des données.</div>`; [cite: 119]
-  }
 }
   
 function renderPublicEvents(list) {
@@ -1062,10 +1057,6 @@ async function seDesinscrire(eventId, placesDispo) {
     await loadMesInscriptions(); 
     await loadPublicEvents();
 
-  } catch(e) { 
-    console.error("Erreur critique:", e);
-    alert('Une erreur est survenue : ' + e.message); 
-  }
 }
 
 // ════════════════════════════════════════════════════
@@ -1123,7 +1114,6 @@ async function loadMesInscriptions() {
         </div>
       </div>`;
     }).join('');
-  } catch(e) { grid.innerHTML = `<div class="empty-state" style="color:var(--red-blood)">Erreur de chargement.</div>`; }
 }
 
 // ════════════════════════════════════════════════════
@@ -1147,7 +1137,6 @@ async function loadMessages() {
     // Marquer comme lus
     await sb.from('messages').update({ lu_joueur: true }).eq('user_id', state.user.id).eq('lu_joueur', false);
     document.getElementById('notif-msg-dot').style.display = 'none';
-  } catch(e) { fil.innerHTML = `<div class="empty-state" style="color:var(--red-blood)">Erreur.</div>`; }
 }
 
 async function checkNouveauxMessages() {
@@ -1175,7 +1164,6 @@ async function envoyerMessage() {
     document.getElementById('msg-nouveau').value = '';
     await loadMessages();
     showToast('✦ Message envoyé !');
-  } catch(e) { showMsg('err-msg', 'Erreur : ' + e.message); }
 }
 
 // ════════════════════════════════════════════════════
@@ -1227,7 +1215,6 @@ async function loadOrgaConversation(userId) {
     // Marquer comme lus par l'orga
     await sb.from('messages').update({ lu_orga: true }).eq('user_id', userId).eq('auteur', 'joueur');
     await loadOrgaMessagerie();
-  } catch(e) { fil.innerHTML = `<div class="empty-state" style="color:var(--red-blood)">Erreur.</div>`; }
 }
 
 async function envoyerMessageOrga() {
@@ -1246,7 +1233,6 @@ async function envoyerMessageOrga() {
     document.getElementById('orga-msg-nouveau').value = '';
     await loadOrgaConversation(state.currentOrgaUserId);
     showToast('✦ Réponse envoyée !');
-  } catch(e) { showMsg('err-orga-msg', 'Erreur : ' + e.message); }
 }
 
 // ════════════════════════════════════════════════════
