@@ -431,13 +431,24 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
         <div id="header-user-zone"></div>
       </div>
       <div class="filter-bar">
-        <input type="text" id="filter-search" placeholder="Rechercher un événement…" oninput="filterEvents()">
+        <input type="text" id="filter-search" placeholder="Rechercher un événement…" oninput="filterEvents()" autocomplete="off" name="search-no-fill" spellcheck="false">
         <select id="filter-type" onchange="filterEvents()">
           <option value="">Tous les types</option>
-          <option value="GN">GN</option>
-          <option value="Atelier">Atelier</option>
-          <option value="Réunion">Réunion</option>
+          <option value="Assemblée générale">Assemblée générale</option>
+          <option value="Atelier bricolage">Atelier bricolage</option>
+          <option value="Atelier couture">Atelier couture</option>
+          <option value="Atelier craft">Atelier craft</option>
           <option value="Autre">Autre</option>
+          <option value="Grandeur nature">Grandeur nature</option>
+          <option value="Inventaire/Rangement">Inventaire/Rangement</option>
+          <option value="Jeepform">Jeepform</option>
+          <option value="Jeu de rôles sur tables">Jeu de rôles sur tables</option>
+          <option value="Jeu de société">Jeu de société</option>
+          <option value="Jeu immersif">Jeu immersif</option>
+          <option value="Jeux sportif">Jeux sportif</option>
+          <option value="Murder party">Murder party</option>
+          <option value="Repas">Repas</option>
+          <option value="Réunion">Réunion</option>
         </select>
       </div>
       <div class="events-grid" id="public-events-grid">
@@ -582,11 +593,22 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
       </div>
       <div class="form-group">
         <label>Type</label>
-        <select id="e-type">
-          <option value="GN">GN</option>
-          <option value="Atelier">Atelier</option>
-          <option value="Réunion">Réunion</option>
+       <select id="e-type">
+          <option value="Assemblée générale">Assemblée générale</option>
+          <option value="Atelier bricolage">Atelier bricolage</option>
+          <option value="Atelier couture">Atelier couture</option>
+          <option value="Atelier craft">Atelier craft</option>
           <option value="Autre">Autre</option>
+          <option value="Grandeur nature">Grandeur nature</option>
+          <option value="Inventaire/Rangement">Inventaire/Rangement</option>
+          <option value="Jeepform">Jeepform</option>
+          <option value="Jeu de rôles sur tables">Jeu de rôles sur tables</option>
+          <option value="Jeu de société">Jeu de société</option>
+          <option value="Jeu immersif">Jeu immersif</option>
+          <option value="Jeux sportif">Jeux sportif</option>
+          <option value="Murder party">Murder party</option>
+          <option value="Repas">Repas</option>
+          <option value="Réunion">Réunion</option>
         </select>
       </div>
     </div>
