@@ -1070,7 +1070,8 @@ function switchAuthTab(tab) {
 
 async function doLogin() {
   const email = document.getElementById('login-email').value.trim(); const mdp = document.getElementById('login-mdp').value;
-  if (!email || !mdp) return; hideMsg('err-login');
+  hideMsg('err-login');
+  if (!email || !mdp) return;
   const { data, error } = await sb.auth.signInWithPassword({ email, password: mdp });
   if (error) {
   if (error.message.includes('Invalid login credentials')) {
