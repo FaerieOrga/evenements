@@ -846,7 +846,7 @@ function renderPublicEvents(list) {
 
     let btnHtml = '';
     if (inscrit) { btnHtml = `<span class="badge-inscrit">✦ Inscrit·e</span>`; } 
-    else if (enAttente) { btnHtml = `<span class="badge-attente">⏳ En attente</span>`; } 
+    else if (enAttente) { btnHtml = `<span class="badge-attente">⏳ Vous êtes sur la liste d'attente</span>`; } 
     else {
       const btnClass = 'btn btn-sm' + (complet ? ' btn-danger' : '');
       const btnLabel = complet ? "Liste d'attente" : "S'inscrire";
