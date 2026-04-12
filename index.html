@@ -862,7 +862,16 @@ async function doLogin() {
   updateHeaderUserZone();
   await loadPublicEvents();
   showToast(`✦ Bienvenue !`);
-  if (state.pendingEventId) openConfirmInscription();
+  if (state.pendingEventId !== null) {
+    openModal('modal-inscription');
+    document.getElementById('modal-insc-titre').textContent = state.pendingEventTitre;
+    document.getElementById('modal-insc-detail').textContent =
+      state.pendingEventDispo > 0
+        ? `Il reste ${state.pendingEventDispo} place(s). Confirmez-vous votre inscription ?`
+        : "Cet événement est complet. Souhaitez-vous rejoindre la liste d'attente ?";
+    hideMsg('err-insc'); hideMsg('ok-insc');
+  }
+}
 }
 
 async function doRegister() {
