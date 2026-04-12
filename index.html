@@ -936,13 +936,45 @@ async function confirmInscription() {
 
 async function seDesinscrire(eventId, placesDispo) {
   if (!confirm('Confirmer la désinscription ?')) return;
+  
   try {
-    await sb.from('inscriptions').delete().eq('event_id', eventId).eq('user_id', state.user.id);
-    await sb.from('evenements').update({ places_disponibles: placesDispo + 1 }).eq('id', eventId);
-    showToast('✦ Désinscription confirmée');
-    await loadMesInscriptions();
+    showToast('Sorcier à l\'œuvre...');
+    
+    // 1. Suppression de la ligne dans Supabase
+    const { error: delError } = await sb
+      .from('inscriptions')
+      .delete()
+      .eq('event_id', eventId)
+      .eq('user_id', state.user.id);
+
+    if (delError) {
+      console.error("Erreur Supabase Delete:", delError);
+      alert("Erreur de suppression : " + delError.message);
+      return;
+    }
+
+    // 2. Mise à jour des places (on en rend une)
+    const { error: updateError } = await sb
+      .from('evenements')
+      .update({ places_disponibles: (placesDispo || 0) + 1 })
+      .eq('id', eventId);
+      
+    if (updateError) console.error("Erreur Update Places:", updateError);
+
+    // 3. Mise à jour forcée de l'affichage
+    showToast('✦ Désinscription réussie');
+    
+    // On nettoie le state localement pour un effet instantané
+    state.mesInscriptions = state.mesInscriptions.filter(id => id !== eventId);
+    
+    // On relance le chargement des données
+    await loadMesInscriptions(); 
     await loadPublicEvents();
-  } catch(e) { showToast('Erreur : ' + e.message); }
+
+  } catch(e) { 
+    console.error("Erreur critique:", e);
+    alert('Une erreur est survenue : ' + e.message); 
+  }
 }
 
 // ════════════════════════════════════════════════════
