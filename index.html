@@ -622,7 +622,7 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
 // ════════════════════════════════════════════════════
 const SUPABASE_URL  = 'https://zutgjwnmolzwkbkdzfko.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_E_81QRnHPOXTDcxLv9l2wQ_dpqspXFf';
-const ORGA_PASSWORD = 'faerie2024'; // ← change ce mot de passe
+const ORGA_PASSWORD = 'faerie2024'; 
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -701,7 +701,6 @@ function renderPublicEvents(list) {
     const complet = placesDispo <= 0;
     const inscrit = state.mesInscriptions.includes(ev.id);
 
-    // Dates
     const debut = ev.date_debut ? formatDatetime(ev.date_debut) : (ev.date ? new Date(ev.date).toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'}) : '—');
     const fin   = ev.date_fin   ? formatDatetime(ev.date_fin)   : null;
 
@@ -725,25 +724,14 @@ function renderPublicEvents(list) {
           <span class="event-info-label">Début</span>
           <span class="event-info-val">📅 ${debut}</span>
         </div>
-        ${fin ? `<div class="event-info-item">
-          <span class="event-info-label">Fin</span>
-          <span class="event-info-val">🏁 ${fin}</span>
-        </div>` : '<div></div>'}
-        <div class="event-info-item">
-          <span class="event-info-label">Lieu</span>
-          <span class="event-info-val">📍 ${ev.lieu || '—'}</span>
-        </div>
-        <div class="event-info-item">
-          <span class="event-info-label">Organisateurs</span>
-          <span class="event-info-val">${ev.organisateurs || '—'}</span>
-        </div>
+        ${fin ? `<div class="event-info-item"><span class="event-info-label">Fin</span><span class="event-info-val">🏁 ${fin}</span></div>` : '<div></div>'}
+        <div class="event-info-item"><span class="event-info-label">Lieu</span><span class="event-info-val">📍 ${ev.lieu || '—'}</span></div>
+        <div class="event-info-item"><span class="event-info-label">Organisateurs</span><span class="event-info-val">${ev.organisateurs || '—'}</span></div>
       </div>
       ${ev.description ? `<div class="event-description">${ev.description}</div>` : ''}
       <div class="event-card-footer">
         <div class="jauge-wrap">
-          <div class="jauge-bar">
-            <div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div>
-          </div>
+          <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
           <span class="jauge-text">${placesDispo} / ${placesTot} place${placesTot > 1 ? 's' : ''}</span>
           ${complet && !inscrit ? '<span class="badge-attente">COMPLET</span>' : ''}
         </div>
@@ -778,7 +766,6 @@ function handleInscriptionClick(eventId, titre, placesDispo) {
     ctx.textContent = `Pour vous inscrire à « ${titre} », connectez-vous ou créez un compte.`;
     document.getElementById('modal-auth-titre').textContent = 'Connexion requise';
     switchAuthTab('connexion');
-    hideMsg('err-login'); hideMsg('ok-login'); hideMsg('err-reg'); hideMsg('ok-reg');
     openModal('modal-auth');
   } else {
     openConfirmInscription();
@@ -803,16 +790,11 @@ async function confirmInscription() {
         user_id:  state.user.id
       });
       if (errInscr) throw errInscr;
-      await sb.from('evenements')
-        .update({ places_disponibles: state.pendingEventDispo - 1 })
-        .eq('id', state.pendingEventId);
+      await sb.from('evenements').update({ places_disponibles: state.pendingEventDispo - 1 }).eq('id', state.pendingEventId);
       showMsg('ok-insc', '✦ Inscription confirmée !', 'success');
       showToast('✦ Inscription confirmée !');
     } else {
-      const { error } = await sb.from('liste_attente').insert({
-        event_id: state.pendingEventId,
-        user_id:  state.user.id
-      });
+      const { error } = await sb.from('liste_attente').insert({ event_id: state.pendingEventId, user_id: state.user.id });
       if (error) throw error;
       showMsg('ok-insc', "⚠ Ajouté·e à la liste d'attente.", 'success');
       showToast("⚠ Liste d'attente");
@@ -850,8 +832,6 @@ async function doLogin() {
 
 async function doRegister() {
   const btn = document.querySelector('#form-inscription .btn-full');
-  
-  // 1. Protection : Si le bouton est déjà désactivé, on ne fait rien
   if (btn.disabled) return;
 
   const prenom = document.getElementById('reg-prenom').value.trim();
@@ -865,43 +845,33 @@ async function doRegister() {
   }
 
   try {
-    // 2. On verrouille le bouton et on change l'apparence
     btn.disabled = true;
     const originalText = btn.textContent;
     btn.textContent = "Magie en cours...";
-    btn.style.opacity = "0.7";
-    btn.style.cursor = "not-allowed";
-
     hideMsg('err-reg');
 
     const { data, error } = await sb.auth.signUp({
-      email, 
-      password: mdp,
+      email, password: mdp,
       options: { data: { prenom, nom } }
     });
 
     if (error) throw error;
 
-    // 3. Succès : Comme tu as désactivé "Confirm Email", on peut connecter direct !
-    showMsg('ok-reg', '✦ Bienvenue dans la Faérie ! Connexion...', 'success');
+    showMsg('ok-reg', '✦ Bienvenue ! Connexion en cours...', 'success');
     
-    // Petite pause pour laisser l'utilisateur lire le message de succès
     setTimeout(async () => {
-        // On tente de le connecter automatiquement
         await doLoginDirect(email, mdp);
     }, 1500);
 
   } catch (err) {
-    showMsg('err-reg', err.message);
-    // En cas d'erreur, on redonne la main à l'utilisateur
+    let message = err.message;
+    if (message.includes("429")) message = "Trop de tentatives. Attendez 5 min.";
+    showMsg('err-reg', message);
     btn.disabled = false;
     btn.textContent = "Créer mon compte";
-    btn.style.opacity = "1";
-    btn.style.cursor = "pointer";
   }
 }
 
-// Fonction utilitaire pour connecter juste après l'inscription
 async function doLoginDirect(email, password) {
     const { data, error } = await sb.auth.signInWithPassword({ email, password });
     if (!error) {
@@ -911,28 +881,6 @@ async function doLoginDirect(email, password) {
         await loadPublicEvents();
         showToast(`✦ Bienvenue ${state.user.user_metadata.prenom} !`);
     }
-}
-
-    // 2. Succès
-    showMsg('ok-reg', '✦ Compte créé ! Vérifiez vos e-mails pour confirmer.', 'success');
-    document.getElementById('reg-email').value = ""; // On vide pour la sécurité
-    document.getElementById('reg-mdp').value = "";
-    
-    // On redirige vers la connexion après 3 secondes
-    setTimeout(() => switchAuthTab('connexion'), 3000);
-
-  } catch (err) {
-    // 3. Gestion d'erreur (dont la 429)
-    let message = err.message;
-    if (message.includes("429")) {
-      message = "Trop de tentatives. Attendez quelques minutes avant de réessayer.";
-    }
-    showMsg('err-reg', message);
-  } finally {
-    // 4. On remet le bouton à la normale
-    btn.disabled = false;
-    btn.textContent = originalText;
-  }
 }
 
 async function logoutJoueur() {
@@ -948,8 +896,7 @@ function updateHeaderUserZone() {
   const zone = document.getElementById('header-user-zone');
   if (state.user) {
     const prenom = state.user.user_metadata?.prenom || state.user.email;
-    zone.innerHTML = `
-      <span style="font-family:'Cinzel',serif;font-size:0.8rem;color:var(--ink-light);letter-spacing:1px;">✦ ${prenom}</span>
+    zone.innerHTML = `<span style="font-family:'Cinzel',serif;font-size:0.8rem;color:var(--ink-light);letter-spacing:1px;">✦ ${prenom}</span>
       <button class="btn-ghost" onclick="logoutJoueur()" style="margin-left:8px">Déconnexion</button>`;
   } else {
     zone.innerHTML = `<button class="btn btn-sm" onclick="openAuthModal()">Se connecter</button>`;
@@ -1008,8 +955,7 @@ function renderOrgaTable(list) {
   }
   tbody.innerHTML = list.map(ev => {
     const debut = ev.date_debut ? new Date(ev.date_debut).toLocaleString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : (ev.date || '—');
-    return `
-    <tr>
+    return `<tr>
       <td><strong style="font-family:'Cinzel',serif;font-size:0.88rem">${ev.titre}</strong></td>
       <td>${debut}</td>
       <td>${ev.lieu || '—'}</td>
@@ -1021,9 +967,7 @@ function renderOrgaTable(list) {
 }
 
 function filterOrgaEvents(q) {
-  const filtered = state.orgaEvents.filter(ev =>
-    (ev.titre + (ev.lieu || '') + (ev.type || '')).toLowerCase().includes(q.toLowerCase())
-  );
+  const filtered = state.orgaEvents.filter(ev => (ev.titre + (ev.lieu || '') + (ev.type || '')).toLowerCase().includes(q.toLowerCase()));
   renderOrgaTable(filtered);
 }
 
@@ -1076,18 +1020,13 @@ async function saveEvent() {
   if (!titre || !date_debut) { showMsg('err-event', 'Titre et date de début sont obligatoires.'); return; }
   hideMsg('err-event');
 
-  // Extraire la date seule pour le champ `date` existant
   const date = date_debut.split('T')[0];
-
   let error;
   if (id) {
     const places_disponibles = parseInt(document.getElementById('e-places-dispo').value) || 0;
-    ({ error } = await sb.from('evenements')
-      .update({ titre, date, date_debut, date_fin, lieu, organisateurs, type, description, places_totales, places_disponibles })
-      .eq('id', id));
+    ({ error } = await sb.from('evenements').update({ titre, date, date_debut, date_fin, lieu, organisateurs, type, description, places_totales, places_disponibles }).eq('id', id));
   } else {
-    ({ error } = await sb.from('evenements')
-      .insert({ titre, date, date_debut, date_fin, lieu, organisateurs, type, description, places_totales, places_disponibles: places_totales }));
+    ({ error } = await sb.from('evenements').insert({ titre, date, date_debut, date_fin, lieu, organisateurs, type, description, places_totales, places_disponibles: places_totales }));
   }
 
   if (error) { showMsg('err-event', error.message); return; }
@@ -1101,6 +1040,7 @@ async function saveEvent() {
 // ════════════════════════════════════════════════════
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
 function showMsg(id, txt, type = 'error') {
   const el = document.getElementById(id);
   if (!el) return;
@@ -1108,7 +1048,12 @@ function showMsg(id, txt, type = 'error') {
   el.style.display = '';
   el.className = type === 'success' ? 'msg-success' : 'msg-error';
 }
-function hideMsg(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
+
+function hideMsg(id) { 
+  const el = document.getElementById(id);
+  if (el) el.style.display = 'none'; 
+}
+
 let toastTimer;
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -1117,6 +1062,7 @@ function showToast(msg) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
 }
+
 document.querySelectorAll('.modal-overlay').forEach(el => {
   el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
 });
