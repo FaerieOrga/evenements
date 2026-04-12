@@ -883,9 +883,7 @@ async function doRegister() {
   }
 
   // Si ça marche, on affiche le message
-  showMsg('ok-reg', '✦ Compte créé ! Vérifiez votre e-mail (ou demandez à l\'admin de valider).', 'success');
-  btn.textContent = originalText;
-  btn.disabled = false;
+showMsg('ok-reg', '✦ Compte créé ! ATTENTION : Vous devez cliquer sur le lien envoyé sur votre boite e-mail pour activer votre compte avant de pouvoir vous connecter. Pensez à regarder dans vos spam', 'success');
 }
 
     // 2. Succès
