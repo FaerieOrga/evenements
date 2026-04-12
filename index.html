@@ -431,7 +431,7 @@ textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
         <div id="header-user-zone"></div>
       </div>
       <div class="filter-bar">
-        <input type="text" id="filter-search" placeholder="Rechercher un événement…" oninput="filterEvents()" autocomplete="off" name="search-no-fill" spellcheck="false">
+        <input type="search" id="orga-search" placeholder="Filtrer…" style="max-width:220px;margin-left:auto" oninput="filterOrgaEvents(this.value)" autocomplete="off">
         <select id="filter-type" onchange="filterEvents()">
           <option value="">Tous les types</option>
           <option value="Assemblée générale">Assemblée générale</option>
