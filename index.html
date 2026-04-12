@@ -1389,14 +1389,23 @@ function renderOrgaTable(list) {
   openModal('modal-liste-participants');
 
   try {
-    // 1. On récupère les inscriptions + les profils
-    const { data: inscr } = await sb.from('inscriptions').select('user_id').eq('event_id', eventId);
-    const { data: attente } = await sb.from('liste_attente').select('user_id').eq('event_id', eventId);
+    // On force la récupération
+    const { data: inscr, error: err1 } = await sb.from('inscriptions').select('user_id').eq('event_id', eventId);
+    const { data: attente, error: err2 } = await sb.from('liste_attente').select('user_id').eq('event_id', eventId);
+
+    if (err1 || err2) throw (err1 || err2);
+
+    console.log("Inscrits trouvés:", inscr); // Pour vérifier dans ta console F12
 
     let html = '<h3>⚔ Inscrits officiels</h3><ul>';
-    html += (inscr?.length) ? inscr.map(i => `<li>👤 ID: ${i.user_id.substring(0,8)}...</li>`).join('') : '<li>Personne pour le moment</li>';
+    html += (inscr && inscr.length > 0) 
+      ? inscr.map(i => `<li>👤 Joueur ID: ${i.user_id.substring(0,8)}...</li>`).join('') 
+      : '<li>Personne pour le moment</li>';
+    
     html += '</ul><br><h3>⏳ Liste d\'attente</h3><ul>';
-    html += (attente?.length) ? attente.map(a => `<li>👤 ID: ${a.user_id.substring(0,8)}...</li>`).join('') : '<li>Vide</li>';
+    html += (attente && attente.length > 0) 
+      ? attente.map(a => `<li>👤 Joueur ID: ${a.user_id.substring(0,8)}...</li>`).join('') 
+      : '<li>Vide</li>';
     html += '</ul>';
 
     content.innerHTML = html;
