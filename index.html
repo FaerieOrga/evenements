@@ -514,8 +514,28 @@ input:-webkit-autofill:focus {
   .modal-box { padding: 22px 18px; }
   .event-card-body { grid-template-columns: 1fr; }
   .site-title { font-size: 1.7rem; }
+  
+  /* Masque les colonnes Lieu et Type sur mobile */
   .orga-table th:nth-child(3), .orga-table td:nth-child(3),
   .orga-table th:nth-child(4), .orga-table td:nth-child(4) { display: none; }
+  
+  /* --- CORRECTION DU TABLEAU ORGA SUR MOBILE --- */
+  .orga-table { font-size: 0.75rem; } /* Texte un peu plus petit */
+  .orga-table th, .orga-table td { padding: 6px 4px; } /* Moins de marges internes */
+  
+  /* Aligne les boutons proprement en colonne */
+  .orga-table td:last-child { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 6px; 
+  }
+  .orga-table td:last-child .btn { 
+    padding: 6px 4px; 
+    font-size: 0.6rem; 
+    letter-spacing: 0px; 
+    text-align: center; 
+    width: 100%;
+  }
 }
 
   .badge-attente {
