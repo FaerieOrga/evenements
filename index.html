@@ -1150,13 +1150,24 @@ async function envoyerMessageOrga() {
   const contenu = document.getElementById('orga-msg-nouveau').value.trim();
   if (!contenu || !state.currentOrgaUserId) return;
   try {
+    // 1. On sauvegarde le message dans la base de données
     await sb.from('messages').insert({ user_id: state.currentOrgaUserId, auteur: 'orga', contenu, lu_orga: true, lu_joueur: false });
     document.getElementById('orga-msg-nouveau').value = '';
-    await loadOrgaConversation(state.currentOrgaUserId); showToast('✦ Réponse envoyée !');
+    await loadOrgaConversation(state.currentOrgaUserId); 
+    showToast('✦ Réponse envoyée !');
     
-    // RAPPEL POUR LE JOUEUR
-    // Si tu veux, tu peux aussi envoyer un email au joueur ici pour lui dire que l'orga a répondu.
-    // Il faudrait récupérer son email d'abord dans la table profils.
+    // 2. On cherche l'adresse email du joueur dans la table des profils
+    const { data: profil } = await sb.from('profils').select('email, prenom').eq('id', state.currentOrgaUserId).single();
+    
+    // 3. Si on trouve bien son email, on demande au Facteur Google de livrer l'alerte !
+    if (profil && profil.email) {
+      const prenom = profil.prenom || 'Joueur';
+      sendEmailViaGAS(
+        profil.email, 
+        "Nouveau message de l'organisation - Faérie", 
+        `<h3>Bonjour ${prenom},</h3><p>L'équipe d'organisation t'a répondu sur l'espace Faérie :</p><blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #64748b;">${contenu}</blockquote><p>Connecte-toi à ton espace pour poursuivre la conversation.</p>`
+      );
+    }
     
   } catch(e) { console.error(e); }
 }
