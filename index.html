@@ -8,21 +8,23 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
-  --parchment:    #f2e8c9;
-  --parchment-dk: #e0ceA0;
-  --ink:          #2a1a0a;
-  --ink-light:    #5c3d1e;
-  --red-blood:    #8b1a1a;
-  --gold:         #9a7b2f;
-  --gold-light:   #c9a84c;
-  --border:       #6b4c1e;
-  --shadow:       rgba(30,15,5,0.45);
+  --parchment:    #ffffff;
+  --parchment-dk: #f8fafc;
+  --ink:          #1e293b;
+  --ink-light:    #64748b;
+  --red-blood:    #b91c1c;
+  --gold:         #8c7b50;
+  --gold-light:   #cbd5e1;
+  --border:       #e2e8f0;
+  --shadow:       rgba(15, 23, 42, 0.08);
+  /* On garde ton image au cas où, mais on mettra le beau dégradé bleu par-dessus */
   --bg-img:       url('https://drive.google.com/uc?export=view&id=142vQlX6NsPL118l3x-VHn9iNx94Vydng');
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   min-height: 100vh;
-  background: #1a0f05 var(--bg-img) center/cover fixed;
+  /* Magnifique dégradé ciel de nuit Faérie */
+  background: linear-gradient(to bottom, #0f172a 0%, #1e3a8a 50%, #38bdf8 100%) fixed;
   font-family: 'Crimson Text', Georgia, serif;
   color: var(--ink);
   font-size: 16px;
@@ -31,7 +33,8 @@ body {
 body::before {
   content: '';
   position: fixed; inset: 0;
-  background: rgba(10,5,2,0.55);
+  /* Voile étoilé très léger pour adoucir le fond */
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.15) 100%);
   pointer-events: none;
   z-index: 0;
 }
@@ -43,42 +46,42 @@ body::before {
   padding: 20px 16px 60px;
 }
 .parchment {
-  background: var(--parchment) var(--bg-img) center/cover;
-  border: 3px solid var(--border);
-  border-radius: 4px;
+  background: var(--parchment);
+  border: 1px solid rgba(255,255,255,0.8);
+  border-radius: 8px;
   padding: 36px 40px;
-  box-shadow: 0 0 0 1px var(--gold), 0 8px 32px var(--shadow), inset 0 0 80px rgba(160,120,40,0.18);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.03);
   position: relative;
   overflow: hidden;
 }
 .parchment::before, .parchment::after {
   content: '✦';
   position: absolute;
-  font-size: 28px;
-  color: var(--gold);
-  opacity: 0.7;
+  font-size: 24px;
+  color: #cbd5e1;
+  opacity: 0.5;
   line-height: 1;
 }
-.parchment::before { top: 10px; left: 14px; }
-.parchment::after  { bottom: 10px; right: 14px; }
+.parchment::before { top: 12px; left: 16px; }
+.parchment::after  { bottom: 12px; right: 16px; }
 
 /* ── EN-TÊTE ── */
 .site-header { text-align: center; padding: 32px 0 24px; }
 .site-title {
   font-family: 'Cinzel', serif;
-  font-size: 2.4rem;
+  font-size: 2.6rem;
   font-weight: 700;
-  color: var(--parchment);
-  text-shadow: 0 2px 12px rgba(0,0,0,0.7), 1px 1px 0 var(--gold);
+  color: #ffffff;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.6), 0 0 20px rgba(255,255,255,0.2);
   letter-spacing: 3px;
   margin-bottom: 6px;
 }
 .site-subtitle {
   font-family: 'IM Fell English', serif;
   font-style: italic;
-  color: var(--gold-light);
-  font-size: 1.1rem;
-  text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+  color: #bae6fd;
+  font-size: 1.15rem;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
 }
 
 /* ── FORMS ── */
@@ -95,9 +98,9 @@ label {
 input[type="text"], input[type="email"], input[type="password"],
 input[type="date"], input[type="datetime-local"], input[type="number"], select, textarea {
   width: 100%;
-  background: rgba(242,232,201,0.6);
+  background: #f8fafc;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 4px;
   padding: 9px 12px;
   font-family: 'Crimson Text', serif;
   font-size: 1rem;
@@ -106,17 +109,17 @@ input[type="date"], input[type="datetime-local"], input[type="number"], select, 
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 input:focus, select:focus, textarea:focus {
-  border-color: var(--gold);
-  box-shadow: 0 0 0 2px rgba(154,123,47,0.2);
+  border-color: #64748b;
+  box-shadow: 0 0 0 2px rgba(100,116,139,0.15);
 }
 textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
 
- /* Empêche le fond bleu de la saisie automatique */
+/* Empêche le fond bleu/jaune de la saisie automatique */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus {
   -webkit-text-fill-color: var(--ink);
-  -webkit-box-shadow: 0 0 0px 1000px rgba(242,232,201,0.6) inset;
+  -webkit-box-shadow: 0 0 0px 1000px #f8fafc inset;
   transition: background-color 5000s ease-in-out 0s;
 }
 
@@ -125,23 +128,23 @@ input:-webkit-autofill:focus {
   display: inline-block;
   padding: 10px 28px;
   background: var(--ink);
-  color: var(--parchment);
-  border: 1px solid var(--gold);
-  border-radius: 2px;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
   font-family: 'Cinzel', serif;
   font-size: 0.85rem;
   letter-spacing: 2px;
   cursor: pointer;
   text-transform: uppercase;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
 }
-.btn:hover { background: var(--gold); color: var(--ink); }
+.btn:hover { background: #334155; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transform: translateY(-1px); }
 .btn-full  { width: 100%; text-align: center; }
 .btn-sm    { padding: 6px 16px; font-size: 0.75rem; }
-.btn-danger { background: var(--red-blood); border-color: var(--red-blood); color: #fff; }
-.btn-danger:hover { background: #6b0f0f; }
-.btn-orga { background: var(--red-blood); border-color: var(--red-blood); }
-.btn-orga:hover { background: #6b0f0f; }
+.btn-danger { background: var(--red-blood); color: #fff; }
+.btn-danger:hover { background: #991b1b; }
+.btn-orga { background: var(--ink); }
+.btn-orga:hover { background: #334155; }
 .btn-ghost {
   background: transparent;
   border: 1px solid var(--border);
@@ -150,28 +153,28 @@ input:-webkit-autofill:focus {
   font-family: 'Cinzel', serif;
   font-size: 0.75rem;
   cursor: pointer;
-  border-radius: 2px;
-  transition: background 0.2s;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
 }
-.btn-ghost:hover { background: rgba(154,123,47,0.15); }
+.btn-ghost:hover { background: #f1f5f9; color: var(--ink); }
 
 /* ── MESSAGES ── */
 .msg-error {
-  background: rgba(139,26,26,0.12);
-  border: 1px solid var(--red-blood);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
   color: var(--red-blood);
   padding: 8px 14px;
-  border-radius: 2px;
+  border-radius: 4px;
   font-size: 0.9rem;
   margin-top: 10px;
   display: none;
 }
 .msg-success {
-  background: rgba(47,100,47,0.12);
-  border: 1px solid #3a6b3a;
-  color: #2a4a2a;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
   padding: 8px 14px;
-  border-radius: 2px;
+  border-radius: 4px;
   font-size: 0.9rem;
   margin-top: 10px;
   display: none;
@@ -184,24 +187,25 @@ input:-webkit-autofill:focus {
   align-items: center;
   margin-bottom: 20px;
   padding: 10px 16px;
-  background: rgba(30,15,5,0.7);
-  border: 1px solid var(--gold);
-  color: var(--parchment);
+  background: rgba(255,255,255,0.95);
+  border-radius: 6px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  color: var(--ink);
 }
-.logout-bar span { font-family: 'Cinzel', serif; font-size: 0.78rem; letter-spacing: 1px; }
+.logout-bar span { font-family: 'Cinzel', serif; font-size: 0.78rem; letter-spacing: 1px; font-weight: 600; }
 
 /* ── ONGLETS ── */
 .tab-switch {
   display: flex;
   margin-bottom: 24px;
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: 4px;
   overflow: hidden;
 }
 .tab-switch button {
   flex: 1;
   padding: 10px;
-  background: rgba(160,120,40,0.1);
+  background: #f8fafc;
   border: none;
   border-right: 1px solid var(--border);
   font-family: 'Cinzel', serif;
@@ -212,7 +216,7 @@ input:-webkit-autofill:focus {
   transition: background 0.2s, color 0.2s;
 }
 .tab-switch button:last-child { border-right: none; }
-.tab-switch button.active { background: var(--gold); color: #fff; font-weight: 600; }
+.tab-switch button.active { background: var(--ink); color: #fff; font-weight: 600; }
 
 /* ── FILTRE ── */
 .filter-bar {
@@ -228,35 +232,36 @@ input:-webkit-autofill:focus {
 .events-grid { display: flex; flex-direction: column; gap: 18px; }
 .event-card {
   border: 1px solid var(--border);
-  background: rgba(255,255,255,0.12);
+  background: #ffffff;
+  border-radius: 6px;
   transition: box-shadow 0.2s, transform 0.15s;
 }
-.event-card:hover { box-shadow: 0 4px 20px var(--shadow); transform: translateY(-1px); }
+.event-card:hover { box-shadow: 0 8px 24px var(--shadow); transform: translateY(-2px); }
 .event-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   padding: 16px 20px 12px;
-  border-bottom: 1px solid rgba(107,76,30,0.25);
+  border-bottom: 1px solid #f1f5f9;
   gap: 12px;
   flex-wrap: wrap;
 }
 .event-card-titre {
   font-family: 'Cinzel', serif;
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-size: 1.15rem;
+  font-weight: 700;
   color: var(--ink);
   flex: 1;
 }
 .event-card-type {
   display: inline-block;
-  padding: 3px 12px;
-  border: 1px solid var(--border);
-  border-radius: 2px;
+  padding: 4px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
   font-family: 'Cinzel', serif;
   font-size: 0.68rem;
   letter-spacing: 1px;
-  background: rgba(154,123,47,0.15);
+  background: #f8fafc;
   color: var(--ink-light);
   white-space: nowrap;
 }
@@ -278,51 +283,51 @@ input:-webkit-autofill:focus {
 .event-description {
   font-family: 'IM Fell English', serif;
   font-style: italic;
-  font-size: 0.97rem;
+  font-size: 1.05rem;
   color: var(--ink);
   line-height: 1.75;
   padding: 0 20px 14px;
-  border-bottom: 1px solid rgba(107,76,30,0.15);
+  border-bottom: 1px solid #f1f5f9;
 }
 .event-card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px 14px;
+  padding: 12px 20px 16px;
   gap: 10px;
   flex-wrap: wrap;
 }
 .jauge-wrap { display: flex; align-items: center; gap: 8px; }
-.jauge-bar { width: 120px; height: 6px; background: rgba(107,76,30,0.2); border-radius: 3px; overflow: hidden; }
-.jauge-fill { height: 100%; background: var(--gold); border-radius: 3px; transition: width 0.4s; }
+.jauge-bar { width: 120px; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+.jauge-fill { height: 100%; background: #94a3b8; border-radius: 3px; transition: width 0.4s; }
 .jauge-fill.complet { background: var(--red-blood); }
 .jauge-text { font-family: 'Cinzel', serif; font-size: 0.72rem; color: var(--ink-light); white-space: nowrap; }
 .badge-attente {
-  background: rgba(139,26,26,0.12);
-  border: 1px solid var(--red-blood);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
   color: var(--red-blood);
   font-family: 'Cinzel', serif;
   font-size: 0.68rem;
   letter-spacing: 1px;
-  padding: 2px 10px;
-  border-radius: 2px;
+  padding: 3px 10px;
+  border-radius: 4px;
 }
 .badge-inscrit {
-  background: rgba(47,100,47,0.12);
-  border: 1px solid #3a6b3a;
-  color: #2a4a2a;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
   font-family: 'Cinzel', serif;
   font-size: 0.68rem;
   letter-spacing: 1px;
-  padding: 2px 10px;
-  border-radius: 2px;
+  padding: 3px 10px;
+  border-radius: 4px;
 }
 
 /* ── ESPACE JOUEUR — ONGLETS ── */
 .joueur-tabs {
   display: flex;
   gap: 0;
-  border-bottom: 2px solid var(--gold);
+  border-bottom: 2px solid var(--border);
   margin-bottom: 28px;
 }
 .joueur-tab-btn {
@@ -341,7 +346,7 @@ input:-webkit-autofill:focus {
   position: relative;
 }
 .joueur-tab-btn:hover { color: var(--ink); }
-.joueur-tab-btn.active { color: var(--red-blood); border-bottom-color: var(--red-blood); font-weight: 600; }
+.joueur-tab-btn.active { color: var(--ink); border-bottom-color: var(--ink); font-weight: 700; }
 .notif-dot {
   position: absolute;
   top: 4px;
@@ -363,28 +368,28 @@ input:-webkit-autofill:focus {
 }
 .msg-bubble {
   max-width: 80%;
-  padding: 10px 14px;
-  border-radius: 2px;
+  padding: 12px 16px;
+  border-radius: 6px;
   font-family: 'Crimson Text', serif;
   font-size: 1rem;
   line-height: 1.6;
 }
 .msg-bubble.joueur {
   align-self: flex-end;
-  background: rgba(154,123,47,0.15);
+  background: #f8fafc;
   border: 1px solid var(--border);
 }
 .msg-bubble.orga {
   align-self: flex-start;
-  background: rgba(139,26,26,0.08);
-  border: 1px solid rgba(139,26,26,0.2);
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
 }
 .msg-bubble-meta {
   font-family: 'Cinzel', serif;
   font-size: 0.65rem;
   letter-spacing: 1px;
   color: var(--ink-light);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 .msg-input-zone {
   display: flex;
@@ -401,19 +406,19 @@ input:-webkit-autofill:focus {
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--ink-light);
-  border-bottom: 2px solid var(--gold);
-  padding: 8px 10px;
+  border-bottom: 2px solid var(--border);
+  padding: 10px 10px;
   text-align: left;
 }
-.orga-table td { padding: 8px 10px; border-bottom: 1px solid rgba(107,76,30,0.2); vertical-align: middle; }
-.orga-table tr:hover td { background: rgba(154,123,47,0.06); }
+.orga-table td { padding: 10px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+.orga-table tr:hover td { background: #f8fafc; }
 .orga-toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
 
 /* ── MODALES ── */
 .modal-overlay {
   display: none;
   position: fixed; inset: 0;
-  background: rgba(10,5,2,0.78);
+  background: rgba(15, 23, 42, 0.85); /* Fond nuit pour faire ressortir la modale */
   z-index: 100;
   align-items: center;
   justify-content: center;
@@ -421,9 +426,10 @@ input:-webkit-autofill:focus {
 }
 .modal-overlay.open { display: flex; }
 .modal-box {
-  background: var(--parchment) var(--bg-img) center/cover;
-  border: 2px solid var(--border);
-  box-shadow: 0 0 0 1px var(--gold), 0 12px 48px rgba(0,0,0,0.6);
+  background: var(--parchment);
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 15px 50px rgba(0,0,0,0.4);
   padding: 30px 34px;
   max-width: 520px;
   width: 100%;
@@ -434,26 +440,27 @@ input:-webkit-autofill:focus {
 .modal-box-wide { max-width: 660px; }
 .modal-title {
   font-family: 'Cinzel', serif;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   font-weight: 700;
   margin-bottom: 20px;
   color: var(--ink);
   text-align: center;
 }
-.modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 1.4rem; color: var(--ink-light); cursor: pointer; }
+.modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 1.4rem; color: var(--ink-light); cursor: pointer; transition: color 0.2s; }
+.modal-close:hover { color: var(--red-blood); }
 
 /* ── TOAST ── */
 .toast {
   position: fixed;
   bottom: 24px; right: 24px;
   background: var(--ink);
-  color: var(--parchment);
-  border: 1px solid var(--gold);
+  color: #ffffff;
+  border-radius: 4px;
   padding: 12px 22px;
   font-family: 'Cinzel', serif;
   font-size: 0.8rem;
   letter-spacing: 1px;
-  box-shadow: 0 4px 20px var(--shadow);
+  box-shadow: 0 10px 30px var(--shadow);
   z-index: 200;
   opacity: 0;
   transform: translateY(10px);
@@ -468,13 +475,13 @@ input:-webkit-autofill:focus {
   font-family: 'Cinzel', serif;
   font-size: 0.7rem;
   letter-spacing: 1px;
-  color: rgba(200,180,140,0.3);
+  color: rgba(255,255,255,0.5);
   cursor: pointer;
   border: none;
   background: none;
   transition: color 0.2s;
 }
-.footer-orga-link:hover { color: var(--gold-light); }
+.footer-orga-link:hover { color: #ffffff; }
 
 /* ── ÉTAT VIDE ── */
 .empty-state {
@@ -520,35 +527,23 @@ input:-webkit-autofill:focus {
   .orga-table th:nth-child(4), .orga-table td:nth-child(4) { display: none; }
   
   /* --- CORRECTION DU TABLEAU ORGA SUR MOBILE --- */
-  .orga-table { font-size: 0.75rem; } /* Texte un peu plus petit */
-  .orga-table th, .orga-table td { padding: 6px 4px; } /* Moins de marges internes */
+  .orga-table { font-size: 0.75rem; } 
+  .orga-table th, .orga-table td { padding: 6px 4px; } 
   
   /* Aligne les boutons proprement en colonne */
   .orga-table td:last-child { 
-    display: flex; 
+    display: flex;
     flex-direction: column; 
     gap: 6px; 
   }
   .orga-table td:last-child .btn { 
     padding: 6px 4px; 
-    font-size: 0.6rem; 
+    font-size: 0.6rem;
     letter-spacing: 0px; 
     text-align: center; 
     width: 100%;
   }
 }
-
-  .badge-attente {
-  background: rgba(154, 123, 47, 0.12);
-  border: 1px solid var(--gold);
-  color: var(--gold);
-  font-family: 'Cinzel', serif;
-  font-size: 0.75rem;
-  padding: 4px 12px;
-  border-radius: 2px;
-  letter-spacing: 1px;
-}
-  
 </style>
 </head>
 <body>
@@ -561,11 +556,12 @@ input:-webkit-autofill:focus {
     </div>
     <div class="parchment">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-        <div style="font-family:'Cinzel',serif;font-size:1.05rem;font-weight:600;letter-spacing:2px;color:var(--ink)">Événements à venir</div>
+        <div style="font-family:'Cinzel',serif;font-size:1.15rem;font-weight:700;letter-spacing:2px;color:var(--ink)">Événements à venir</div>
         <div id="header-user-zone"></div>
       </div>
       <div class="filter-bar">
         <input type="text" id="search-input" placeholder="Rechercher un événement..." oninput="filterEvents()" autocomplete="one-time-code" name="search-fantasy-unique-id" spellcheck="false">
+ 
         <select id="filter-type" onchange="filterEvents()">
           <option value="">Tous les types</option>
           <option value="Assemblée générale">Assemblée générale</option>
@@ -574,14 +570,16 @@ input:-webkit-autofill:focus {
           <option value="Atelier craft">Atelier craft</option>
           <option value="Autre">Autre</option>
           <option value="Grandeur nature">Grandeur nature</option>
-          <option value="Inventaire/Rangement">Inventaire/Rangement</option>
+  
+         <option value="Inventaire/Rangement">Inventaire/Rangement</option>
           <option value="Jeepform">Jeepform</option>
           <option value="Jeu de rôles sur tables">Jeu de rôles sur tables</option>
           <option value="Jeu de société">Jeu de société</option>
           <option value="Jeu immersif">Jeu immersif</option>
           <option value="Jeux sportif">Jeux sportif</option>
           <option value="Murder party">Murder party</option>
-          <option value="Repas">Repas</option>
+       
+    <option value="Repas">Repas</option>
           <option value="Réunion">Réunion</option>
         </select>
       </div>
@@ -597,7 +595,8 @@ input:-webkit-autofill:focus {
   <div id="joueur-screen" style="display:none">
     <div class="logout-bar">
       <span id="joueur-screen-label">⚔ Mon Espace</span>
-      <div style="display:flex;gap:8px">
+   
+    <div style="display:flex;gap:8px">
         <button class="btn btn-sm" onclick="retourAccueil()">← Événements</button>
         <button class="btn btn-sm btn-danger" onclick="logoutJoueur()">Déconnexion</button>
       </div>
@@ -608,6 +607,7 @@ input:-webkit-autofill:focus {
         <button class="joueur-tab-btn" id="jtab-messages" onclick="showJoueurTab('messages', this)">
           Messages
           <span class="notif-dot" id="notif-msg-dot" style="display:none"></span>
+ 
         </button>
       </div>
 
@@ -621,7 +621,8 @@ input:-webkit-autofill:focus {
         <div class="messages-fil" id="messages-fil">
           <div class="empty-state">Chargement…</div>
         </div>
-        <div class="msg-input-zone">
+        
+ <div class="msg-input-zone">
           <textarea id="msg-nouveau" placeholder="Écrivez votre message à l'orga…"></textarea>
           <button class="btn btn-sm" onclick="envoyerMessage()">Envoyer</button>
         </div>
@@ -647,7 +648,8 @@ input:-webkit-autofill:focus {
       </div>
 
       <div id="orga-tab-events">
-        <div class="orga-toolbar">
+       
+  <div class="orga-toolbar">
           <button class="btn btn-sm" onclick="openModalCreateEvent()">+ Nouvel événement</button>
           <input type="text" id="orga-search" placeholder="Filtrer…" style="max-width:220px;margin-left:auto" oninput="filterOrgaEvents(this.value)" autocomplete="new-password" onfocus="this.value=''">
         </div>
@@ -656,7 +658,8 @@ input:-webkit-autofill:focus {
             <tr><th>Titre</th><th>Début</th><th>Lieu</th><th>Type</th><th>Places</th><th>Actions</th></tr>
           </thead>
           <tbody id="orga-events-body">
-            <tr><td colspan="6" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement…</td></tr>
+      
+       <tr><td colspan="6" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement…</td></tr>
           </tbody>
         </table>
       </div>
@@ -666,7 +669,8 @@ input:-webkit-autofill:focus {
           <label style="text-transform:none;font-size:0.9rem;margin-bottom:0">Conversation avec :</label>
           <select id="orga-joueur-select" onchange="loadOrgaConversation(this.value)" style="max-width:280px">
             <option value="">— Sélectionner un joueur —</option>
-          </select>
+        
+   </select>
         </div>
         <div class="messages-fil" id="orga-messages-fil">
           <div class="empty-state">Sélectionnez un joueur pour voir la conversation.</div>
@@ -675,7 +679,8 @@ input:-webkit-autofill:focus {
           <textarea id="orga-msg-nouveau" placeholder="Réponse à ce joueur…"></textarea>
           <button class="btn btn-sm" onclick="envoyerMessageOrga()">Répondre</button>
         </div>
-        <div class="msg-error" id="err-orga-msg"></div>
+        
+ <div class="msg-error" id="err-orga-msg"></div>
       </div>
     </div>
   </div>
@@ -686,7 +691,7 @@ input:-webkit-autofill:focus {
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('modal-auth')">✕</button>
     <div class="modal-title" id="modal-auth-titre">Rejoindre Faérie</div>
-    <div id="auth-context" style="display:none;font-family:'IM Fell English',serif;font-style:italic;text-align:center;color:var(--ink-light);font-size:1rem;margin-bottom:16px;padding:10px 14px;border:1px solid var(--border);border-radius:2px;background:rgba(154,123,47,0.08)"></div>
+    <div id="auth-context" style="display:none;font-family:'IM Fell English',serif;font-style:italic;text-align:center;color:var(--ink-light);font-size:1rem;margin-bottom:16px;padding:10px 14px;border:1px solid var(--border);border-radius:4px;background:#f8fafc"></div>
     <div class="tab-switch">
       <button class="active" id="tab-connexion" onclick="switchAuthTab('connexion')">Se connecter</button>
       <button id="tab-inscription" onclick="switchAuthTab('inscription')">Créer un compte</button>
@@ -704,6 +709,7 @@ input:-webkit-autofill:focus {
       </div>
       <div class="form-group"><label>Adresse e-mail</label><input type="email" id="reg-email" placeholder="votre@email.com"></div>
       <div class="form-group"><label>Mot de passe</label><input type="password" id="reg-mdp" placeholder="••••••••" onkeydown="if(event.key==='Enter') doRegister()"></div>
+ 
       <button class="btn btn-full" onclick="doRegister()">Créer mon compte</button>
       <div class="msg-error" id="err-reg"></div><div class="msg-success" id="ok-reg"></div>
     </div>
@@ -751,7 +757,8 @@ input:-webkit-autofill:focus {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
       <div class="form-group"><label>Lieu</label><input type="text" id="e-lieu" placeholder="Adresse ou lieu-dit"></div>
       <div class="form-group">
-        <label>Type</label>
+      
+  <label>Type</label>
         <select id="e-type">
           <option value="Assemblée générale">Assemblée générale</option>
           <option value="Atelier bricolage">Atelier bricolage</option>
@@ -760,14 +767,16 @@ input:-webkit-autofill:focus {
           <option value="Autre">Autre</option>
           <option value="Grandeur nature">Grandeur nature</option>
           <option value="Inventaire/Rangement">Inventaire/Rangement</option>
-          <option value="Jeepform">Jeepform</option>
+  
+        <option value="Jeepform">Jeepform</option>
           <option value="Jeu de rôles sur tables">Jeu de rôles sur tables</option>
           <option value="Jeu de société">Jeu de société</option>
           <option value="Jeu immersif">Jeu immersif</option>
           <option value="Jeux sportif">Jeux sportif</option>
           <option value="Murder party">Murder party</option>
           <option value="Repas">Repas</option>
-          <option value="Réunion">Réunion</option>
+       
+   <option value="Réunion">Réunion</option>
         </select>
       </div>
     </div>
@@ -797,20 +806,19 @@ const state = {
   user: null, events: [], orgaEvents: [], mesInscriptions: [], mesInscriptionsData: [],
   pendingEventId: null, pendingEventTitre: null, pendingEventDispo: null, currentOrgaUserId: null
 };
-
 // ════════════════════════════════════════════════════
 //  HELPERS DATE
 // ════════════════════════════════════════════════════
 function formatDatetime(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
-  return d.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'long', year: 'numeric' }) + ' à ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+return d.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'long', year: 'numeric' }) + ' à ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 function toLocalInput(iso) {
   if (!iso) return '';
   const d = new Date(iso);
   const pad = n => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 // ════════════════════════════════════════════════════
@@ -818,35 +826,35 @@ function toLocalInput(iso) {
 // ════════════════════════════════════════════════════
 async function loadPublicEvents() {
   const grid = document.getElementById('public-events-grid');
-  try {
+try {
     const today = new Date();
-today.setHours(0, 0, 0, 0); // On prend à partir de minuit ce matin
+today.setHours(0, 0, 0, 0);
+// On prend à partir de minuit ce matin
 const { data: events } = await sb.from('evenements').select('*').gte('date_debut', today.toISOString()).order('date_debut', { ascending: true });
-    const { data: allInscriptions } = await sb.from('inscriptions').select('event_id');
+const { data: allInscriptions } = await sb.from('inscriptions').select('event_id');
     
     state.events = (events || []).map(ev => {
       const occupes = (allInscriptions || []).filter(i => i.event_id === ev.id).length;
       ev.places_reelles_dispo = ev.places_totales - occupes;
       return ev;
     });
-
-    if (state.user) {
+if (state.user) {
       const { data: inscr } = await sb.from('inscriptions').select('event_id').eq('user_id', state.user.id);
-      state.mesInscriptions = (inscr || []).map(i => i.event_id);
+state.mesInscriptions = (inscr || []).map(i => i.event_id);
       const { data: attente } = await sb.from('liste_attente').select('event_id').eq('user_id', state.user.id);
-      state.maListeAttente = (attente || []).map(i => i.event_id);
+state.maListeAttente = (attente || []).map(i => i.event_id);
     }
     renderPublicEvents(state.events);
   } catch(e) { 
-    console.error(e); 
-    if (grid) grid.innerHTML = `<div class="empty-state">Erreur de chargement.</div>`;
+    console.error(e);
+if (grid) grid.innerHTML = `<div class="empty-state">Erreur de chargement.</div>`;
   }
 }
 
 function filterEvents() {
   const q = document.getElementById('search-input').value.toLowerCase();
   const type = document.getElementById('filter-type').value;
-  renderPublicEvents(state.events.filter(ev =>
+renderPublicEvents(state.events.filter(ev =>
     (!q || ev.titre.toLowerCase().includes(q) || (ev.lieu || '').toLowerCase().includes(q)) &&
     (!type || ev.type === type)
   ));
@@ -854,7 +862,8 @@ function filterEvents() {
 
 function renderPublicEvents(list) {
   const grid = document.getElementById('public-events-grid');
-  if (!list.length) { grid.innerHTML = '<div class="empty-state">Aucun événement à venir.</div>'; return; }
+  if (!list.length) { grid.innerHTML = '<div class="empty-state">Aucun événement à venir.</div>'; return;
+}
 
   grid.innerHTML = list.map(ev => {
     const placesTot   = ev.places_totales || 0;
@@ -863,7 +872,8 @@ function renderPublicEvents(list) {
     const complet     = placesDispo <= 0;
     const inscrit     = state.mesInscriptions.includes(ev.id);
     const enAttente   = state.maListeAttente && state.maListeAttente.includes(ev.id);
-    const debut       = ev.date_debut ? formatDatetime(ev.date_debut) : (ev.date ? new Date(ev.date).toLocaleDateString('fr-FR') : '—');
+    const debut       = ev.date_debut 
+? formatDatetime(ev.date_debut) : (ev.date ? new Date(ev.date).toLocaleDateString('fr-FR') : '—');
     const fin         = ev.date_fin ? formatDatetime(ev.date_fin) : null;
 
     let btnHtml = '';
@@ -873,59 +883,66 @@ function renderPublicEvents(list) {
       const btnClass = 'btn btn-sm' + (complet ? ' btn-danger' : '');
       const btnLabel = complet ? "Liste d'attente" : "S'inscrire";
       btnHtml = `<button class="${btnClass}" onclick="handleInscriptionClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${placesDispo})">${btnLabel}</button>`;
-    }
+}
 
     return `
     <div class="event-card">
-      <div class="event-card-header"><div class="event-card-titre">${ev.titre}</div><div class="event-card-type">${ev.type || '—'}</div></div>
+      <div class="event-card-header"><div class="event-card-titre">${ev.titre}</div><div class="event-card-type">${ev.type ||
+'—'}</div></div>
       <div class="event-card-body">
         <div class="event-info-item"><span class="event-info-label">Début</span><span class="event-info-val"> ${debut}</span></div>
-        ${fin ? `<div class="event-info-item"><span class="event-info-label">Fin</span><span class="event-info-val"> ${fin}</span></div>` : '<div></div>'}
-        <div class="event-info-item"><span class="event-info-label">Lieu</span><span class="event-info-val">📍 ${ev.lieu || '—'}</span></div>
-        <div class="event-info-item"><span class="event-info-label">Organisateurs</span><span class="event-info-val">${ev.organisateurs || '—'}</span></div>
+        ${fin ?
+`<div class="event-info-item"><span class="event-info-label">Fin</span><span class="event-info-val"> ${fin}</span></div>` : '<div></div>'}
+        <div class="event-info-item"><span class="event-info-label">Lieu</span><span class="event-info-val">📍 ${ev.lieu ||
+'—'}</span></div>
+        <div class="event-info-item"><span class="event-info-label">Organisateurs</span><span class="event-info-val">${ev.organisateurs ||
+'—'}</span></div>
       </div>
-      ${ev.description ? `<div class="event-description">${ev.description}</div>` : ''}
+      ${ev.description ?
+`<div class="event-description">${ev.description}</div>` : ''}
       <div class="event-card-footer">
         <div class="jauge-wrap">
           <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
           <span class="jauge-text">${placesDispo} / ${placesTot}</span>
-          ${complet && !inscrit && !enAttente ? '<span class="badge-attente" style="background:rgba(139,26,26,0.12); color:var(--red-blood); border-color:var(--red-blood);">COMPLET</span>' : ''}
+          ${complet && !inscrit && !enAttente ?
+'<span class="badge-attente" style="background:#fef2f2; color:var(--red-blood); border-color:#fecaca;">COMPLET</span>' : ''}
         </div>
         ${btnHtml}
       </div>
     </div>`;
-  }).join('');
+}).join('');
 }
 
 // ════════════════════════════════════════════════════
 //  INSCRIPTION / DESINSCRIPTION
 // ════════════════════════════════════════════════════
 function handleInscriptionClick(eventId, titre, placesDispo) {
-  state.pendingEventId = eventId; state.pendingEventTitre = titre; state.pendingEventDispo = placesDispo;
+  state.pendingEventId = eventId; state.pendingEventTitre = titre;
+state.pendingEventDispo = placesDispo;
   if (!state.user) {
     document.getElementById('auth-context').style.display = '';
-    document.getElementById('auth-context').textContent = `Pour vous inscrire à « ${titre} », connectez-vous ou créez un compte.`;
+document.getElementById('auth-context').textContent = `Pour vous inscrire à « ${titre} », connectez-vous ou créez un compte.`;
     document.getElementById('modal-auth-titre').textContent = 'Connexion requise';
     switchAuthTab('connexion'); openModal('modal-auth');
-  } else { ouvrirConfirmInscription(); }
+} else { ouvrirConfirmInscription(); }
 }
 
 function ouvrirConfirmInscription() {
   const detail = document.getElementById('modal-insc-detail');
   const titre = document.getElementById('modal-insc-titre');
   const footer = document.getElementById('modal-insc-footer');
-  titre.textContent = state.pendingEventTitre;
+titre.textContent = state.pendingEventTitre;
   
   if (state.pendingEventDispo > 0) {
     detail.innerHTML = `Il reste <strong>${state.pendingEventDispo} place(s)</strong>.<br>Que souhaitez-vous faire ?`;
-    footer.innerHTML = `<button class="btn" onclick="confirmInscription('officielle')">S'inscrire</button>
+footer.innerHTML = `<button class="btn" onclick="confirmInscription('officielle')">S'inscrire</button>
                         <button class="btn-ghost" onclick="confirmInscription('attente')">Liste d'attente</button>
                         <button class="btn-ghost" onclick="closeModal('modal-inscription')">Annuler</button>`;
-  } else {
+} else {
     detail.innerHTML = `L'événement est <strong>complet</strong>. Voulez-vous rejoindre la liste d'attente ?`;
-    footer.innerHTML = `<button class="btn" onclick="confirmInscription('attente')">Rejoindre la liste d'attente</button>
+footer.innerHTML = `<button class="btn" onclick="confirmInscription('attente')">Rejoindre la liste d'attente</button>
                         <button class="btn-ghost" onclick="closeModal('modal-inscription')">Annuler</button>`;
-  }
+}
   hideMsg('err-insc'); hideMsg('ok-insc'); openModal('modal-inscription');
 }
 
@@ -933,39 +950,39 @@ async function confirmInscription(typeChoisi) {
   try {
     if (typeChoisi === 'officielle') {
       const { error } = await sb.from('inscriptions').insert({ event_id: state.pendingEventId, user_id: state.user.id });
-      if (error) throw error;
+if (error) throw error;
       showToast('✦ Inscription confirmée !');
     } else {
       const { error } = await sb.from('liste_attente').insert({ event_id: state.pendingEventId, user_id: state.user.id });
-      if (error) throw error;
+if (error) throw error;
       showToast("⚠ Ajouté·e à la liste d'attente");
     }
     closeModal('modal-inscription'); await loadPublicEvents();
-  } catch(e) { showMsg('err-insc', e.message.includes('23505') ? 'Déjà inscrit·e !' : e.message); }
+} catch(e) { showMsg('err-insc', e.message.includes('23505') ? 'Déjà inscrit·e !' : e.message);
+}
 }
 
 async function seDesinscrire(eventId) {
   if (!confirm('Confirmer la désinscription ?')) return;
   try {
     showToast('Sorcier à l\'œuvre...');
-    
-    // On demande à Supabase de retirer le joueur des deux tables au cas où
+// On demande à Supabase de retirer le joueur des deux tables au cas où
     await sb.from('inscriptions').delete().eq('event_id', eventId).eq('user_id', state.user.id);
-    await sb.from('liste_attente').delete().eq('event_id', eventId).eq('user_id', state.user.id);
+await sb.from('liste_attente').delete().eq('event_id', eventId).eq('user_id', state.user.id);
     
     showToast('✦ Désinscription réussie');
     
     // On met à jour la mémoire locale du site
     state.mesInscriptions = state.mesInscriptions.filter(id => id !== eventId);
-    state.maListeAttente = state.maListeAttente.filter(id => id !== eventId);
+state.maListeAttente = state.maListeAttente.filter(id => id !== eventId);
     
     // On rafraîchit l'affichage
     await loadMesInscriptions(); 
     await loadPublicEvents();
-  } catch (e) { 
+} catch (e) { 
     console.error(e); 
     alert("Erreur lors de la désinscription.");
-  }
+}
 }
 
 // ════════════════════════════════════════════════════
@@ -973,7 +990,7 @@ async function seDesinscrire(eventId) {
 // ════════════════════════════════════════════════════
 function ouvrirEspaceJoueur() {
   const prenom = state.user.user_metadata?.prenom || state.user.email;
-  document.getElementById('joueur-screen-label').textContent = `⚔ Espace de ${prenom}`;
+document.getElementById('joueur-screen-label').textContent = `⚔ Espace de ${prenom}`;
   document.getElementById('public-screen').style.display = 'none';
   document.getElementById('joueur-screen').style.display = '';
   showJoueurTab('inscriptions', document.getElementById('jtab-inscriptions'));
@@ -985,26 +1002,24 @@ function retourAccueil() { document.getElementById('joueur-screen').style.displa
 function showJoueurTab(tab, btn) {
   document.querySelectorAll('.joueur-tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('joueur-tab-inscriptions').style.display = tab === 'inscriptions' ? '' : 'none';
+document.getElementById('joueur-tab-inscriptions').style.display = tab === 'inscriptions' ? '' : 'none';
   document.getElementById('joueur-tab-messages').style.display = tab === 'messages' ? '' : 'none';
-  if (tab === 'messages') { loadMessages(); }
+if (tab === 'messages') { loadMessages(); }
 }
 
 async function loadMesInscriptions() {
   const grid = document.getElementById('mes-inscriptions-grid');
   grid.innerHTML = '<div class="empty-state">Chargement…</div>';
-  try {
+try {
     // On regroupe les événements où le joueur est inscrit ET ceux en attente
     const allIds = [...new Set([...state.mesInscriptions, ...state.maListeAttente])];
-    
-    if (!allIds.length) { 
-      grid.innerHTML = '<div class="empty-state">Vous n\'êtes inscrit·e à aucun événement pour l\'instant.</div>'; 
-      return; 
+if (!allIds.length) { 
+      grid.innerHTML = '<div class="empty-state">Vous n\'êtes inscrit·e à aucun événement pour l\'instant.</div>';
+return; 
     }
     
     const { data: evs } = await sb.from('evenements').select('*').in('id', allIds).order('date_debut', { ascending: true });
-    
-    grid.innerHTML = (evs || []).map(ev => {
+grid.innerHTML = (evs || []).map(ev => {
       const debut = ev.date_debut ? formatDatetime(ev.date_debut) : '—';
       const enAttente = state.maListeAttente.includes(ev.id);
       const badge = enAttente ? '<span class="badge-attente">⏳ Vous êtes sur la liste d\'attente</span>' : '<span class="badge-inscrit">✦ Inscrit·e</span>';
@@ -1014,12 +1029,13 @@ async function loadMesInscriptions() {
         <div class="event-card-header"><div class="event-card-titre">${ev.titre}</div></div>
         <div class="event-card-body"><div class="event-info-item"><span class="event-info-label">Début</span><span class="event-info-val">📅 ${debut}</span></div></div>
         <div class="event-card-footer">
-          ${badge}
+    
+      ${badge}
           <button class="btn-ghost btn-sm" onclick="seDesinscrire('${ev.id}')">Se désinscrire</button>
         </div>
       </div>`;
     }).join('');
-  } catch (e) { console.error(e); }
+} catch (e) { console.error(e); }
 }
 
 // ════════════════════════════════════════════════════
@@ -1027,84 +1043,91 @@ async function loadMesInscriptions() {
 // ════════════════════════════════════════════════════
 async function loadMessages() {
   const fil = document.getElementById('messages-fil');
-  fil.innerHTML = '<div class="empty-state">Chargement…</div>';
+fil.innerHTML = '<div class="empty-state">Chargement…</div>';
   try {
     const { data, error } = await sb.from('messages').select('*').eq('user_id', state.user.id).order('created_at', { ascending: true });
-    if (error) throw error;
-    if (!data.length) { fil.innerHTML = '<div class="empty-state">Aucun message pour l\'instant.</div>'; return; }
+if (error) throw error;
+    if (!data.length) { fil.innerHTML = '<div class="empty-state">Aucun message pour l\'instant.</div>'; return;
+}
     fil.innerHTML = data.map(m => {
       const date = new Date(m.created_at).toLocaleString('fr-FR');
       const side = m.auteur === 'orga' ? 'orga' : 'joueur';
       const label = m.auteur === 'orga' ? '⚔ Organisateur' : '✦ Vous';
       return `<div class="msg-bubble ${side}"><div class="msg-bubble-meta">${label} — ${date}</div>${m.contenu}</div>`;
     }).join('');
-    fil.scrollTop = fil.scrollHeight;
+fil.scrollTop = fil.scrollHeight;
     await sb.from('messages').update({ lu_joueur: true }).eq('user_id', state.user.id).eq('lu_joueur', false);
     document.getElementById('notif-msg-dot').style.display = 'none';
-  } catch(e) { console.error(e); }
+  } catch(e) { console.error(e);
+}
 }
 
 async function checkNouveauxMessages() {
   if (!state.user) return;
   const { data } = await sb.from('messages').select('id').eq('user_id', state.user.id).eq('lu_joueur', false).eq('auteur', 'orga');
-  const dot = document.getElementById('notif-msg-dot');
+const dot = document.getElementById('notif-msg-dot');
   if (dot) dot.style.display = (data && data.length > 0) ? '' : 'none';
 }
 
 async function envoyerMessage() {
   const contenu = document.getElementById('msg-nouveau').value.trim();
   if (!contenu) return;
-  try {
+try {
     await sb.from('messages').insert({ user_id: state.user.id, auteur: 'joueur', contenu, lu_orga: false, lu_joueur: true });
     document.getElementById('msg-nouveau').value = '';
-    await loadMessages(); showToast('✦ Message envoyé !');
-  } catch(e) { console.error(e); }
+await loadMessages(); showToast('✦ Message envoyé !');
+  } catch(e) { console.error(e);
+}
 }
 
 async function loadOrgaMessagerie() {
   const { data } = await sb.from('messages').select('user_id, auteur, lu_orga').order('created_at', { ascending: false });
-  if (!data) return;
+if (!data) return;
   const joueurs = {};
   for (const m of data) {
     if (!joueurs[m.user_id]) joueurs[m.user_id] = { nonLus: 0 };
-    if (m.auteur === 'joueur' && !m.lu_orga) joueurs[m.user_id].nonLus++;
+if (m.auteur === 'joueur' && !m.lu_orga) joueurs[m.user_id].nonLus++;
   }
   const sel = document.getElementById('orga-joueur-select');
-  sel.innerHTML = '<option value="">— Sélectionner un joueur —</option>' + Object.keys(joueurs).map(uid => `<option value="${uid}">${uid.substring(0,8)}… ${joueurs[uid].nonLus > 0 ? `(${joueurs[uid].nonLus} non lu)` : ''}</option>`).join('');
-  const totalNonLus = Object.values(joueurs).reduce((a, b) => a + b.nonLus, 0);
+sel.innerHTML = '<option value="">— Sélectionner un joueur —</option>' + Object.keys(joueurs).map(uid => `<option value="${uid}">${uid.substring(0,8)}… ${joueurs[uid].nonLus > 0 ? `(${joueurs[uid].nonLus} non lu)` : ''}</option>`).join('');
+const totalNonLus = Object.values(joueurs).reduce((a, b) => a + b.nonLus, 0);
   const dot = document.getElementById('notif-orga-dot');
-  if (dot) dot.style.display = totalNonLus > 0 ? '' : 'none';
+if (dot) dot.style.display = totalNonLus > 0 ? '' : 'none';
 }
 
 async function loadOrgaConversation(userId) {
   state.currentOrgaUserId = userId;
-  const fil = document.getElementById('orga-messages-fil');
+const fil = document.getElementById('orga-messages-fil');
   const replyZone = document.getElementById('orga-reply-zone');
-  if (!userId) { fil.innerHTML = '<div class="empty-state">Sélectionnez un joueur.</div>'; replyZone.style.display = 'none'; return; }
+  if (!userId) { fil.innerHTML = '<div class="empty-state">Sélectionnez un joueur.</div>'; replyZone.style.display = 'none';
+return; }
   fil.innerHTML = '<div class="empty-state">Chargement…</div>'; replyZone.style.display = '';
-  try {
+try {
     const { data } = await sb.from('messages').select('*').eq('user_id', userId).order('created_at', { ascending: true });
-    if (!data || !data.length) { fil.innerHTML = '<div class="empty-state">Aucun message.</div>'; return; }
+if (!data || !data.length) { fil.innerHTML = '<div class="empty-state">Aucun message.</div>'; return;
+}
     fil.innerHTML = data.map(m => {
       const date = new Date(m.created_at).toLocaleString('fr-FR');
       const side = m.auteur === 'orga' ? 'orga' : 'joueur';
       const label = m.auteur === 'orga' ? '⚔ Vous' : '✦ Joueur';
       return `<div class="msg-bubble ${side}"><div class="msg-bubble-meta">${label} — ${date}</div>${m.contenu}</div>`;
     }).join('');
-    fil.scrollTop = fil.scrollHeight;
+fil.scrollTop = fil.scrollHeight;
     await sb.from('messages').update({ lu_orga: true }).eq('user_id', userId).eq('auteur', 'joueur');
     await loadOrgaMessagerie();
-  } catch(e) { console.error(e); }
+  } catch(e) { console.error(e);
+}
 }
 
 async function envoyerMessageOrga() {
   const contenu = document.getElementById('orga-msg-nouveau').value.trim();
   if (!contenu || !state.currentOrgaUserId) return;
-  try {
+try {
     await sb.from('messages').insert({ user_id: state.currentOrgaUserId, auteur: 'orga', contenu, lu_orga: true, lu_joueur: false });
     document.getElementById('orga-msg-nouveau').value = '';
-    await loadOrgaConversation(state.currentOrgaUserId); showToast('✦ Réponse envoyée !');
-  } catch(e) { console.error(e); }
+await loadOrgaConversation(state.currentOrgaUserId); showToast('✦ Réponse envoyée !');
+  } catch(e) { console.error(e);
+}
 }
 
 // ════════════════════════════════════════════════════
@@ -1113,7 +1136,7 @@ async function envoyerMessageOrga() {
 function switchAuthTab(tab) {
   document.getElementById('tab-connexion').classList.toggle('active', tab === 'connexion');
   document.getElementById('tab-inscription').classList.toggle('active', tab === 'inscription');
-  document.getElementById('form-connexion').style.display = tab === 'connexion' ? '' : 'none';
+document.getElementById('form-connexion').style.display = tab === 'connexion' ? '' : 'none';
   document.getElementById('form-inscription').style.display = tab === 'inscription' ? '' : 'none';
 }
 
@@ -1121,10 +1144,10 @@ async function doLogin() {
   const email = document.getElementById('login-email').value.trim(); const mdp = document.getElementById('login-mdp').value;
   hideMsg('err-login');
   if (!email || !mdp) return;
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: mdp });
-  if (error) {
+const { data, error } = await sb.auth.signInWithPassword({ email, password: mdp });
+if (error) {
   showMsg('err-login', 'Email ou mot de passe incorrect. Si vous n\'avez pas encore de compte, cliquez sur "Créer un compte".');
-  return;
+return;
 }
   state.user = data.user; closeModal('modal-auth'); updateHeaderUserZone(); await loadPublicEvents();
   if (state.pendingEventId && !state.mesInscriptions.includes(state.pendingEventId)) ouvrirConfirmInscription();
@@ -1132,86 +1155,98 @@ async function doLogin() {
 
 async function doRegister() {
   const prenom = document.getElementById('reg-prenom').value.trim(); const nom = document.getElementById('reg-nom').value.trim();
-  const email = document.getElementById('reg-email').value.trim(); const mdp = document.getElementById('reg-mdp').value;
-  if (!prenom || !nom || !email || !mdp) { showMsg('err-reg', 'Champs obligatoires.'); return; }
+  const email = document.getElementById('reg-email').value.trim();
+const mdp = document.getElementById('reg-mdp').value;
+  if (!prenom || !nom || !email || !mdp) { showMsg('err-reg', 'Champs obligatoires.'); return;
+}
   try {
     const { data, error } = await sb.auth.signUp({ email, password: mdp, options: { data: { prenom, nom } } });
-    if (error) throw error;
+if (error) throw error;
     await sb.from('profils').upsert({ id: data.user.id, prenom, nom });
     showMsg('ok-reg', '✦ Compte créé !', 'success');
-    setTimeout(() => doLoginDirect(email, mdp), 1000);
-  } catch (err) { showMsg('err-reg', err.message); }
+setTimeout(() => doLoginDirect(email, mdp), 1000);
+  } catch (err) { showMsg('err-reg', err.message);
+}
 }
 
 async function doLoginDirect(email, password) {
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
-  if (!error) { state.user = data.user; closeModal('modal-auth'); updateHeaderUserZone(); await loadPublicEvents(); }
+if (!error) { state.user = data.user; closeModal('modal-auth'); updateHeaderUserZone(); await loadPublicEvents(); }
 }
 
-async function logoutJoueur() { await sb.auth.signOut(); state.user = null; state.mesInscriptions = []; state.maListeAttente = []; document.getElementById('joueur-screen').style.display = 'none'; document.getElementById('public-screen').style.display = ''; updateHeaderUserZone(); renderPublicEvents(state.events); }
+async function logoutJoueur() { await sb.auth.signOut(); state.user = null;
+state.mesInscriptions = []; state.maListeAttente = []; document.getElementById('joueur-screen').style.display = 'none'; document.getElementById('public-screen').style.display = ''; updateHeaderUserZone(); renderPublicEvents(state.events);
+}
 
 function updateHeaderUserZone() {
   const zone = document.getElementById('header-user-zone');
   if (state.user) {
-    zone.innerHTML = `<button class="btn-ghost" onclick="ouvrirEspaceJoueur()" style="position:relative">✦ ${state.user.user_metadata?.prenom || 'Moi'}<span id="header-notif-dot" style="display:none;position:absolute;top:2px;right:2px;width:8px;height:8px;background:var(--red-blood);border-radius:50%"></span></button><button class="btn-ghost" onclick="logoutJoueur()">Déconnexion</button>`;
+    zone.innerHTML = `<button class="btn-ghost" onclick="ouvrirEspaceJoueur()" style="position:relative">✦ ${state.user.user_metadata?.prenom ||
+'Moi'}<span id="header-notif-dot" style="display:none;position:absolute;top:2px;right:2px;width:8px;height:8px;background:var(--red-blood);border-radius:50%"></span></button><button class="btn-ghost" onclick="logoutJoueur()">Déconnexion</button>`;
     checkNouveauxMessages().then(() => { const dot = document.getElementById('notif-msg-dot'); const hdot = document.getElementById('header-notif-dot'); if (hdot && dot) hdot.style.display = dot.style.display; });
-  } else { zone.innerHTML = `<button class="btn btn-sm" onclick="openAuthModal()">Se connecter</button>`; }
+} else { zone.innerHTML = `<button class="btn btn-sm" onclick="openAuthModal()">Se connecter</button>`; }
 }
-function openAuthModal() { document.getElementById('auth-context').style.display = 'none'; document.getElementById('modal-auth-titre').textContent = 'Rejoindre Faérie'; state.pendingEventId = null; switchAuthTab('connexion'); openModal('modal-auth'); }
-function openOrgaLogin() { document.getElementById('orga-pwd').value = ''; hideMsg('err-orga'); openModal('modal-orga-auth'); }
-async function doLoginOrga() { if (document.getElementById('orga-pwd').value !== ORGA_PASSWORD) { showMsg('err-orga', 'Mot de passe incorrect.'); return; } closeModal('modal-orga-auth'); document.getElementById('public-screen').style.display = 'none'; document.getElementById('orga-screen').style.display = 'block'; showOrgaTab('events', document.getElementById('otab-events')); await loadOrgaEvents(); await loadOrgaMessagerie(); }
-function logoutOrga() { document.getElementById('orga-screen').style.display = 'none'; document.getElementById('public-screen').style.display = ''; }
-function showOrgaTab(tab, btn) { document.querySelectorAll('#orga-screen .joueur-tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); document.getElementById('orga-tab-events').style.display = tab === 'events' ? '' : 'none'; document.getElementById('orga-tab-messages').style.display = tab === 'messages' ? '' : 'none'; }
+function openAuthModal() { document.getElementById('auth-context').style.display = 'none'; document.getElementById('modal-auth-titre').textContent = 'Rejoindre Faérie';
+state.pendingEventId = null; switchAuthTab('connexion'); openModal('modal-auth'); }
+function openOrgaLogin() { document.getElementById('orga-pwd').value = ''; hideMsg('err-orga'); openModal('modal-orga-auth');
+}
+async function doLoginOrga() { if (document.getElementById('orga-pwd').value !== ORGA_PASSWORD) { showMsg('err-orga', 'Mot de passe incorrect.'); return; } closeModal('modal-orga-auth'); document.getElementById('public-screen').style.display = 'none';
+document.getElementById('orga-screen').style.display = 'block'; showOrgaTab('events', document.getElementById('otab-events')); await loadOrgaEvents(); await loadOrgaMessagerie(); }
+function logoutOrga() { document.getElementById('orga-screen').style.display = 'none'; document.getElementById('public-screen').style.display = '';
+}
+function showOrgaTab(tab, btn) { document.querySelectorAll('#orga-screen .joueur-tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); document.getElementById('orga-tab-events').style.display = tab === 'events' ? '' : 'none';
+document.getElementById('orga-tab-messages').style.display = tab === 'messages' ? '' : 'none'; }
 
 // ════════════════════════════════════════════════════
 //  VUE ORGA ÉVÉNEMENTS
 // ════════════════════════════════════════════════════
 async function loadOrgaEvents() {
-  const tbody = document.getElementById('orga-events-body'); tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Chargement…</td></tr>';
+  const tbody = document.getElementById('orga-events-body');
+tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Chargement…</td></tr>';
   const today = new Date();
 today.setHours(0, 0, 0, 0);
 const { data, error } = await sb.from('evenements').select('*').gte('date_debut', today.toISOString()).order('date_debut', { ascending: true, nullsFirst: false });
-  if (error) { tbody.innerHTML = `<tr><td colspan="6">Erreur</td></tr>`; return; }
+if (error) { tbody.innerHTML = `<tr><td colspan="6">Erreur</td></tr>`; return; }
   state.orgaEvents = data || []; renderOrgaTable(state.orgaEvents);
 }
 function renderOrgaTable(list) {
   const tbody = document.getElementById('orga-events-body');
-  if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Aucun événement.</td></tr>'; return; }
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Aucun événement.</td></tr>'; return;
+}
   tbody.innerHTML = list.map(ev => `<tr><td><strong>${ev.titre}</strong></td><td>${ev.date_debut ? new Date(ev.date_debut).toLocaleString('fr-FR') : '—'}</td><td>${ev.lieu || '—'}</td><td>${ev.type || '—'}</td><td>${ev.places_disponibles}/${ev.places_totales}</td><td><button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">👁 Inscrits</button> <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏ Modif</button> <button class="btn btn-sm btn-danger" style="padding: 6px 10px; font-size: 0.7rem;" onclick="supprimerEvent('${ev.id}')">🗑 Supprimer</button></td></tr>`).join('');
 }
 
   async function retirerParticipant(eventId, userId, table, titre) {
   if (!confirm('Voulez-vous vraiment retirer ce joueur ?')) return;
-  try {
+try {
     const { error } = await sb.from(table).delete().eq('event_id', eventId).eq('user_id', userId);
     if (error) throw error;
-    
-    showToast('✦ Joueur retiré');
+showToast('✦ Joueur retiré');
     // On met à jour la liste ouverte et le tableau orga derrière
     voirParticipants(eventId, titre);
-    loadOrgaEvents();
+loadOrgaEvents();
   } catch (e) {
     alert("Erreur : " + e.message);
-  }
+}
 }
 
 async function supprimerEvent(eventId) {
   if (!confirm('Voulez-vous vraiment supprimer cet événement ? Cette action est irréversible et supprimera toutes les inscriptions associées.')) return;
-  try {
+try {
     // 1. On vide d'abord les listes d'inscrits et d'attente pour éviter les erreurs de base de données
     await sb.from('inscriptions').delete().eq('event_id', eventId);
-    await sb.from('liste_attente').delete().eq('event_id', eventId);
+await sb.from('liste_attente').delete().eq('event_id', eventId);
     
     // 2. On supprime l'événement
     const { error } = await sb.from('evenements').delete().eq('id', eventId);
-    if (error) throw error;
+if (error) throw error;
     
     showToast('✦ Événement supprimé');
     loadOrgaEvents();
     loadPublicEvents();
   } catch (e) {
     alert("Erreur : " + e.message);
-  }
+}
 }
   
 async function voirParticipants(eventId, titre) {
@@ -1219,51 +1254,62 @@ async function voirParticipants(eventId, titre) {
   const content = document.getElementById('liste-participants-content'); 
   content.innerHTML = 'Chargement...'; 
   openModal('modal-liste-participants');
-  
-  try {
+try {
     const { data: inscr } = await sb.from('inscriptions').select('user_id').eq('event_id', eventId);
-    const { data: attente } = await sb.from('liste_attente').select('user_id').eq('event_id', eventId);
+const { data: attente } = await sb.from('liste_attente').select('user_id').eq('event_id', eventId);
     const { data: profils } = await sb.from('profils').select('id, prenom, nom');
-    
-    const annuaire = {}; 
+const annuaire = {}; 
     if (profils) profils.forEach(p => annuaire[p.id] = `${p.prenom} ${p.nom}`);
-    
-    let html = '<h3 style="margin-bottom:10px;">⚔ Inscrits officiels</h3><ul style="list-style:none; padding:0; margin-bottom:20px;">';
-    html += (inscr && inscr.length > 0) ? inscr.map(i => {
+let html = '<h3 style="margin-bottom:10px;">⚔ Inscrits officiels</h3><ul style="list-style:none; padding:0; margin-bottom:20px;">';
+    html += (inscr && inscr.length > 0) ?
+inscr.map(i => {
       const nom = annuaire[i.user_id] || `Joueur Inconnu (${i.user_id.substring(0,5)})`;
-      return `<li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:6px; background:rgba(154,123,47,0.1); border-radius:3px;">
+      return `<li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:6px; background:#f8fafc; border-radius:4px; border:1px solid #e2e8f0;">
                 <span>👤 ${nom}</span>
                 <button class="btn-ghost" style="padding:2px 8px; color:var(--red-blood); border-color:var(--red-blood);" onclick="retirerParticipant('${eventId}', '${i.user_id}', 'inscriptions', '${titre.replace(/'/g,"\\'")}')">✕</button>
               </li>`;
     }).join('') : '<li style="padding:6px;">Personne</li>';
-
-    html += '</ul><h3 style="margin-bottom:10px;">⏳ Liste d\'attente</h3><ul style="list-style:none; padding:0;">';
-    html += (attente && attente.length > 0) ? attente.map(a => {
+html += '</ul><h3 style="margin-bottom:10px;">⏳ Liste d\'attente</h3><ul style="list-style:none; padding:0;">';
+    html += (attente && attente.length > 0) ?
+attente.map(a => {
       const nom = annuaire[a.user_id] || `Joueur Inconnu (${a.user_id.substring(0,5)})`;
-      return `<li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:6px; background:rgba(154,123,47,0.1); border-radius:3px;">
+      return `<li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:6px; background:#f8fafc; border-radius:4px; border:1px solid #e2e8f0;">
                 <span>👤 ${nom}</span>
                 <button class="btn-ghost" style="padding:2px 8px; color:var(--red-blood); border-color:var(--red-blood);" onclick="retirerParticipant('${eventId}', '${a.user_id}', 'liste_attente', '${titre.replace(/'/g,"\\'")}')">✕</button>
               </li>`;
     }).join('') : '<li style="padding:6px;">Vide</li>';
-    
-    content.innerHTML = html + '</ul>';
-  } catch (e) { content.innerHTML = "Erreur : " + e.message; }
+content.innerHTML = html + '</ul>';
+  } catch (e) { content.innerHTML = "Erreur : " + e.message;
+}
 }
 
 function filterOrgaEvents(q) { renderOrgaTable(state.orgaEvents.filter(ev => (ev.titre + (ev.lieu||'') + (ev.type||'')).toLowerCase().includes(q.toLowerCase()))); }
-function openModalCreateEvent() { document.getElementById('modal-event-title').textContent = '+ Nouvel événement'; document.getElementById('e-id').value = ''; ['e-titre','e-lieu','e-organisateurs','e-description','e-date-debut','e-date-fin'].forEach(id => document.getElementById(id).value = ''); document.getElementById('row-places-dispo').style.display = 'none'; openModal('modal-event'); }
-function openModalEditEvent(id) { const ev = state.orgaEvents.find(e => e.id === id); if (!ev) return; document.getElementById('modal-event-title').textContent = '✏ Modifier'; document.getElementById('e-id').value = ev.id; document.getElementById('e-titre').value = ev.titre; document.getElementById('e-date-debut').value = toLocalInput(ev.date_debut); document.getElementById('e-lieu').value = ev.lieu || ''; document.getElementById('e-organisateurs').value = ev.organisateurs || ''; document.getElementById('e-type').value = ev.type || 'Grandeur nature'; document.getElementById('e-description').value = ev.description || ''; document.getElementById('e-places-totales').value = ev.places_totales || ''; document.getElementById('e-places-dispo').value = ev.places_disponibles || ''; document.getElementById('row-places-dispo').style.display = ''; openModal('modal-event'); }
-async function saveEvent() { const id = document.getElementById('e-id').value; const titre = document.getElementById('e-titre').value.trim(); const date_debut = document.getElementById('e-date-debut').value; const date_fin = document.getElementById('e-date-fin').value || null; const lieu = document.getElementById('e-lieu').value.trim(); const organisateurs = document.getElementById('e-organisateurs').value.trim(); const type = document.getElementById('e-type').value; const description = document.getElementById('e-description').value.trim() || null; const places_totales = parseInt(document.getElementById('e-places-totales').value) || 0; if (!titre || !date_debut) return; const date = date_debut.split('T')[0]; if (id) { const places_disponibles = parseInt(document.getElementById('e-places-dispo').value) || 0; await sb.from('evenements').update({ titre, date, date_debut, date_fin, lieu, organisateurs, type, description, places_totales, places_disponibles }).eq('id', id); } else { await sb.from('evenements').insert({ titre, date, date_debut, date_fin, lieu, organisateurs, type, description, places_totales, places_disponibles: places_totales }); } closeModal('modal-event'); loadOrgaEvents(); showToast('✦ Enregistré'); }
+function openModalCreateEvent() { document.getElementById('modal-event-title').textContent = '+ Nouvel événement';
+document.getElementById('e-id').value = ''; ['e-titre','e-lieu','e-organisateurs','e-description','e-date-debut','e-date-fin'].forEach(id => document.getElementById(id).value = ''); document.getElementById('row-places-dispo').style.display = 'none'; openModal('modal-event');
+}
+function openModalEditEvent(id) { const ev = state.orgaEvents.find(e => e.id === id); if (!ev) return; document.getElementById('modal-event-title').textContent = '✏ Modifier';
+document.getElementById('e-id').value = ev.id; document.getElementById('e-titre').value = ev.titre; document.getElementById('e-date-debut').value = toLocalInput(ev.date_debut); document.getElementById('e-lieu').value = ev.lieu || ''; document.getElementById('e-organisateurs').value = ev.organisateurs || '';
+document.getElementById('e-type').value = ev.type || 'Grandeur nature'; document.getElementById('e-description').value = ev.description || ''; document.getElementById('e-places-totales').value = ev.places_totales || ''; document.getElementById('e-places-dispo').value = ev.places_disponibles ||
+''; document.getElementById('row-places-dispo').style.display = ''; openModal('modal-event'); }
+async function saveEvent() { const id = document.getElementById('e-id').value; const titre = document.getElementById('e-titre').value.trim();
+const date_debut = document.getElementById('e-date-debut').value; const date_fin = document.getElementById('e-date-fin').value || null; const lieu = document.getElementById('e-lieu').value.trim(); const organisateurs = document.getElementById('e-organisateurs').value.trim();
+const type = document.getElementById('e-type').value; const description = document.getElementById('e-description').value.trim() || null; const places_totales = parseInt(document.getElementById('e-places-totales').value) || 0;
+if (!titre || !date_debut) return; const date = date_debut.split('T')[0]; if (id) { const places_disponibles = parseInt(document.getElementById('e-places-dispo').value) || 0;
+await sb.from('evenements').update({ titre, date, date_debut, date_fin, lieu, organisateurs, type, description, places_totales, places_disponibles }).eq('id', id);
+} else { await sb.from('evenements').insert({ titre, date, date_debut, date_fin, lieu, organisateurs, type, description, places_totales, places_disponibles: places_totales }); } closeModal('modal-event'); loadOrgaEvents();
+showToast('✦ Enregistré'); }
 
 // ════════════════════════════════════════════════════
 //  UI & INIT
 // ════════════════════════════════════════════════════
-function openModal(id) { document.getElementById(id).classList.add('open'); } function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-function showMsg(id, txt, type='error') { const el = document.getElementById(id); if(el){ el.textContent=txt; el.style.display='block'; el.className = type==='success'?'msg-success':'msg-error'; } }
+function openModal(id) { document.getElementById(id).classList.add('open'); } function closeModal(id) { document.getElementById(id).classList.remove('open');
+}
+function showMsg(id, txt, type='error') { const el = document.getElementById(id); if(el){ el.textContent=txt; el.style.display='block'; el.className = type==='success'?'msg-success':'msg-error';
+} }
 function hideMsg(id) { const el = document.getElementById(id); if(el) el.style.display='none'; }
-let toastTimer; function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),3200); }
+let toastTimer; function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer);
+toastTimer=setTimeout(()=>t.classList.remove('show'),3200); }
 document.querySelectorAll('.modal-overlay').forEach(el => el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); }));
-
 window.addEventListener('load', async () => {
   setTimeout(() => { const s = document.getElementById('search-input'); if(s) s.value=''; const o = document.getElementById('orga-search'); if(o) o.value=''; }, 500);
   const { data: { session } } = await sb.auth.getSession();
