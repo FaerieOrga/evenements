@@ -1083,9 +1083,9 @@ async function envoyerMessage() {
     await loadMessages(); showToast('✦ Message envoyé !');
     
     // ALERTE EMAIL POUR L'ORGA
-    // Change "contact@xn--farie--csa.fr" par ton email d'association
+    // Change "contact@xn--farie-csa.fr" par ton email d'association
     sendEmailViaGAS(
-      "contact@xn--farie--csa.fr", 
+      "contact@xn--farie-csa.fr", 
       "Nouveau message de " + (state.user.user_metadata?.prenom || state.user.email), 
       `<p>Un joueur a envoyé un nouveau message sur l'espace Faérie :</p><blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #64748b;">${contenu}</blockquote><p>Connectez-vous à l'espace Organisateur pour lui répondre.</p>`
     );
