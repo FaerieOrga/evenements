@@ -1311,18 +1311,33 @@ function openModalEditEvent(id) {
   document.getElementById('row-places-dispo').style.display = ''; 
   openModal('modal-event'); 
 }
-async function saveEvent() { const id = document.getElementById('e-id').value; const titre = document.getElementById('e-titre').value.trim();
-const date_debut = document.getElementById('e-date-debut').value; const date_fin = document.getElementById('e-date-fin').value || null; 
-const lieu = document.getElementById('e-lieu').value.trim(); const lien_maps = document.getElementById('e-lien-maps').value.trim() || null; const organisateurs = document.getElementById('e-organisateurs').value.trim();
-const type = document.getElementById('e-type').value; const description = document.getElementById('e-description').value.trim() || null; const places_totales = parseInt(document.getElementById('e-places-totales').value) || 0;
-if (!titre || !date_debut) return; const date = date_debut.split('T')[0]; if (id) { const places_disponibles = parseInt(document.getElementById('e-places-dispo').value) || 0;
-await sb.from('evenements').update({ titre, date, date_debut, date_fin, lieu, lien_maps, organisateurs, type, description, places_totales, places_disponibles }).eq('id', id);
-} else { await sb.from('evenements').insert({ titre, date, date_debut, date_fin, lieu, lien_maps, organisateurs, type, description, places_totales, places_disponibles: places_totales }); } closeModal('modal-event'); loadOrgaEvents();
-                            
-if (!titre || !date_debut) return; const date = date_debut.split('T')[0]; if (id) { const places_disponibles = parseInt(document.getElementById('e-places-dispo').value) || 0;
-await sb.from('evenements').update({ titre, date, date_debut, date_fin, lieu, organisateurs, type, description, places_totales, places_disponibles }).eq('id', id);
-} else { await sb.from('evenements').insert({ titre, date, date_debut, date_fin, lieu, organisateurs, type, description, places_totales, places_disponibles: places_totales }); } closeModal('modal-event'); loadOrgaEvents();
-showToast('✦ Enregistré'); }
+async function saveEvent() { 
+  const id = document.getElementById('e-id').value; 
+  const titre = document.getElementById('e-titre').value.trim();
+  const date_debut = document.getElementById('e-date-debut').value; 
+  const date_fin = document.getElementById('e-date-fin').value || null; 
+  const lieu = document.getElementById('e-lieu').value.trim(); 
+  const lien_maps = document.getElementById('e-lien-maps').value.trim() || null; 
+  const organisateurs = document.getElementById('e-organisateurs').value.trim();
+  const type = document.getElementById('e-type').value; 
+  const description = document.getElementById('e-description').value.trim() || null; 
+  const places_totales = parseInt(document.getElementById('e-places-totales').value) || 0;
+  
+  if (!titre || !date_debut) return; 
+  
+  const date = date_debut.split('T')[0]; 
+  
+  if (id) { 
+    const places_disponibles = parseInt(document.getElementById('e-places-dispo').value) || 0;
+    await sb.from('evenements').update({ titre, date, date_debut, date_fin, lieu, lien_maps, organisateurs, type, description, places_totales, places_disponibles }).eq('id', id);
+  } else { 
+    await sb.from('evenements').insert({ titre, date, date_debut, date_fin, lieu, lien_maps, organisateurs, type, description, places_totales, places_disponibles: places_totales }); 
+  } 
+  
+  closeModal('modal-event'); 
+  loadOrgaEvents();
+  showToast('✦ Enregistré'); 
+}
 
 // ════════════════════════════════════════════════════
 //  UI & INIT
