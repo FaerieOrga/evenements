@@ -1153,7 +1153,7 @@ async function loadOrgaEvents() {
 function renderOrgaTable(list) {
   const tbody = document.getElementById('orga-events-body');
   if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Aucun événement.</td></tr>'; return; }
-  tbody.innerHTML = list.map(ev => `<tr><td><strong>${ev.titre}</strong></td><td>${ev.date_debut ? new Date(ev.date_debut).toLocaleString('fr-FR') : '—'}</td><td>${ev.lieu || '—'}</td><td>${ev.type || '—'}</td><td>${ev.places_disponibles}/${ev.places_totales}</td><td><button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">👁 Voir</button> <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏ Modif</button></td></tr>`).join('');
+  tbody.innerHTML = list.map(ev => `<tr><td><strong>${ev.titre}</strong></td><td>${ev.date_debut ? new Date(ev.date_debut).toLocaleString('fr-FR') : '—'}</td><td>${ev.lieu || '—'}</td><td>${ev.type || '—'}</td><td>${ev.places_disponibles}/${ev.places_totales}</td><td><button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">👁 Inscrits</button> <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏ Modif</button></td></tr>`).join('');
 }
 
   async function retirerParticipant(eventId, userId, table, titre) {
