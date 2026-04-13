@@ -922,16 +922,28 @@ async function confirmInscription(typeChoisi) {
   } catch(e) { showMsg('err-insc', e.message.includes('23505') ? 'Déjà inscrit·e !' : e.message); }
 }
 
-async function seDesinscrire(eventId, placesDispo) {
+async function seDesinscrire(eventId) {
   if (!confirm('Confirmer la désinscription ?')) return;
   try {
     showToast('Sorcier à l\'œuvre...');
-    const { error: delError } = await sb.from('inscriptions').delete().eq('event_id', eventId).eq('user_id', state.user.id);
-    if (delError) { alert("Erreur de suppression : " + delError.message); return; }
+    
+    // On demande à Supabase de retirer le joueur des deux tables au cas où
+    await sb.from('inscriptions').delete().eq('event_id', eventId).eq('user_id', state.user.id);
+    await sb.from('liste_attente').delete().eq('event_id', eventId).eq('user_id', state.user.id);
+    
     showToast('✦ Désinscription réussie');
+    
+    // On met à jour la mémoire locale du site
     state.mesInscriptions = state.mesInscriptions.filter(id => id !== eventId);
-    await loadMesInscriptions(); await loadPublicEvents();
-  } catch (e) { console.error(e); }
+    state.maListeAttente = state.maListeAttente.filter(id => id !== eventId);
+    
+    // On rafraîchit l'affichage
+    await loadMesInscriptions(); 
+    await loadPublicEvents();
+  } catch (e) { 
+    console.error(e); 
+    alert("Erreur lors de la désinscription.");
+  }
 }
 
 // ════════════════════════════════════════════════════
@@ -960,15 +972,30 @@ async function loadMesInscriptions() {
   const grid = document.getElementById('mes-inscriptions-grid');
   grid.innerHTML = '<div class="empty-state">Chargement…</div>';
   try {
-    const { data: inscr } = await sb.from('inscriptions').select('event_id').eq('user_id', state.user.id);
-    const ids = (inscr || []).map(i => i.event_id);
-    if (!ids.length) { grid.innerHTML = '<div class="empty-state">Vous n\'êtes inscrit·e à aucun événement pour l\'instant.</div>'; return; }
-    const { data: evs } = await sb.from('evenements').select('*').in('id', ids).order('date_debut', { ascending: true });
+    // On regroupe les événements où le joueur est inscrit ET ceux en attente
+    const allIds = [...new Set([...state.mesInscriptions, ...state.maListeAttente])];
+    
+    if (!allIds.length) { 
+      grid.innerHTML = '<div class="empty-state">Vous n\'êtes inscrit·e à aucun événement pour l\'instant.</div>'; 
+      return; 
+    }
+    
+    const { data: evs } = await sb.from('evenements').select('*').in('id', allIds).order('date_debut', { ascending: true });
+    
     grid.innerHTML = (evs || []).map(ev => {
       const debut = ev.date_debut ? formatDatetime(ev.date_debut) : '—';
-      return `<div class="event-card"><div class="event-card-header"><div class="event-card-titre">${ev.titre}</div></div>
-              <div class="event-card-body"><div class="event-info-item"><span class="event-info-label">Début</span><span class="event-info-val">📅 ${debut}</span></div></div>
-              <div class="event-card-footer"><span class="badge-inscrit">✦ Inscrit·e</span><button class="btn-ghost btn-sm" onclick="seDesinscrire('${ev.id}', ${ev.places_disponibles})">Se désinscrire</button></div></div>`;
+      const enAttente = state.maListeAttente.includes(ev.id);
+      const badge = enAttente ? '<span class="badge-attente">⏳ En attente</span>' : '<span class="badge-inscrit">✦ Inscrit·e</span>';
+
+      return `
+      <div class="event-card">
+        <div class="event-card-header"><div class="event-card-titre">${ev.titre}</div></div>
+        <div class="event-card-body"><div class="event-info-item"><span class="event-info-label">Début</span><span class="event-info-val">📅 ${debut}</span></div></div>
+        <div class="event-card-footer">
+          ${badge}
+          <button class="btn-ghost btn-sm" onclick="seDesinscrire('${ev.id}')">Se désinscrire</button>
+        </div>
+      </div>`;
     }).join('');
   } catch (e) { console.error(e); }
 }
