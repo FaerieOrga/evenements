@@ -754,8 +754,9 @@ input:-webkit-autofill:focus {
       <div class="form-group"><label>Début</label><input type="datetime-local" id="e-date-debut"></div>
       <div class="form-group"><label>Fin</label><input type="datetime-local" id="e-date-fin"></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-      <div class="form-group"><label>Lieu</label><input type="text" id="e-lieu" placeholder="Adresse ou lieu-dit"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+      <div class="form-group"><label>Lieu</label><input type="text" id="e-lieu" placeholder="Nom du lieu"></div>
+      <div class="form-group"><label>Lien Google Maps</label><input type="text" id="e-lien-maps" placeholder="https://maps.app.goo.gl/..."></div>
       <div class="form-group">
       
   <label>Type</label>
@@ -893,7 +894,11 @@ function renderPublicEvents(list) {
         <div class="event-info-item"><span class="event-info-label">Début</span><span class="event-info-val"> ${debut}</span></div>
         ${fin ?
 `<div class="event-info-item"><span class="event-info-label">Fin</span><span class="event-info-val"> ${fin}</span></div>` : '<div></div>'}
-        <div class="event-info-item"><span class="event-info-label">Lieu</span><span class="event-info-val">📍 ${ev.lieu ||
+<div class="event-info-item">
+  <span class="event-info-label">Lieu</span>
+  <span class="event-info-val">📍 ${ev.lieu || '—'}</span>
+  ${ev.lien_maps ? `<a href="${ev.lien_maps}" target="_blank" style="display:inline-block; margin-top:4px; font-family:'Cinzel', serif; font-size:0.7rem; color:var(--ink-light); text-decoration:none; border:1px solid var(--border); padding:2px 8px; border-radius:3px; background:#f8fafc; transition:all 0.2s;">🗺️ Ouvrir la carte</a>` : ''}
+</div>
 '—'}</span></div>
         <div class="event-info-item"><span class="event-info-label">Organisateurs</span><span class="event-info-val">${ev.organisateurs ||
 '—'}</span></div>
@@ -1285,15 +1290,35 @@ content.innerHTML = html + '</ul>';
 
 function filterOrgaEvents(q) { renderOrgaTable(state.orgaEvents.filter(ev => (ev.titre + (ev.lieu||'') + (ev.type||'')).toLowerCase().includes(q.toLowerCase()))); }
 function openModalCreateEvent() { document.getElementById('modal-event-title').textContent = '+ Nouvel événement';
-document.getElementById('e-id').value = ''; ['e-titre','e-lieu','e-organisateurs','e-description','e-date-debut','e-date-fin'].forEach(id => document.getElementById(id).value = ''); document.getElementById('row-places-dispo').style.display = 'none'; openModal('modal-event');
+document.getElementById('e-id').value = ''; ['e-titre','e-lieu','e-lien-maps','e-organisateurs','e-description','e-date-debut','e-date-fin'].forEach(id => document.getElementById(id).value = ''); document.getElementById('row-places-dispo').style.display = 'none'; openModal('modal-event');
 }
-function openModalEditEvent(id) { const ev = state.orgaEvents.find(e => e.id === id); if (!ev) return; document.getElementById('modal-event-title').textContent = '✏ Modifier';
-document.getElementById('e-id').value = ev.id; document.getElementById('e-titre').value = ev.titre; document.getElementById('e-date-debut').value = toLocalInput(ev.date_debut); document.getElementById('e-lieu').value = ev.lieu || ''; document.getElementById('e-organisateurs').value = ev.organisateurs || '';
-document.getElementById('e-type').value = ev.type || 'Grandeur nature'; document.getElementById('e-description').value = ev.description || ''; document.getElementById('e-places-totales').value = ev.places_totales || ''; document.getElementById('e-places-dispo').value = ev.places_disponibles ||
-''; document.getElementById('row-places-dispo').style.display = ''; openModal('modal-event'); }
+function openModalEditEvent(id) { 
+  const ev = state.orgaEvents.find(e => e.id === id); 
+  if (!ev) return; 
+  
+  document.getElementById('modal-event-title').textContent = '✏ Modifier';
+  document.getElementById('e-id').value = ev.id; 
+  document.getElementById('e-titre').value = ev.titre; 
+  document.getElementById('e-date-debut').value = toLocalInput(ev.date_debut); 
+  document.getElementById('e-lieu').value = ev.lieu || ''; 
+  document.getElementById('e-lien-maps').value = ev.lien_maps || ''; 
+  document.getElementById('e-organisateurs').value = ev.organisateurs || '';
+  document.getElementById('e-type').value = ev.type || 'Grandeur nature'; 
+  document.getElementById('e-description').value = ev.description || ''; 
+  document.getElementById('e-places-totales').value = ev.places_totales || ''; 
+  document.getElementById('e-places-dispo').value = ev.places_disponibles || ''; 
+  
+  document.getElementById('row-places-dispo').style.display = ''; 
+  openModal('modal-event'); 
+}
 async function saveEvent() { const id = document.getElementById('e-id').value; const titre = document.getElementById('e-titre').value.trim();
-const date_debut = document.getElementById('e-date-debut').value; const date_fin = document.getElementById('e-date-fin').value || null; const lieu = document.getElementById('e-lieu').value.trim(); const organisateurs = document.getElementById('e-organisateurs').value.trim();
+const date_debut = document.getElementById('e-date-debut').value; const date_fin = document.getElementById('e-date-fin').value || null; 
+const lieu = document.getElementById('e-lieu').value.trim(); const lien_maps = document.getElementById('e-lien-maps').value.trim() || null; const organisateurs = document.getElementById('e-organisateurs').value.trim();
 const type = document.getElementById('e-type').value; const description = document.getElementById('e-description').value.trim() || null; const places_totales = parseInt(document.getElementById('e-places-totales').value) || 0;
+if (!titre || !date_debut) return; const date = date_debut.split('T')[0]; if (id) { const places_disponibles = parseInt(document.getElementById('e-places-dispo').value) || 0;
+await sb.from('evenements').update({ titre, date, date_debut, date_fin, lieu, lien_maps, organisateurs, type, description, places_totales, places_disponibles }).eq('id', id);
+} else { await sb.from('evenements').insert({ titre, date, date_debut, date_fin, lieu, lien_maps, organisateurs, type, description, places_totales, places_disponibles: places_totales }); } closeModal('modal-event'); loadOrgaEvents();
+                            
 if (!titre || !date_debut) return; const date = date_debut.split('T')[0]; if (id) { const places_disponibles = parseInt(document.getElementById('e-places-dispo').value) || 0;
 await sb.from('evenements').update({ titre, date, date_debut, date_fin, lieu, organisateurs, type, description, places_totales, places_disponibles }).eq('id', id);
 } else { await sb.from('evenements').insert({ titre, date, date_debut, date_fin, lieu, organisateurs, type, description, places_totales, places_disponibles: places_totales }); } closeModal('modal-event'); loadOrgaEvents();
