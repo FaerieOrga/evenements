@@ -1095,13 +1095,27 @@ async function envoyerMessage() {
 async function loadOrgaMessagerie() {
   const { data } = await sb.from('messages').select('user_id, auteur, lu_orga').order('created_at', { ascending: false });
   if (!data) return;
+  
+  // On récupère le "bottin" de tous les joueurs pour traduire les ID en prénoms
+  const { data: profils } = await sb.from('profils').select('id, prenom, nom');
+  const annuaire = {};
+  if (profils) {
+    profils.forEach(p => annuaire[p.id] = `${p.prenom} ${p.nom}`);
+  }
+
   const joueurs = {};
   for (const m of data) {
     if (!joueurs[m.user_id]) joueurs[m.user_id] = { nonLus: 0 };
     if (m.auteur === 'joueur' && !m.lu_orga) joueurs[m.user_id].nonLus++;
   }
+  
   const sel = document.getElementById('orga-joueur-select');
-  sel.innerHTML = '<option value="">— Sélectionner un joueur —</option>' + Object.keys(joueurs).map(uid => `<option value="${uid}">${uid.substring(0,8)}… ${joueurs[uid].nonLus > 0 ? `(${joueurs[uid].nonLus} non lu)` : ''}</option>`).join('');
+  sel.innerHTML = '<option value="">— Sélectionner un joueur —</option>' + Object.keys(joueurs).map(uid => {
+    // On va chercher le vrai nom, ou on affiche l'ID si le profil est introuvable
+    const nomAffichage = annuaire[uid] || `Joueur inconnu (${uid.substring(0,5)})`;
+    return `<option value="${uid}">${nomAffichage} ${joueurs[uid].nonLus > 0 ? `(${joueurs[uid].nonLus} non lu)` : ''}</option>`;
+  }).join('');
+  
   const totalNonLus = Object.values(joueurs).reduce((a, b) => a + b.nonLus, 0);
   const dot = document.getElementById('notif-orga-dot');
   if (dot) dot.style.display = totalNonLus > 0 ? '' : 'none';
@@ -1114,12 +1128,16 @@ async function loadOrgaConversation(userId) {
   if (!userId) { fil.innerHTML = '<div class="empty-state">Sélectionnez un joueur.</div>'; replyZone.style.display = 'none'; return; }
   fil.innerHTML = '<div class="empty-state">Chargement…</div>'; replyZone.style.display = '';
   try {
+    // On récupère le nom du joueur pour l'afficher au-dessus de ses bulles
+    const { data: profil } = await sb.from('profils').select('prenom, nom').eq('id', userId).single();
+    const nomJoueur = profil ? `${profil.prenom} ${profil.nom}` : 'Joueur';
+
     const { data } = await sb.from('messages').select('*').eq('user_id', userId).order('created_at', { ascending: true });
     if (!data || !data.length) { fil.innerHTML = '<div class="empty-state">Aucun message.</div>'; return; }
     fil.innerHTML = data.map(m => {
       const date = new Date(m.created_at).toLocaleString('fr-FR');
       const side = m.auteur === 'orga' ? 'orga' : 'joueur';
-      const label = m.auteur === 'orga' ? '⚔ Vous' : '✦ Joueur';
+      const label = m.auteur === 'orga' ? '⚔ Vous' : `✦ ${nomJoueur}`;
       return `<div class="msg-bubble ${side}"><div class="msg-bubble-meta">${label} — ${date}</div>${m.contenu}</div>`;
     }).join('');
     fil.scrollTop = fil.scrollHeight;
