@@ -274,7 +274,7 @@ input:-webkit-autofill:focus {
   text-transform: uppercase;
   color: var(--ink-light);
 }
-.event-info-val { font-family: 'Crimson Text', serif; font-size: 0.97rem; color: var(--ink); }
+.event-info-val { font-family: 'Crimson Text', serif; font-size: 0.97rem; color: var(--ink); word-break: break-word; }
 .event-description {
   font-family: 'IM Fell English', serif;
   font-style: italic;
@@ -512,7 +512,7 @@ input:-webkit-autofill:focus {
 @media (max-width: 600px) {
   .parchment { padding: 22px 18px; }
   .modal-box { padding: 22px 18px; }
-  .event-card-body { grid-template-columns: 1fr 1fr; }
+  .event-card-body { grid-template-columns: 1fr; }
   .site-title { font-size: 1.7rem; }
   .orga-table th:nth-child(3), .orga-table td:nth-child(3),
   .orga-table th:nth-child(4), .orga-table td:nth-child(4) { display: none; }
