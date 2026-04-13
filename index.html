@@ -985,7 +985,7 @@ async function loadMesInscriptions() {
     grid.innerHTML = (evs || []).map(ev => {
       const debut = ev.date_debut ? formatDatetime(ev.date_debut) : '—';
       const enAttente = state.maListeAttente.includes(ev.id);
-      const badge = enAttente ? '<span class="badge-attente">⏳ En attente</span>' : '<span class="badge-inscrit">✦ Inscrit·e</span>';
+      const badge = enAttente ? '<span class="badge-attente">⏳ Vous êtes sur liste d'attente</span>' : '<span class="badge-inscrit">✦ Inscrit·e</span>';
 
       return `
       <div class="event-card">
