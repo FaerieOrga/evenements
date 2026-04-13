@@ -863,8 +863,7 @@ renderPublicEvents(state.events.filter(ev =>
 
 function renderPublicEvents(list) {
   const grid = document.getElementById('public-events-grid');
-  if (!list.length) { grid.innerHTML = '<div class="empty-state">Aucun événement à venir.</div>'; return;
-}
+  if (!list.length) { grid.innerHTML = '<div class="empty-state">Aucun événement à venir.</div>'; return; }
 
   grid.innerHTML = list.map(ev => {
     const placesTot   = ev.places_totales || 0;
@@ -873,8 +872,7 @@ function renderPublicEvents(list) {
     const complet     = placesDispo <= 0;
     const inscrit     = state.mesInscriptions.includes(ev.id);
     const enAttente   = state.maListeAttente && state.maListeAttente.includes(ev.id);
-    const debut       = ev.date_debut 
-? formatDatetime(ev.date_debut) : (ev.date ? new Date(ev.date).toLocaleDateString('fr-FR') : '—');
+    const debut       = ev.date_debut ? formatDatetime(ev.date_debut) : (ev.date ? new Date(ev.date).toLocaleDateString('fr-FR') : '—');
     const fin         = ev.date_fin ? formatDatetime(ev.date_fin) : null;
 
     let btnHtml = '';
@@ -884,38 +882,34 @@ function renderPublicEvents(list) {
       const btnClass = 'btn btn-sm' + (complet ? ' btn-danger' : '');
       const btnLabel = complet ? "Liste d'attente" : "S'inscrire";
       btnHtml = `<button class="${btnClass}" onclick="handleInscriptionClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${placesDispo})">${btnLabel}</button>`;
-}
+    }
 
     return `
     <div class="event-card">
-      <div class="event-card-header"><div class="event-card-titre">${ev.titre}</div><div class="event-card-type">${ev.type ||
-'—'}</div></div>
+      <div class="event-card-header"><div class="event-card-titre">${ev.titre}</div><div class="event-card-type">${ev.type || '—'}</div></div>
       <div class="event-card-body">
         <div class="event-info-item"><span class="event-info-label">Début</span><span class="event-info-val"> ${debut}</span></div>
-        ${fin ?
-`<div class="event-info-item"><span class="event-info-label">Fin</span><span class="event-info-val"> ${fin}</span></div>` : '<div></div>'}
-<div class="event-info-item">
-  <span class="event-info-label">Lieu</span>
-  <span class="event-info-val">📍 ${ev.lieu || '—'}</span>
-  ${ev.lien_maps ? `<a href="${ev.lien_maps}" target="_blank" style="display:inline-block; margin-top:4px; font-family:'Cinzel', serif; font-size:0.7rem; color:var(--ink-light); text-decoration:none; border:1px solid var(--border); padding:2px 8px; border-radius:3px; background:#f8fafc; transition:all 0.2s;">🗺️ Ouvrir la carte</a>` : ''}
-</div>
-'—'}</span></div>
-        <div class="event-info-item"><span class="event-info-label">Organisateurs</span><span class="event-info-val">${ev.organisateurs ||
-'—'}</span></div>
+        ${fin ? `<div class="event-info-item"><span class="event-info-label">Fin</span><span class="event-info-val"> ${fin}</span></div>` : '<div></div>'}
+        
+        <div class="event-info-item">
+          <span class="event-info-label">Lieu</span>
+          <span class="event-info-val">📍 ${ev.lieu || '—'}</span>
+          ${ev.lien_maps ? `<a href="${ev.lien_maps}" target="_blank" style="display:inline-block; margin-top:4px; font-family:'Cinzel', serif; font-size:0.7rem; color:var(--ink-light); text-decoration:none; border:1px solid var(--border); padding:2px 8px; border-radius:3px; background:#f8fafc; transition:all 0.2s;">🗺️ Ouvrir la carte</a>` : ''}
+        </div>
+        
+        <div class="event-info-item"><span class="event-info-label">Organisateurs</span><span class="event-info-val">${ev.organisateurs || '—'}</span></div>
       </div>
-      ${ev.description ?
-`<div class="event-description">${ev.description}</div>` : ''}
+      ${ev.description ? `<div class="event-description">${ev.description}</div>` : ''}
       <div class="event-card-footer">
         <div class="jauge-wrap">
           <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
           <span class="jauge-text">${placesDispo} / ${placesTot}</span>
-          ${complet && !inscrit && !enAttente ?
-'<span class="badge-attente" style="background:#fef2f2; color:var(--red-blood); border-color:#fecaca;">COMPLET</span>' : ''}
+          ${complet && !inscrit && !enAttente ? '<span class="badge-attente" style="background:#fef2f2; color:var(--red-blood); border-color:#fecaca;">COMPLET</span>' : ''}
         </div>
         ${btnHtml}
       </div>
     </div>`;
-}).join('');
+  }).join('');
 }
 
 // ════════════════════════════════════════════════════
