@@ -819,7 +819,9 @@ function toLocalInput(iso) {
 async function loadPublicEvents() {
   const grid = document.getElementById('public-events-grid');
   try {
-    const { data: events } = await sb.from('evenements').select('*').order('date_debut', { ascending: true });
+    const today = new Date();
+today.setHours(0, 0, 0, 0); // On prend à partir de minuit ce matin
+const { data: events } = await sb.from('evenements').select('*').gte('date_debut', today.toISOString()).order('date_debut', { ascending: true });
     const { data: allInscriptions } = await sb.from('inscriptions').select('event_id');
     
     state.events = (events || []).map(ev => {
@@ -1166,14 +1168,16 @@ function showOrgaTab(tab, btn) { document.querySelectorAll('#orga-screen .joueur
 // ════════════════════════════════════════════════════
 async function loadOrgaEvents() {
   const tbody = document.getElementById('orga-events-body'); tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Chargement…</td></tr>';
-  const { data, error } = await sb.from('evenements').select('*').order('date_debut', { ascending: true, nullsFirst: false });
+  const today = new Date();
+today.setHours(0, 0, 0, 0);
+const { data, error } = await sb.from('evenements').select('*').gte('date_debut', today.toISOString()).order('date_debut', { ascending: true, nullsFirst: false });
   if (error) { tbody.innerHTML = `<tr><td colspan="6">Erreur</td></tr>`; return; }
   state.orgaEvents = data || []; renderOrgaTable(state.orgaEvents);
 }
 function renderOrgaTable(list) {
   const tbody = document.getElementById('orga-events-body');
   if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Aucun événement.</td></tr>'; return; }
-  tbody.innerHTML = list.map(ev => `<tr><td><strong>${ev.titre}</strong></td><td>${ev.date_debut ? new Date(ev.date_debut).toLocaleString('fr-FR') : '—'}</td><td>${ev.lieu || '—'}</td><td>${ev.type || '—'}</td><td>${ev.places_disponibles}/${ev.places_totales}</td><td><button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">👁 Inscrits</button> <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏ Modif</button></td></tr>`).join('');
+  tbody.innerHTML = list.map(ev => `<tr><td><strong>${ev.titre}</strong></td><td>${ev.date_debut ? new Date(ev.date_debut).toLocaleString('fr-FR') : '—'}</td><td>${ev.lieu || '—'}</td><td>${ev.type || '—'}</td><td>${ev.places_disponibles}/${ev.places_totales}</td><td><button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">👁 Inscrits</button> <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏ Modif</button> <button class="btn btn-sm btn-danger" style="padding: 6px 10px; font-size: 0.7rem;" onclick="supprimerEvent('${ev.id}')">🗑</button></td></tr>`).join('');
 }
 
   async function retirerParticipant(eventId, userId, table, titre) {
@@ -1186,6 +1190,25 @@ function renderOrgaTable(list) {
     // On met à jour la liste ouverte et le tableau orga derrière
     voirParticipants(eventId, titre);
     loadOrgaEvents();
+  } catch (e) {
+    alert("Erreur : " + e.message);
+  }
+}
+
+async function supprimerEvent(eventId) {
+  if (!confirm('Voulez-vous vraiment supprimer cet événement ? Cette action est irréversible et supprimera toutes les inscriptions associées.')) return;
+  try {
+    // 1. On vide d'abord les listes d'inscrits et d'attente pour éviter les erreurs de base de données
+    await sb.from('inscriptions').delete().eq('event_id', eventId);
+    await sb.from('liste_attente').delete().eq('event_id', eventId);
+    
+    // 2. On supprime l'événement
+    const { error } = await sb.from('evenements').delete().eq('id', eventId);
+    if (error) throw error;
+    
+    showToast('✦ Événement supprimé');
+    loadOrgaEvents();
+    loadPublicEvents();
   } catch (e) {
     alert("Erreur : " + e.message);
   }
