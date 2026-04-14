@@ -964,7 +964,7 @@ async function confirmInscription(typeChoisi) {
       sendEmailViaGAS(
         state.user.email, 
         `Confirmation d'inscription : ${state.pendingEventTitre}`, 
-        `<h3>Félicitations !</h3><p>Ton inscription à l'événement <b>${state.pendingEventTitre}</b> est bien confirmée.</p><p>Prépare-toi bien pour l'aventure !</p>`
+        ``<h3>Félicitations !</h3><p>Ton inscription à l'événement <b>${state.pendingEventTitre}</b> est bien confirmée.</p><p>Prépare-toi bien pour <a href="https://www.xn--farie-csa.fr/%C3%A9v%C3%A9nements" style="background:#64748b; color:#fff; padding:8px 16px; text-decoration:none; border-radius:4px;">l'aventure</a> !</p>`
       );
     } else {
       const { error } = await sb.from('liste_attente').insert({ event_id: state.pendingEventId, user_id: state.user.id });
@@ -1172,7 +1172,7 @@ async function envoyerMessageOrga() {
       sendEmailViaGAS(
         profil.email, 
         "Nouveau message de l'organisation - Faérie", 
-        `<h3>Bonjour ${prenom},</h3><p>L'équipe d'organisation t'a répondu sur l'espace Faérie :</p><blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #64748b;">${contenu}</blockquote><p>Connecte-toi à ton espace pour poursuivre la conversation.</p>`
+        ``<h3>Bonjour ${prenom},</h3><p>L'équipe d'orga de Faérie t'a répondu sur ton espace des événements :</p><blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #64748b;">${contenu}</blockquote><p><a href="https://www.xn--farie-csa.fr/%C3%A9v%C3%A9nements" style="background:#64748b; color:#fff; padding:8px 16px; text-decoration:none; border-radius:4px;">Connecte-toi à ton espace</a> pour poursuivre la conversation.</p>`
       );
     }
     
@@ -1222,7 +1222,7 @@ async function doRegister() {
     sendEmailViaGAS(
       email, 
       "Bienvenue dans l'aventure Faérie !", 
-      `<h3>Bienvenue ${prenom} !</h3><p>Ton compte a bien été créé sur l'espace des Événements de Faérie.</p><p>Tu peux maintenant t'inscrire à toutes nos prochaines aventures.</p>`
+      ``<h3>Bienvenue ${prenom} !</h3><p>Ton compte a bien été créé sur l'espace des Événements de Faérie.</p><p>Tu peux maintenant <a href="https://www.xn--farie-csa.fr/%C3%A9v%C3%A9nements" style="background:#64748b; color:#fff; padding:8px 16px; text-decoration:none; border-radius:4px;">t'inscrire à toutes nos prochaines aventures</a>.</p>`
     );
     
     setTimeout(() => doLoginDirect(email, mdp), 1000);
