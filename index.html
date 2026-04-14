@@ -987,20 +987,28 @@ async function seDesinscrire(eventId) {
     return;
   }
   if (!confirm('Confirmer la désinscription ?')) return;
+  if (!state.user) return showToast('❌ Erreur : session perdue');
+
   try {
     showToast('Sorcier à l\'œuvre...');
-    await sb.from('inscriptions').delete().eq('event_id', eventId).eq('user_id', state.user.id);
-    await sb.from('liste_attente').delete().eq('event_id', eventId).eq('user_id', state.user.id);
-    
-    showToast('✦ Désinscription réussie');
-    
-    state.mesInscriptions = state.mesInscriptions.filter(id => id !== eventId);
-    state.maListeAttente = state.maListeAttente.filter(id => id !== eventId);
-    
+
+    // On lance les deux suppressions en parallèle
+    await Promise.all([
+      sb.from('inscriptions').delete().eq('event_id', eventId).eq('user_id', state.user.id),
+      sb.from('liste_attente').delete().eq('event_id', eventId).eq('user_id', state.user.id)
+    ]);
+
+    // On met à jour les listes locales (filtre)
+    state.mesInscriptions = (state.mesInscriptions || []).filter(id => id !== eventId);
+    state.maListeAttente = (state.maListeAttente || []).filter(id => id !== eventId);
+
+    // On recharge proprement les données
     await loadMesInscriptions(); 
     await loadPublicEvents();
+
+    showToast('✦ Désinscription réussie');
   } catch (e) { 
-    console.error(e); 
+    console.error("Erreur désinscription:", e); 
     alert("Erreur lors de la désinscription.");
   }
 }
