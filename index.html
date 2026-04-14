@@ -22,7 +22,12 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   min-height: 100vh;
-  background: linear-gradient(to bottom, #0f172a 0%, #1e3a8a 50%, #38bdf8 100%) fixed;
+  /* On part du bleu de ta barre de menu pour aller vers le bleu clair du fond de ton forum */
+  background: linear-gradient(to bottom, 
+    #58abbc 0%,    /* Bleu de la barre de menu */
+    #66b5c6 50%,   /* Bleu des boutons "Nouvelle discussion" */
+    #e8f4f7 100%   /* Bleu très clair du fond de page du forum */
+  ) fixed;
   font-family: 'Crimson Text', Georgia, serif;
   color: var(--ink);
   font-size: 16px;
