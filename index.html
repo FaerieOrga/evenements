@@ -982,6 +982,10 @@ async function confirmInscription(typeChoisi) {
 }
 
 async function seDesinscrire(eventId) {
+  if (!state.user) {
+    alert("Vous devez être connecté.");
+    return;
+  }
   if (!confirm('Confirmer la désinscription ?')) return;
   try {
     showToast('Sorcier à l\'œuvre...');
