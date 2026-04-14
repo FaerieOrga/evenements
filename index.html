@@ -820,8 +820,10 @@ function formatDatetime(iso) {
 function toLocalInput(iso) {
   if (!iso) return '';
   const d = new Date(iso);
-  const pad = n => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  // On décale manuellement pour compenser le fuseau horaire local du navigateur
+  const offset = d.getTimezoneOffset() * 60000;
+  const localTime = new Date(d.getTime() - offset);
+  return localTime.toISOString().slice(0, 16);
 }
 
 // ════════════════════════════════════════════════════
@@ -1337,25 +1339,41 @@ function openModalEditEvent(id) {
   
   document.getElementById('modal-event-title').textContent = '✏ Modifier';
   document.getElementById('e-id').value = ev.id; 
-  document.getElementById('e-titre').value = ev.titre; 
+  document.getElementById('e-titre').value = ev.titre || ''; 
+  
+  // Correction des dates (utilise le nouveau toLocalInput)
   document.getElementById('e-date-debut').value = toLocalInput(ev.date_debut); 
+  document.getElementById('e-date-fin').value = toLocalInput(ev.date_fin); 
+  
   document.getElementById('e-lieu').value = ev.lieu || ''; 
   document.getElementById('e-lien-maps').value = ev.lien_maps || ''; 
   document.getElementById('e-organisateurs').value = ev.organisateurs || '';
   document.getElementById('e-type').value = ev.type || 'Grandeur nature'; 
   document.getElementById('e-description').value = ev.description || ''; 
+  
+  // Gestion des places (Important pour ne pas casser les inscriptions en cours)
   document.getElementById('e-places-totales').value = ev.places_totales || ''; 
   document.getElementById('e-places-dispo').value = ev.places_disponibles || ''; 
   
+  // On affiche la ligne des places disponibles uniquement en mode "Modification"
   document.getElementById('row-places-dispo').style.display = ''; 
+  
   openModal('modal-event'); 
 }
 
 async function saveEvent() { 
   const id = document.getElementById('e-id').value; 
   const titre = document.getElementById('e-titre').value.trim();
-  const date_debut = document.getElementById('e-date-debut').value; 
-  const date_fin = document.getElementById('e-date-fin').value || null; 
+  
+  // --- PROTECTION ANTI-DÉCALAGE HORAIRE ---
+  // On transforme le texte du champ en vraie date ISO pour Supabase
+  const rawDebut = document.getElementById('e-date-debut').value;
+  const rawFin = document.getElementById('e-date-fin').value;
+  
+  const date_debut = rawDebut ? new Date(rawDebut).toISOString() : null;
+  const date_fin = rawFin ? new Date(rawFin).toISOString() : null;
+  // ----------------------------------------
+
   const lieu = document.getElementById('e-lieu').value.trim(); 
   const lien_maps = document.getElementById('e-lien-maps').value.trim() || null; 
   const organisateurs = document.getElementById('e-organisateurs').value.trim();
@@ -1365,6 +1383,7 @@ async function saveEvent() {
   
   if (!titre || !date_debut) return; 
   
+  // On extrait la date simple pour la colonne 'date' (utile pour tes filtres Supabase)
   const date = date_debut.split('T')[0]; 
   
   if (id) { 
