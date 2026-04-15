@@ -659,13 +659,13 @@ input:-webkit-autofill:focus {
   </div>
 
   <div id="joueur-screen" style="display:none">
-    <div class="logout-bar">
-      <span id="joueur-screen-label">⚔ Mon Espace</span>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-sm" onclick="retourAccueil()">← Événements</button>
-        <button class="btn btn-sm btn-danger" onclick="logoutJoueur()">Déconnexion</button>
-      </div>
-    </div>
+    <div class="logout-bar" style="flex-direction:column;align-items:center;text-align:center;gap:8px">
+  <span id="joueur-screen-label">⚔ Mon Espace</span>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-sm" onclick="retourAccueil()">← Événements</button>
+    <button class="btn btn-sm btn-danger" onclick="logoutJoueur()">Déconnexion</button>
+  </div>
+</div>
     <div class="parchment">
       <div class="joueur-tabs">
         <button class="joueur-tab-btn active" id="jtab-inscriptions" onclick="showJoueurTab('inscriptions', this)">Mes Inscriptions</button>
