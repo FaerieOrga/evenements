@@ -472,6 +472,8 @@ input:-webkit-autofill:focus {
 }
 .toast.show { opacity: 1; transform: translateY(0); }
 
+  
+
 /* ── PIED DE PAGE ── */
 .site-footer { text-align: center; margin-top: 36px; padding-bottom: 10px; }
 .footer-orga-link {
@@ -517,6 +519,54 @@ input:-webkit-autofill:focus {
   font-size: 0.65rem;
   font-weight: 700;
   margin-left: 6px;
+}
+
+  .cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.cal-header-day {
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  text-align: center;
+  padding: 6px 0;
+}
+.cal-day {
+  min-height: 70px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px;
+  background: #f8fafc;
+  vertical-align: top;
+}
+.cal-day.today { border-color: #64748b; background: #f1f5f9; }
+.cal-day.vide { background: transparent; border: none; }
+.cal-day-num {
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  color: var(--ink-light);
+  margin-bottom: 4px;
+}
+.cal-event-pill {
+  background: #1e293b;
+  color: #fff;
+  border-radius: 3px;
+  padding: 2px 5px;
+  font-family: 'Crimson Text', serif;
+  font-size: 0.75rem;
+  margin-bottom: 2px;
+  cursor: default;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 600px) {
+  .cal-day { min-height: 50px; }
+  .cal-event-pill { font-size: 0.65rem; }
 }
 
 @media (max-width: 600px) {
@@ -580,6 +630,7 @@ input:-webkit-autofill:focus {
           <option value="Repas">Repas</option>
           <option value="Réunion">Réunion</option>
         </select>
+        <button class="btn-ghost" onclick="openCalendrier()">📅 Calendrier</button>
       </div>
       <div class="events-grid" id="public-events-grid">
         <div class="empty-state">Chargement des événements…</div>
@@ -780,6 +831,18 @@ input:-webkit-autofill:focus {
 </div>
 
 <div class="toast" id="toast"></div>
+
+  <div class="modal-overlay" id="modal-calendrier">
+  <div class="modal-box modal-box-wide">
+    <button class="modal-close" onclick="closeModal('modal-calendrier')">✕</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <button class="btn-ghost" onclick="changeMonth(-1)">◀</button>
+      <div class="modal-title" id="cal-titre" style="margin:0"></div>
+      <button class="btn-ghost" onclick="changeMonth(1)">▶</button>
+    </div>
+    <div id="cal-grid"></div>
+  </div>
+</div>
 
 <script>
 // ════════════════════════════════════════════════════
@@ -1425,6 +1488,66 @@ async function saveEvent() {
   closeModal('modal-event'); 
   loadOrgaEvents();
   showToast('✦ Enregistré'); 
+}
+
+  // ════════════════════════════════════════════════════
+//  CALENDRIER
+// ════════════════════════════════════════════════════
+let calDate = new Date();
+
+function openCalendrier() {
+  calDate = new Date();
+  renderCalendrier();
+  openModal('modal-calendrier');
+}
+
+function changeMonth(delta) {
+  calDate.setMonth(calDate.getMonth() + delta);
+  renderCalendrier();
+}
+
+function renderCalendrier() {
+  const mois = calDate.getMonth();
+  const annee = calDate.getFullYear();
+  const titre = new Date(annee, mois, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  document.getElementById('cal-titre').textContent = titre.charAt(0).toUpperCase() + titre.slice(1);
+
+  const jours = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+  const today = new Date();
+
+  // Premier jour du mois (0=dim, ajusté pour lundi=0)
+  let premierJour = new Date(annee, mois, 1).getDay();
+  premierJour = (premierJour + 6) % 7; // Lundi en premier
+
+  const dernierJour = new Date(annee, mois + 1, 0).getDate();
+
+  // Événements du mois
+  const evsDuMois = state.events.filter(ev => {
+    if (!ev.date_debut) return false;
+    const d = new Date(ev.date_debut);
+    return d.getMonth() === mois && d.getFullYear() === annee;
+  });
+
+  let html = '<div class="cal-grid">';
+
+  // En-têtes jours
+  jours.forEach(j => { html += `<div class="cal-header-day">${j}</div>`; });
+
+  // Cases vides avant le 1er
+  for (let i = 0; i < premierJour; i++) { html += '<div class="cal-day vide"></div>'; }
+
+  // Jours du mois
+  for (let d = 1; d <= dernierJour; d++) {
+    const isToday = d === today.getDate() && mois === today.getMonth() && annee === today.getFullYear();
+    const evsJour = evsDuMois.filter(ev => new Date(ev.date_debut).getDate() === d);
+    html += `<div class="cal-day${isToday ? ' today' : ''}">
+      <div class="cal-day-num">${d}</div>
+      ${evsJour.map(ev => `<div class="cal-event-pill" title="${ev.titre}">${ev.titre}</div>`).join('')}
+    </div>`;
+  }
+
+  html += '</div>';
+  document.getElementById('cal-grid').innerHTML = html;
 }
 
 // ════════════════════════════════════════════════════
