@@ -1674,7 +1674,7 @@ window.addEventListener('load', async () => {
 async function supprimerCompteJoueur() {
   if (!state.user) return;
 
-  // Modale personnalisée pour remplacer l'alerte native bloquée
+  // Modale personnalisée
   const ok = await new Promise(resolve => {
     const overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.85);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px';
@@ -1696,18 +1696,13 @@ async function supprimerCompteJoueur() {
 
   try {
     showToast('Sorcier à l\'œuvre... Suppression en cours');
-    const uid = state.user.id;
 
-    // On efface absolument toutes les traces du joueur
-    await Promise.all([
-      sb.from('inscriptions').delete().eq('user_id', uid),
-      sb.from('liste_attente').delete().eq('user_id', uid),
-      sb.from('interesses').delete().eq('user_id', uid),
-      sb.from('messages').delete().eq('user_id', uid),
-      sb.from('profils').delete().eq('id', uid)
-    ]);
+    // ⚡️ LA MAGIE EST ICI : On appelle la fonction côté serveur
+    const { error } = await sb.rpc('supprimer_mon_compte');
+    
+    if (error) throw error;
 
-    // On le déconnecte et on vide la mémoire du site
+    // On déconnecte le joueur et on vide la mémoire du site
     await sb.auth.signOut();
     state.user = null;
     state.mesInscriptions = [];
