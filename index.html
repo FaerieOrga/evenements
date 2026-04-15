@@ -678,12 +678,13 @@ input:-webkit-autofill:focus {
 
   <div id="joueur-screen" style="display:none">
     <div class="logout-bar" style="flex-direction:column;align-items:center;text-align:center;gap:8px">
-  <span id="joueur-screen-label">⚔ Mon Espace</span>
-  <div style="display:flex;gap:8px">
-    <button class="btn btn-sm" onclick="retourAccueil()">← Événements</button>
-    <button class="btn btn-sm btn-danger" onclick="logoutJoueur()">Déconnexion</button>
+    <span id="joueur-screen-label">⚔ Mon Espace</span>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+      <button class="btn btn-sm" onclick="retourAccueil()">← Événements</button>
+      <button class="btn btn-sm btn-danger" onclick="logoutJoueur()">Déconnexion</button>
+      <button class="btn-ghost" style="color:var(--red-blood); border-color:var(--red-blood); padding:6px 16px; font-size:0.75rem;" onclick="supprimerCompteJoueur()">Supprimer mon compte</button>
+    </div>
   </div>
-</div>
     <div class="parchment">
       <div class="joueur-tabs">
         <button class="joueur-tab-btn active" id="jtab-inscriptions" onclick="showJoueurTab('inscriptions', this)">Mes Inscriptions</button>
@@ -1669,6 +1670,48 @@ window.addEventListener('load', async () => {
   updateHeaderUserZone();
   await loadPublicEvents();
 });
+
+async function supprimerCompteJoueur() {
+  if (!state.user) return;
+
+  // Modale de confirmation sécurisée
+  const ok = confirm("⚠️ ATTENTION : Voulez-vous vraiment supprimer définitivement votre compte, vos messages et toutes vos inscriptions ?\n\nCette action est irréversible.");
+  if (!ok) return;
+
+  try {
+    showToast('Sorcier à l\'œuvre... Suppression en cours');
+    const uid = state.user.id;
+
+    // On efface absolument toutes les traces du joueur dans la base de données
+    await Promise.all([
+      sb.from('inscriptions').delete().eq('user_id', uid),
+      sb.from('liste_attente').delete().eq('user_id', uid),
+      sb.from('interesses').delete().eq('user_id', uid),
+      sb.from('messages').delete().eq('user_id', uid),
+      sb.from('profils').delete().eq('id', uid)
+    ]);
+
+    // On le déconnecte et on vide la mémoire du site
+    await sb.auth.signOut();
+    state.user = null;
+    state.mesInscriptions = [];
+    state.maListeAttente = [];
+    state.mesInteresses = [];
+
+    // On le renvoie à l'accueil
+    document.getElementById('joueur-screen').style.display = 'none';
+    document.getElementById('public-screen').style.display = '';
+    updateHeaderUserZone();
+    await loadPublicEvents();
+
+    showToast('✦ Compte et données supprimés avec succès.');
+
+  } catch (e) {
+    console.error(e);
+    alert("Erreur lors de la suppression de vos données.");
+  }
+}
+  
 </script>
 </body>
 </html>
