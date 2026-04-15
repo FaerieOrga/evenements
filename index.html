@@ -1674,7 +1674,7 @@ window.addEventListener('load', async () => {
 async function supprimerCompteJoueur() {
   if (!state.user) return;
 
-  // Modale de confirmation custom (pas de confirm() natif bloqué par le forum)
+  // Modale personnalisée pour remplacer l'alerte native bloquée
   const ok = await new Promise(resolve => {
     const overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.85);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px';
@@ -1683,13 +1683,13 @@ async function supprimerCompteJoueur() {
         <div style="font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;margin-bottom:12px;color:#b91c1c">⚠️ Supprimer le compte ?</div>
         <p style="font-family:'Crimson Text',serif;color:#64748b;margin-bottom:24px">Voulez-vous vraiment supprimer définitivement votre compte, vos messages et toutes vos inscriptions ? Cette action est irréversible.</p>
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-          <button id="confirm-oui" style="padding:10px 20px;background:#b91c1c;color:#fff;border:none;border-radius:4px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:1px;cursor:pointer">Oui, supprimer</button>
-          <button id="confirm-non" style="padding:10px 20px;background:transparent;border:1px solid #e2e8f0;color:#64748b;border-radius:4px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:1px;cursor:pointer">Annuler</button>
+          <button id="btn-oui-suppr" style="padding:10px 20px;background:#b91c1c;color:#fff;border:none;border-radius:4px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:1px;cursor:pointer">Oui, supprimer</button>
+          <button id="btn-non-suppr" style="padding:10px 20px;background:transparent;border:1px solid #e2e8f0;color:#64748b;border-radius:4px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:1px;cursor:pointer">Annuler</button>
         </div>
       </div>`;
     document.body.appendChild(overlay);
-    overlay.querySelector('#confirm-oui').onclick = () => { document.body.removeChild(overlay); resolve(true); };
-    overlay.querySelector('#confirm-non').onclick = () => { document.body.removeChild(overlay); resolve(false); };
+    overlay.querySelector('#btn-oui-suppr').onclick = () => { document.body.removeChild(overlay); resolve(true); };
+    overlay.querySelector('#btn-non-suppr').onclick = () => { document.body.removeChild(overlay); resolve(false); };
   });
 
   if (!ok) return;
@@ -1698,7 +1698,7 @@ async function supprimerCompteJoueur() {
     showToast('Sorcier à l\'œuvre... Suppression en cours');
     const uid = state.user.id;
 
-    // On efface absolument toutes les traces du joueur dans la base de données
+    // On efface absolument toutes les traces du joueur
     await Promise.all([
       sb.from('inscriptions').delete().eq('user_id', uid),
       sb.from('liste_attente').delete().eq('user_id', uid),
@@ -1724,7 +1724,6 @@ async function supprimerCompteJoueur() {
 
   } catch (e) {
     console.error(e);
-    // On remplace aussi le alert() par un beau message pour les mêmes raisons
     showToast("❌ Erreur lors de la suppression de vos données.");
   }
 }
