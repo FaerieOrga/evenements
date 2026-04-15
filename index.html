@@ -193,8 +193,25 @@ input:-webkit-autofill:focus {
   border-radius: 6px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.15);
   color: var(--ink);
+  gap: 10px;
+  flex-wrap: nowrap;
 }
-.logout-bar span { font-family: 'Cinzel', serif; font-size: 0.78rem; letter-spacing: 1px; font-weight: 600; }
+.logout-bar span { 
+  font-family: 'Cinzel', serif; 
+  font-size: 0.78rem; 
+  letter-spacing: 1px; 
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 1;
+}
+.logout-bar > div {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
 
 /* ── ONGLETS ── */
 .tab-switch {
