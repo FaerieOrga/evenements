@@ -1370,15 +1370,28 @@ function switchAuthTab(tab) {
 }
 
 async function doLogin() {
-  const email = document.getElementById('login-email').value.trim(); const mdp = document.getElementById('login-mdp').value;
+  const email = document.getElementById('login-email').value.trim();
+  const mdp = document.getElementById('login-mdp').value;
   hideMsg('err-login');
   if (!email || !mdp) return;
+  
   const { data, error } = await sb.auth.signInWithPassword({ email, password: mdp });
   if (error) {
     showMsg('err-login', 'Email ou mot de passe incorrect. Si vous n\'avez pas encore de compte, cliquez sur "Créer un compte".');
     return;
   }
-  state.user = data.user; closeModal('modal-auth'); updateHeaderUserZone(); await loadPublicEvents();
+  
+  // Vérification confirmation email
+  if (!data.user.email_confirmed_at) {
+    await sb.auth.signOut();
+    showMsg('err-login', '✉ Veuillez confirmer votre adresse email avant de vous connecter. Vérifiez votre boîte mail.');
+    return;
+  }
+  
+  state.user = data.user;
+  closeModal('modal-auth');
+  updateHeaderUserZone();
+  await loadPublicEvents();
   if (state.pendingEventId && !state.mesInscriptions.includes(state.pendingEventId)) ouvrirConfirmInscription();
 }
 
