@@ -682,24 +682,20 @@ input:-webkit-autofill:focus {
          <div id="annonces-container" style="display: flex; flex-direction: column; gap: 15px;">
             <div style="text-align: center; color: var(--ink-light); font-style: italic; font-size: 0.9rem;">Lecture des parchemins...</div>
           </div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="site-footer">
+       </div> </div> </div> <div class="site-footer">
       <button class="footer-orga-link" onclick="openOrgaLogin()">⚔ Accès organisateur</button>
     </div>
-  </div>
+  </div> ```
+
+---
+
+### 2. Vérifier l'Espace Organisateur
+Ton bouton "Nouvelle Missive" est déjà bien présent dans ton espace Orga (ligne 115)[cite: 115]. Cependant, tu as un **double** `id="orga-tab-events"` qui risque de créer des bugs[cite: 114, 115].
+
+**Cherche ce passage (ligne 114-115) :**
+```html
+      <div id="orga-tab-events">
         <div class="orga-toolbar">
-          <button class="btn btn-sm" onclick="openModalCreateEvent()">+ Nouvel événement</button>
-          <button class="btn btn-sm btn-orga" style="background:#58abbc" onclick="ouvrirModaleMissive()">📜 Nouvelle Missive</button>
-          <input type="text" id="orga-search" placeholder="Filtrer…" style="max-width:220px;margin-left:auto" oninput="filterOrgaEvents(this.value)" autocomplete="new-password" onfocus="this.value=''">
-        </div>
-    </div>
-    <div class="site-footer">
-      <button class="footer-orga-link" onclick="openOrgaLogin()">⚔ Accès organisateur</button>
-    </div>
-  </div>
 
   <div id="joueur-screen" style="display:none">
     <div class="logout-bar" style="flex-direction:column;align-items:center;text-align:center;gap:8px">
