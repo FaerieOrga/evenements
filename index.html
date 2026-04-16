@@ -630,17 +630,23 @@ input:-webkit-autofill:focus {
   padding: 3px 10px;
   border-radius: 4px;
 }
-/* ── LAYOUT ACCUEIL ── */
+/* ── LAYOUT ACCUEIL FORCE 50/50 ── */
 .home-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* 50/50 exact ! */
+  grid-template-columns: 1fr 1fr; 
   gap: 24px;
   align-items: start;
-}
-@media (max-width: 900px) {
-  .home-layout { grid-template-columns: 1fr; } /* Sur mobile, ça s'empile proprement */
+  width: 100%;
 }
 
+/* On réduit la largeur minimale des colonnes pour qu'elles puissent cohabiter */
+.home-layout > div {
+  min-width: 0; 
+}
+
+@media (max-width: 900px) {
+  .home-layout { grid-template-columns: 1fr; } 
+}
                                                           
 </style>
 </head>
