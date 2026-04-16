@@ -1391,17 +1391,15 @@ async function doRegister() {
   if (!prenom || !nom || !email || !mdp) { showMsg('err-reg', 'Champs obligatoires.'); return; }
   
   try {
+    // 1. On crée le compte (Supabase envoie le mail à cet instant)
     const { data, error } = await sb.auth.signUp({ email, password: mdp, options: { data: { prenom, nom } } });
     if (error) throw error;
     
-    // On sauvegarde aussi l'email dans la table 'profils'
+    // 2. On crée le profil public
     await sb.from('profils').upsert({ id: data.user.id, prenom, nom, email: email });
     
-    // NOUVEAU MESSAGE : On prévient le joueur d'aller voir ses mails
-    showMsg('ok-reg', '✦ Presque terminé ! Vérifie ta boîte mail (et tes spams) pour confirmer ton compte.', 'success');
-    
-    // J'ai retiré ici l'envoi du mail de bienvenue Google, puisque Supabase lui envoie déjà le mail de confirmation !
-    // J'ai aussi retiré la ligne qui le connectait automatiquement.
+    // 3. ON ARRÊTE TOUT ICI : Pas de doLoginDirect !
+    showMsg('ok-reg', '✦ Compte créé ! Vérifie tes mails pour confirmer avant de te connecter.', 'success');
     
   } catch (err) { 
     showMsg('err-reg', err.message); 
