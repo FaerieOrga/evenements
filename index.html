@@ -679,24 +679,17 @@ input:-webkit-autofill:focus {
           <div style="border-bottom: 2px solid #58abbc; padding-bottom: 10px; margin-bottom: 15px;">
             <h2 style="margin: 0; color: var(--ink); font-family: 'Cinzel', serif; font-size: 1.3rem;">📜 Missives Orga</h2>
           </div>
-          <div id="annonces-container" style="display: flex; flex-direction: column; gap: 15px;">
+         <div id="annonces-container" style="display: flex; flex-direction: column; gap: 15px;">
             <div style="text-align: center; color: var(--ink-light); font-style: italic; font-size: 0.9rem;">Lecture des parchemins...</div>
           </div>
         </div>
-        
       </div>
-      ```
-
----
-
-### Étape 3 : Le bouton Orga & La Modale (HTML)
-Pour que les organisateurs puissent poster, on va leur ajouter un bouton et une petite fenêtre de rédaction.
-
-**1. Le bouton :** Cherche la barre d'outils orga (vers la ligne 475) :
-`<div class="orga-toolbar">` [cite: 106]
-Ajoute la ligne avec le parchemin juste en dessous :
-
-```html
+    </div>
+    
+    <div class="site-footer">
+      <button class="footer-orga-link" onclick="openOrgaLogin()">⚔ Accès organisateur</button>
+    </div>
+  </div>
         <div class="orga-toolbar">
           <button class="btn btn-sm" onclick="openModalCreateEvent()">+ Nouvel événement</button>
           <button class="btn btn-sm btn-orga" style="background:#58abbc" onclick="ouvrirModaleMissive()">📜 Nouvelle Missive</button>
@@ -762,8 +755,10 @@ Ajoute la ligne avec le parchemin juste en dessous :
       </div>
 
       <div id="orga-tab-events">
+        <div id="orga-tab-events">
         <div class="orga-toolbar">
           <button class="btn btn-sm" onclick="openModalCreateEvent()">+ Nouvel événement</button>
+          <button class="btn btn-sm btn-orga" style="background:#58abbc" onclick="ouvrirModaleMissive()">📜 Nouvelle Missive</button>
           <input type="text" id="orga-search" placeholder="Filtrer…" style="max-width:220px;margin-left:auto" oninput="filterOrgaEvents(this.value)" autocomplete="new-password" onfocus="this.value=''">
         </div>
         <table class="orga-table">
