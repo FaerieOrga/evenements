@@ -630,6 +630,18 @@ input:-webkit-autofill:focus {
   padding: 3px 10px;
   border-radius: 4px;
 }
+/* ── LAYOUT ACCUEIL ── */
+.home-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.8fr; /* 1 part pour Événements, 1.8 parts pour Missives */
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .home-layout { grid-template-columns: 1fr; } /* Sur mobile, ça s'empile proprement */
+}
+
+                                                          
 </style>
 </head>
 <body>
@@ -668,22 +680,23 @@ input:-webkit-autofill:focus {
         </select>
         <button class="btn-ghost" onclick="openCalendrier()">📅 Calendrier</button>
       </div>
-      <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;">
+      <div class="home-layout">
         
-        <div style="width: 35%; min-width: 320px; flex-grow: 1;">
+        <div>
           <div class="events-grid" id="public-events-grid">
             <div class="empty-state">Chargement des événements…</div>
           </div>
         </div>
 
-        <div style="width: 60%; min-width: 320px; flex-grow: 2; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 20px;">
+        <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 20px;">
           <div style="border-bottom: 2px solid #58abbc; padding-bottom: 10px; margin-bottom: 15px;">
             <h2 style="margin: 0; color: var(--ink); font-family: 'Cinzel', serif; font-size: 1.3rem;">📜 Missives Orga</h2>
           </div>
-        <div id="annonces-container" style="display: flex; flex-direction: column; gap: 15px;">
+          <div id="annonces-container" style="display: flex; flex-direction: column; gap: 15px;">
             <div style="text-align: center; color: var(--ink-light); font-style: italic; font-size: 0.9rem;">Lecture des parchemins...</div>
           </div>
         </div>
+        
       </div>
     </div>
     <div class="site-footer">
