@@ -667,9 +667,41 @@ input:-webkit-autofill:focus {
         </select>
         <button class="btn-ghost" onclick="openCalendrier()">📅 Calendrier</button>
       </div>
-      <div class="events-grid" id="public-events-grid">
-        <div class="empty-state">Chargement des événements…</div>
+      <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;">
+        
+        <div style="flex: 2; min-width: 300px;">
+          <div class="events-grid" id="public-events-grid">
+            <div class="empty-state">Chargement des événements…</div>
+          </div>
+        </div>
+
+        <div style="flex: 1; min-width: 300px; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 20px;">
+          <div style="border-bottom: 2px solid #58abbc; padding-bottom: 10px; margin-bottom: 15px;">
+            <h2 style="margin: 0; color: var(--ink); font-family: 'Cinzel', serif; font-size: 1.3rem;">📜 Missives Orga</h2>
+          </div>
+          <div id="annonces-container" style="display: flex; flex-direction: column; gap: 15px;">
+            <div style="text-align: center; color: var(--ink-light); font-style: italic; font-size: 0.9rem;">Lecture des parchemins...</div>
+          </div>
+        </div>
+        
       </div>
+      ```
+
+---
+
+### Étape 3 : Le bouton Orga & La Modale (HTML)
+Pour que les organisateurs puissent poster, on va leur ajouter un bouton et une petite fenêtre de rédaction.
+
+**1. Le bouton :** Cherche la barre d'outils orga (vers la ligne 475) :
+`<div class="orga-toolbar">` [cite: 106]
+Ajoute la ligne avec le parchemin juste en dessous :
+
+```html
+        <div class="orga-toolbar">
+          <button class="btn btn-sm" onclick="openModalCreateEvent()">+ Nouvel événement</button>
+          <button class="btn btn-sm btn-orga" style="background:#58abbc" onclick="ouvrirModaleMissive()">📜 Nouvelle Missive</button>
+          <input type="text" id="orga-search" placeholder="Filtrer…" style="max-width:220px;margin-left:auto" oninput="filterOrgaEvents(this.value)" autocomplete="new-password" onfocus="this.value=''">
+        </div>
     </div>
     <div class="site-footer">
       <button class="footer-orga-link" onclick="openOrgaLogin()">⚔ Accès organisateur</button>
@@ -865,7 +897,17 @@ input:-webkit-autofill:focus {
     <div class="msg-error" id="err-event"></div><div class="msg-success" id="ok-event"></div>
   </div>
 </div>
-
+<div class="modal-overlay" id="modal-missive">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-missive')">✕</button>
+    <div class="modal-title">📜 Rédiger une Missive</div>
+    <div class="form-group"><label>Titre de l'annonce</label><input type="text" id="m-titre" placeholder="Oyez, oyez !"></div>
+    <div class="form-group"><label>Auteur</label><input type="text" id="m-auteur" placeholder="L'équipe Orga"></div>
+    <div class="form-group"><label>Message</label><textarea id="m-contenu" placeholder="Votre annonce pour les joueurs..."></textarea></div>
+    <button class="btn btn-full" style="background:#58abbc; margin-top:10px" onclick="sauvegarderMissive()">Publier sur le site</button>
+    <div class="msg-error" id="err-missive"></div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
   <div class="modal-overlay" id="modal-calendrier">
@@ -1680,6 +1722,7 @@ window.addEventListener('load', async () => {
   if (session) state.user = session.user;
   updateHeaderUserZone();
   await loadPublicEvents();
+  await loadAnnonces();
 });
 
 async function supprimerCompteJoueur() {
@@ -1733,7 +1776,71 @@ async function supprimerCompteJoueur() {
     showToast("❌ Erreur lors de la suppression de vos données.");
   }
 }
-  
+  // ════════════════════════════════════════════════════
+//  MISSIVES ORGA
+// ════════════════════════════════════════════════════
+async function loadAnnonces() {
+  const container = document.getElementById('annonces-container');
+  if (!container) return;
+  try {
+    const { data, error } = await sb.from('annonces').select('*').order('date_creation', { ascending: false }).limit(5);
+    if (error) throw error;
+    
+    if (data.length === 0) {
+      container.innerHTML = `<div style="text-align:center; color:var(--ink-light); font-style:italic; font-size:0.9rem;">Aucune missive pour le moment.</div>`;
+      return;
+    }
+    
+    container.innerHTML = data.map(a => `
+      <div style="background: white; padding: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #58abbc;">
+        <h3 style="margin: 0 0 8px 0; font-size: 1.05rem; color: var(--ink); font-family: 'Cinzel', serif;">${a.titre}</h3>
+        <p style="margin: 0 0 12px 0; font-size: 0.9rem; color: #475569; line-height: 1.5; white-space: pre-wrap;">${a.contenu}</p>
+        <div style="font-size: 0.75rem; color: var(--ink-light); text-align: right; border-top: 1px dashed var(--border); padding-top: 8px;">
+          Par <b>${a.auteur_nom}</b> le ${new Date(a.date_creation).toLocaleDateString('fr-FR')}
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    console.error("Erreur missives :", err);
+    container.innerHTML = `<div style="color:var(--red-blood); font-size:0.8rem;">Impossible de lire les parchemins.</div>`;
+  }
+}
+
+function ouvrirModaleMissive() {
+  document.getElementById('m-titre').value = '';
+  document.getElementById('m-auteur').value = 'L\'équipe Orga';
+  document.getElementById('m-contenu').value = '';
+  hideMsg('err-missive');
+  openModal('modal-missive');
+}
+
+async function sauvegarderMissive() {
+  const titre = document.getElementById('m-titre').value.trim();
+  const auteur_nom = document.getElementById('m-auteur').value.trim();
+  const contenu = document.getElementById('m-contenu').value.trim();
+
+  if (!titre || !contenu) { showMsg('err-missive', 'Le titre et le message sont obligatoires.'); return; }
+
+  try {
+    showToast('Envoi de la missive en cours...');
+    
+    // 1. Sauvegarde sur le site
+    const { error } = await sb.from('annonces').insert({ titre, contenu, auteur_nom });
+    if (error) throw error;
+
+    // 2. ⚡️ CONNEXION BREVO ICI ⚡️
+    // C'est ici que tu peux insérer le code que Claude t'a fait pour Brevo.
+    // Par exemple, un fetch vers Make/Zapier :
+    // await fetch('TON_URL_WEBHOOK', { method: 'POST', body: JSON.stringify({ titre, contenu }) });
+
+    closeModal('modal-missive');
+    showToast('✦ Missive publiée !');
+    await loadAnnonces(); 
+  } catch (err) {
+    console.error(err);
+    showMsg('err-missive', "Erreur lors de la publication.");
+  }
+}
 </script>
 </body>
 </html>
