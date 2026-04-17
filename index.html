@@ -1120,11 +1120,30 @@ async function doRegister() {
   showMsg('ok-reg', '✦ Compte créé ! Vérifie tes mails.', 'success');
 }
 
-function updateHeaderUserZone() {
+async function updateHeaderUserZone() {
   const zone = document.getElementById('header-user-zone');
+  if (!zone) return;
+
   if (state.user) {
-    zone.innerHTML = `<button class="btn-ghost" onclick="ouvrirEspaceJoueur()">✦ ${state.user.user_metadata?.prenom || 'Moi'}</button>
-                      <button class="btn-ghost" onclick="logoutJoueur()">Déconnexion</button>`;
+    // 1. On vérifie si l'utilisateur est Admin
+    const isOrga = state.user.app_metadata && state.user.app_metadata.is_admin === true;
+    
+    // 2. On construit le menu
+    zone.innerHTML = `
+      ${isOrga ? `<button class="btn-ghost" onclick="window.location.href='orga.html'" style="color:var(--teal); font-weight:bold;">🏰 Bureau de l'Orga</button>` : ''}
+      <button class="btn-ghost" onclick="ouvrirEspaceJoueur()" style="position:relative">
+        ✦ ${state.user.user_metadata?.prenom || 'Moi'}
+        <span id="header-notif-dot" style="display:none;position:absolute;top:2px;right:2px;width:8px;height:8px;background:var(--red-blood);border-radius:50%"></span>
+      </button>
+      <button class="btn-ghost" onclick="logoutJoueur()">Déconnexion</button>
+    `;
+    
+    // Gestion du petit point de notification
+    checkNouveauxMessages().then(() => { 
+      const dot = document.getElementById('notif-msg-dot'); 
+      const hdot = document.getElementById('header-notif-dot'); 
+      if (hdot && dot) hdot.style.display = dot.style.display; 
+    });
   } else {
     zone.innerHTML = `<button class="btn btn-sm" onclick="openAuthModal()">Se connecter</button>`;
   }
