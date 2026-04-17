@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scribe de Faérie - Administration</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Crimson+Text:ital@0;1&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --teal: #58abbc; --ink: #1e293b; --bg: #f8fafc; }
+        body { font-family: 'Crimson Text', serif; background: var(--bg); color: var(--ink); margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1, h2 { font-family: 'Cinzel', serif; color: var(--teal); text-align: center; }
+        
+        /* Formulaire */
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; margin-bottom: 30px; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; }
+        input, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 15px; font-family: inherit; font-size: 1rem; box-sizing: border-box; }
+        button { background: var(--teal); color: white; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: 'Cinzel'; width: 100%; transition: 0.3s; }
+        button:hover { background: #468a99; transform: translateY(-2px); }
+
+        /* Liste des missives */
+        .missive-item { background: white; padding: 15px; border-radius: 8px; border-left: 5px solid var(--teal); margin-bottom: 10px; position: relative; display: flex; justify-content: space-between; align-items: center; }
+        .missive-info h3 { margin: 0; font-size: 1.1rem; }
+        .btn-delete { background: #fee2e2; color: #b91c1c; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
+        .btn-delete:hover { background: #fecaca; }
+        
+        #admin-lock { display: none; text-align: center; padding: 100px 20px; }
+    </style>
+</head>
+<body>
+
+    <div id="admin-lock">
+        <h1>🔒 Accès Restreint</h1>
+        <p>Seuls les Seigneurs de Faérie peuvent entrer ici.</p>
+        <button onclick="window.location.href='index.html'" style="width:auto;">Retour à l'accueil</button>
+    </div>
+
+    <div id="admin-content" class="container" style="display:none;">
+        <h1>⚔ Bureau de l'Orga</h1>
+        
+        <div class="card">
+            <h2>📜 Publier une nouvelle Missive</h2>
+            <label>Titre de l'annonce</label>
+            <input type="text" id="m-titre" placeholder="Ex: Ouverture des inscriptions...">
+            <label>Votre nom (Scribe)</label>
+            <input type="text" id="m-auteur" placeholder="Ex: Elara">
+            <label>Contenu du message</label>
+            <textarea id="m-contenu" rows="5" placeholder="Écrivez votre parchemin ici..."></textarea>
+            <button onclick="publierMissive()">✦ Diffuser la missive</button>
+        </div>
+
+        <h2>🗑 Gérer les Missives Récentes</h2>
+        <div id="liste-admin-annonces">
+            </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://zutgjwnmolzwkbkdzfko.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1dGdqd25tb2x6d2tia2R6ZmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NDczMTksImV4cCI6MjA5MTUyMzMxOX0.qQ0pCnU9JoPaHmaB-p9vvo5-8rN6LPjNIwf81SaYJbs';
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // 1. VÉRIFICATION DE SÉCURITÉ AU CHARGEMENT
+        window.addEventListener('load', async () => {
+            const { data: { session } } = await sb.auth.getSession();
+            
+            if (session && session.user.app_metadata && session.user.app_metadata.is_admin === true) {
+                document.getElementById('admin-content').style.display = 'block';
+                loadAnnoncesAdmin();
+            } else {
+                document.getElementById('admin-lock').style.display = 'block';
+            }
+        });
+
+        // 2. CHARGER LES ANNONCES
+        async function loadAnnoncesAdmin() {
+            const { data, error } = await sb.from('annonces').select('*').order('date_creation', { ascending: false });
+            const list = document.getElementById('liste-admin-annonces');
+            
+            if (data) {
+                list.innerHTML = data.map(a => `
+                    <div class="missive-item">
+                        <div class="missive-info">
+                            <h3>${a.titre}</h3>
+                            <small>Par ${a.auteur_nom} le ${new Date(a.date_creation).toLocaleDateString()}</small>
+                        </div>
+                        <button class="btn-delete" onclick="supprimerMissive('${a.id}')">Supprimer 🗑️</button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 3. PUBLIER
+        async function publierMissive() {
+            const titre = document.getElementById('m-titre').value;
+            const auteur_nom = document.getElementById('m-auteur').value;
+            const contenu = document.getElementById('m-contenu').value;
+
+            if (!titre || !contenu) return alert("Le titre et le contenu sont requis !");
+
+            const { error } = await sb.from('annonces').insert({ titre, auteur_nom, contenu });
+            
+            if (!error) {
+                alert("✦ Missive envoyée dans les royaumes !");
+                document.getElementById('m-titre').value = '';
+                document.getElementById('m-contenu').value = '';
+                loadAnnoncesAdmin();
+            } else {
+                alert("Erreur : " + error.message);
+            }
+        }
+
+        // 4. SUPPRIMER
+        async function supprimerMissive(id) {
+            if (!confirm("Faire disparaître cette missive ?")) return;
+            await sb.from('annonces').delete().eq('id', id);
+            loadAnnoncesAdmin();
+        }
+    </script>
+</body>
+</html>
