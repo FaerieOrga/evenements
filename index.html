@@ -940,6 +940,23 @@ const ORGA_PASSWORD = 'Faerie2024!';
 // L'adresse de ton facteur Google !
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyvEKDVoslH3d5BnZhLaY7RO_JtTDDEfnRbZLzezZ8PNmWUi5yXEfPsZOhnBgHNaqij/exec';
 
+// --- DÉTECTION AUTOMATIQUE DE LA CONNEXION ---
+sb.auth.onAuthStateChange((event, session) => {
+  console.log("Événement Auth :", event);
+  
+  // Si on se connecte (SIGNED_IN) ou si la session est reconnue (INITIAL_SESSION)
+  if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+    console.log("Utilisateur connecté, mise à jour des droits...");
+    loadAnnonces(); // Relance l'affichage pour montrer les poubelles
+  }
+  
+  // Si on se déconnecte
+  if (event === 'SIGNED_OUT') {
+    console.log("Utilisateur déconnecté.");
+    loadAnnonces(); // Relance l'affichage pour cacher les poubelles
+  }
+});
+  
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const state = {
