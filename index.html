@@ -1341,34 +1341,58 @@ async function envoyerMessage() {
 }
 
 async function loadOrgaMessagerie() {
-  const { data } = await sb.from('messages').select('user_id, auteur, lu_orga').order('created_at', { ascending: false });
-  if (!data) return;
-  
-  // On récupère le "bottin" de tous les joueurs pour traduire les ID en prénoms
-  const { data: profils } = await sb.from('profils').select('id, prenom, nom');
-  const annuaire = {};
-  if (profils) {
-    profils.forEach(p => annuaire[p.id] = `${p.prenom} ${p.nom}`);
-  }
+  try {
+    // 1. On récupère tous les messages
+    const { data: allMessages, error: msgError } = await sb.from('messages')
+      .select('user_id, auteur, lu_orga')
+      .order('created_at', { ascending: false });
+    
+    if (msgError) throw msgError;
+    if (!allMessages) return;
 
-  const joueurs = {};
-  for (const m of data) {
-    if (!joueurs[m.user_id]) joueurs[m.user_id] = { nonLus: 0 };
-    if (m.auteur === 'joueur' && !m.lu_orga) joueurs[m.user_id].nonLus++;
+    // 2. On récupère les profils existants pour faire le lien ID -> Nom
+    const { data: profils } = await sb.from('profils').select('id, prenom, nom, email');
+    const annuaire = {};
+    if (profils) {
+      profils.forEach(p => {
+        // On préfère "Prénom Nom", sinon on prend l'email
+        annuaire[p.id] = (p.prenom || p.nom) ? `${p.prenom || ''} ${p.nom || ''}`.trim() : p.email;
+      });
+    }
+
+    // 3. On regroupe les messages par joueur
+    const joueurs = {};
+    allMessages.forEach(m => {
+      if (!joueurs[m.user_id]) {
+        joueurs[m.user_id] = { nonLus: 0 };
+      }
+      if (m.auteur === 'joueur' && !m.lu_orga) {
+        joueurs[m.user_id].nonLus++;
+      }
+    });
+    
+    // 4. On remplit la liste déroulante
+    const sel = document.getElementById('orga-joueur-select');
+    let html = '<option value="">— Sélectionner un joueur —</option>';
+    
+    Object.keys(joueurs).forEach(uid => {
+      // Si on n'a pas le nom dans l'annuaire, on affiche "Utilisateur (ID...)"
+      const nomAffichage = annuaire[uid] || `Utilisateur inconnu (${uid.substring(0, 5)})`;
+      const badge = joueurs[uid].nonLus > 0 ? ` (${joueurs[uid].nonLus} non lu)` : '';
+      html += `<option value="${uid}">${nomAffichage}${badge}</option>`;
+    });
+    
+    sel.innerHTML = html;
+    
+    // 5. Mise à jour de la petite pastille rouge de notification
+    const totalNonLus = Object.values(joueurs).reduce((a, b) => a + b.nonLus, 0);
+    const dot = document.getElementById('notif-orga-dot');
+    if (dot) dot.style.display = totalNonLus > 0 ? '' : 'none';
+
+  } catch (e) {
+    console.error("Erreur chargement messagerie orga:", e);
   }
-  
-  const sel = document.getElementById('orga-joueur-select');
-  sel.innerHTML = '<option value="">— Sélectionner un joueur —</option>' + Object.keys(joueurs).map(uid => {
-    // On va chercher le vrai nom, ou on affiche l'ID si le profil est introuvable
-    const nomAffichage = annuaire[uid] || `Joueur inconnu (${uid.substring(0,5)})`;
-    return `<option value="${uid}">${nomAffichage} ${joueurs[uid].nonLus > 0 ? `(${joueurs[uid].nonLus} non lu)` : ''}</option>`;
-  }).join('');
-  
-  const totalNonLus = Object.values(joueurs).reduce((a, b) => a + b.nonLus, 0);
-  const dot = document.getElementById('notif-orga-dot');
-  if (dot) dot.style.display = totalNonLus > 0 ? '' : 'none';
 }
-
 async function loadOrgaConversation(userId) {
   state.currentOrgaUserId = userId;
   const fil = document.getElementById('orga-messages-fil');
