@@ -1398,6 +1398,76 @@ function showJoueurTab(tab, btn) {
     renderMesInscriptions();
   }
 }
+
+// --- Charger et afficher les messages du joueur ---
+async function loadJoueurMessages() {
+  const fil = document.getElementById('messages-fil');
+  
+  // Si le joueur n'est pas connecté, on arrête
+  if (!state.user) return;
+
+  try {
+    // On essaie de récupérer les messages dans Supabase
+    const { data, error } = await sb.from('messages')
+      .select('*')
+      .eq('user_id', state.user.id)
+      .order('date_creation', { ascending: true });
+
+    // S'il n'y a pas de messages (ou si la table n'existe pas encore)
+    if (error || !data || data.length === 0) {
+      fil.innerHTML = '<div class="empty-state">Vous n\'avez aucun message. Écrivez à l\'équipe orga ci-dessous !</div>';
+      return;
+    }
+
+    // S'il y a des messages, on les affiche sous forme de bulles
+    fil.innerHTML = data.map(m => {
+      // On vérifie qui a envoyé le message pour aligner à gauche ou à droite
+      const isJoueur = m.expediteur === 'joueur';
+      const bubbleClass = isJoueur ? 'msg-bubble joueur' : 'msg-bubble orga';
+      
+      return `
+        <div class="${bubbleClass}">
+          <div class="msg-bubble-meta">${new Date(m.date_creation).toLocaleString('fr-FR')}</div>
+          <div>${m.contenu}</div>
+        </div>
+      `;
+    }).join('');
+    
+    // On fait défiler la zone vers le bas pour voir le dernier message
+    fil.scrollTop = fil.scrollHeight;
+
+  } catch (e) {
+    // En cas de problème, on enlève le mot "Chargement" au moins !
+    fil.innerHTML = '<div class="empty-state">Commencez la conversation avec les orgas ici.</div>';
+  }
+}
+
+// --- Envoyer un nouveau message ---
+async function envoyerMessage() {
+  const textarea = document.getElementById('msg-nouveau');
+  const contenu = textarea.value.trim();
+  
+  // On ne fait rien si la zone de texte est vide
+  if (!contenu) return;
+
+  try {
+    // On envoie le message dans la base de données Supabase
+    await sb.from('messages').insert({
+      user_id: state.user.id,
+      contenu: contenu,
+      expediteur: 'joueur'
+    });
+    
+    // On vide la zone de texte
+    textarea.value = ''; 
+    
+    // On recharge la liste des messages pour voir celui qu'on vient d'envoyer !
+    loadJoueurMessages(); 
+    
+  } catch(e) {
+    showMsg('err-msg', "Erreur lors de l'envoi du message.");
+  }
+}
   
 </script>
 </body>
