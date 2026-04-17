@@ -1789,21 +1789,27 @@ async function supprimerCompteJoueur() {
 async function loadAnnonces() {
   const container = document.getElementById('annonces-container');
   if (!container) return;
+  
   try {
-    // 1. On vérifie qui est connecté via Supabase
+    // 1. On récupère la session actuelle
     const { data: { session } } = await sb.auth.getSession();
+    
+    // 2. On vérifie si l'utilisateur a le badge admin (ce qu'on a vu en console)
     const isOrga = session && session.user.app_metadata && session.user.app_metadata.is_admin === true;
 
+    // 3. On récupère les missives dans la table 'annonces'
     const { data, error } = await sb.from('annonces').select('*').order('date_creation', { ascending: false }).limit(5);
+    
     if (error) throw error;
     
-    if (data.length === 0) {
+    if (!data || data.length === 0) {
       container.innerHTML = `<div style="text-align:center; color:var(--ink-light); font-style:italic; font-size:0.9rem;">Aucune missive pour le moment.</div>`;
       return;
     }
     
+    // 4. On dessine les missives
     container.innerHTML = data.map(a => `
-      <div style="background: white; padding: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #58abbc; position: relative;">
+      <div style="background: white; padding: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #58abbc; position: relative; margin-bottom: 10px;">
         
         ${isOrga ? `
           <button onclick="supprimerMissive('${a.id}')" 
@@ -1820,12 +1826,12 @@ async function loadAnnonces() {
         </div>
       </div>
     `).join('');
+    
   } catch (err) {
     console.error("Erreur missives :", err);
-    container.innerHTML = `<div style="color:var(--red-blood); font-size:0.8rem;">Impossible de lire les parchemins.</div>`;
+    container.innerHTML = `<div style="color:var(--red-blood); font-size:0.8rem;">Le parchemin des annonces est illisible.</div>`;
   }
 }
-
 function ouvrirModaleMissive() {
   document.getElementById('m-titre').value = '';
   document.getElementById('m-auteur').value = 'L\'équipe Orga';
