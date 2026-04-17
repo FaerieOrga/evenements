@@ -1790,6 +1790,10 @@ async function loadAnnonces() {
   const container = document.getElementById('annonces-container');
   if (!container) return;
   try {
+    // 1. On vérifie qui est connecté via Supabase
+    const { data: { session } } = await sb.auth.getSession();
+    const isOrga = session && session.user.email === 'avada@hotmail.fr'; // Remplace par ton mail exact
+
     const { data, error } = await sb.from('annonces').select('*').order('date_creation', { ascending: false }).limit(5);
     if (error) throw error;
     
@@ -1799,21 +1803,23 @@ async function loadAnnonces() {
     }
     
     container.innerHTML = data.map(a => `
-  <div style="background: white; padding: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #58abbc; position: relative;">
-    
-    <button onclick="supprimerMissive('${a.id}')" 
-            style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: #b91c1c; cursor: pointer; font-size: 1.1rem;" 
-            title="Supprimer la missive">
-      🗑️
-    </button>
+      <div style="background: white; padding: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #58abbc; position: relative;">
+        
+        ${isOrga ? `
+          <button onclick="supprimerMissive('${a.id}')" 
+                  style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: #b91c1c; cursor: pointer; font-size: 1.1rem;" 
+                  title="Supprimer la missive">
+            🗑️
+          </button>
+        ` : ''}
 
-    <h3 style="margin: 0 0 8px 0; font-size: 1.05rem; color: var(--ink); font-family: 'Cinzel', serif; padding-right: 25px;">${a.titre}</h3>
-    <p style="margin: 0 0 12px 0; font-size: 0.9rem; color: #475569; line-height: 1.5; white-space: pre-wrap;">${a.contenu}</p>
-    <div style="font-size: 0.75rem; color: var(--ink-light); text-align: right; border-top: 1px dashed var(--border); padding-top: 8px;">
-      Par <b>${a.auteur_nom}</b> le ${new Date(a.date_creation).toLocaleDateString('fr-FR')}
-    </div>
-  </div>
-`).join('');
+        <h3 style="margin: 0 0 8px 0; font-size: 1.05rem; color: var(--ink); font-family: 'Cinzel', serif; padding-right: 25px;">${a.titre}</h3>
+        <p style="margin: 0 0 12px 0; font-size: 0.9rem; color: #475569; line-height: 1.5; white-space: pre-wrap;">${a.contenu}</p>
+        <div style="font-size: 0.75rem; color: var(--ink-light); text-align: right; border-top: 1px dashed var(--border); padding-top: 8px;">
+          Par <b>${a.auteur_nom}</b> le ${new Date(a.date_creation).toLocaleDateString('fr-FR')}
+        </div>
+      </div>
+    `).join('');
   } catch (err) {
     console.error("Erreur missives :", err);
     container.innerHTML = `<div style="color:var(--red-blood); font-size:0.8rem;">Impossible de lire les parchemins.</div>`;
