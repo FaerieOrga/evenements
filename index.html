@@ -647,6 +647,14 @@ input:-webkit-autofill:focus {
 @media (max-width: 900px) {
   .home-layout { grid-template-columns: 1fr; } 
 }
+
+  /* Style pour la petite bulle d'info au survol */
+.slots-info {
+  cursor: help;
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted var(--ink-light); /* Un petit souligné discret pour dire qu'il y a une info */
+}
                                                           
 </style>
 </head>
@@ -1002,6 +1010,8 @@ async function loadPublicEvents() {
     today.setHours(0, 0, 0, 0);
     const { data: events } = await sb.from('evenements').select('*').gte('date_debut', today.toISOString()).order('date_debut', { ascending: true });
     const { data: allInscriptions } = await sb.from('inscriptions').select('event_id');
+    const { data: allProfils } = await sb.from('profils').select('id, prenom');
+    state.allProfils = allProfils || [];
     
     state.events = (events || []).map(ev => {
       const occupes = (allInscriptions || []).filter(i => i.event_id === ev.id).length;
@@ -1047,6 +1057,12 @@ function renderPublicEvents(list) {
     const interesse   = state.mesInteresses && state.mesInteresses.includes(ev.id);
     const debut       = ev.date_debut ? formatDatetime(ev.date_debut) : (ev.date ? new Date(ev.date).toLocaleDateString('fr-FR') : '—');
     const fin         = ev.date_fin ? formatDatetime(ev.date_fin) : null;
+    const inscritsIci = (state.allInscriptions || []).filter(i => i.event_id === ev.id);
+const noms = inscritsIci.map(ins => {
+    const p = (state.allProfils || []).find(prof => prof.id === ins.user_id);
+    return p ? (p.prenom || "Aventurier") : "Aventurier";
+}).join(', ');
+const bulle = noms ? "Inscrits : " + noms : "Aucun inscrit";
 
     let btnHtml = '';
     if (inscrit) {
@@ -1080,7 +1096,7 @@ function renderPublicEvents(list) {
       <div class="event-card-footer">
         <div class="jauge-wrap">
           <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
-          <span class="jauge-text">${placesDispo} / ${placesTot}</span>
+          <span class="jauge-text slots-info" title="${bulle}">${placesDispo} / ${placesTot}</span>
           ${complet && !inscrit && !enAttente && !interesse ? '<span class="badge-attente">COMPLET</span>' : ''}
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${btnHtml}</div>
@@ -1960,6 +1976,7 @@ async function supprimerMissive(id) {
     showToast("❌ Erreur lors de la suppression.");
   }
 }
+
   
 </script>
 </body>
