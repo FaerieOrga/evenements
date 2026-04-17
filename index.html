@@ -1006,15 +1006,21 @@ function toLocalInput(iso) {
 async function loadPublicEvents() {
   const grid = document.getElementById('public-events-grid');
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const { data: events } = await sb.from('evenements').select('*').gte('date_debut', today.toISOString()).order('date_debut', { ascending: true });
+    // 1. On récupère TOUS les événements sans filtre SQL (plus de bug de date)
+    const { data: allEventsFromDB } = await sb.from('evenements').select('*').order('date_debut', { ascending: true });
+    
     const { data: allInscriptions } = await sb.from('inscriptions').select('event_id, user_id');
     const { data: profils } = await sb.from('profils').select('id, prenom, nom');
+    
     state.allProfils = profils || [];
     state.allInscriptionsData = allInscriptions || [];
-    
-    state.events = (events || []).map(ev => {
+
+    // 2. On trie en JavaScript : on ne garde que ce qui est futur (ou aujourd'hui)
+    const maintenant = new Date();
+    state.events = (allEventsFromDB || []).filter(ev => {
+      const dateEv = new Date(ev.date_debut);
+      return dateEv >= maintenant; // On ne garde que le futur
+    }).map(ev => {
       const occupes = (allInscriptions || []).filter(i => i.event_id === ev.id).length;
       ev.places_reelles_dispo = ev.places_totales - occupes;
       return ev;
