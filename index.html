@@ -959,6 +959,9 @@ function switchAuthTab(tab) {
   document.getElementById('tab-inscription').classList.toggle('active', tab === 'inscription');
 }
 
+// On crée le client Supabase en premier !
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  
 // ════════════════════════════════════════════════════
 //  2. DÉTECTION DE CONNEXION (DYNAMIQUE)
 // ════════════════════════════════════════════════════
@@ -971,8 +974,6 @@ sb.auth.onAuthStateChange((event, session) => {
   }
 });
   
-// On crée le client Supabase en premier !
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const state = {
   user: null, events: [], orgaEvents: [], mesInscriptions: [], 
