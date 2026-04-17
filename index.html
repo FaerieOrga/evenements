@@ -47,6 +47,7 @@ input, select, textarea { width: 100%; background: #f8fafc; border: 1px solid va
 .tab-switch button { flex: 1; padding: 10px; background: #f8fafc; border: none; font-family: 'Cinzel', serif; cursor: pointer; }
 .tab-switch button.active { background: var(--ink); color: #fff; }
 .filter-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 22px; flex-wrap: wrap; }
+.filter-bar input, .filter-bar select { flex: 1; min-width: 140px; max-width: 260px; }
 .events-grid { display: flex; flex-direction: column; gap: 18px; }
 .event-card { border: 1px solid var(--border); background: #ffffff; border-radius: 6px; padding: 15px; }
 .event-card-titre { font-family: 'Cinzel', serif; font-size: 1.15rem; font-weight: 700; }
@@ -65,7 +66,7 @@ input, select, textarea { width: 100%; background: #f8fafc; border: 1px solid va
 .modal-close { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 1.2rem; cursor: pointer; }
 .toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: white; padding: 10px 20px; border-radius: 4px; opacity: 0; transition: 0.3s; }
 .toast.show { opacity: 1; }
-.home-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.home-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: start; }
 @media (max-width: 900px) { .home-layout { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -82,7 +83,7 @@ input, select, textarea { width: 100%; background: #f8fafc; border: 1px solid va
         <div id="header-user-zone"></div>
       </div>
       <div class="filter-bar">
-        <input type="text" id="search-input" placeholder="Rechercher..." oninput="filterEvents()">
+        <input type="text" id="search-input" placeholder="Rechercher un événement..." oninput="filterEvents()" autocomplete="one-time-code" name="search-fantasy-unique-id" spellcheck="false">
         <select id="filter-type" onchange="filterEvents()">
           <option value="">Tous les types</option>
           <option value="Grandeur nature">Grandeur nature</option>
