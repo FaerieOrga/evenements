@@ -931,33 +931,31 @@ input:-webkit-autofill:focus {
 
 <script>
 // ════════════════════════════════════════════════════
-//  1. CONFIGURATION ET INITIALISATION (D'ABORD)
+//  1. CONFIGURATION ET INITIALISATION
 // ════════════════════════════════════════════════════
 const SUPABASE_URL  = 'https://zutgjwnmolzwkbkdzfko.supabase.co';
 const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1dGdqd25tb2x6d2tia2R6ZmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NDczMTksImV4cCI6MjA5MTUyMzMxOX0.qQ0pCnU9JoPaHmaB-p9vvo5-8rN6LPjNIwf81SaYJbs';
 const ORGA_PASSWORD = 'Faerie2024!';
 const GAS_URL       = 'https://script.google.com/macros/s/AKfycbyvEKDVoslH3d5BnZhLaY7RO_JtTDDEfnRbZLzezZ8PNmWUi5yXEfPsZOhnBgHNaqij/exec';
 
-// Création du client AVANT toute utilisation
+// On crée le client Supabase en premier !
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const state = {
-  user: null, events: [], orgaEvents: [], mesInscriptions: [], maListeAttente: [],
-  pendingEventId: null, pendingEventTitre: null, pendingEventDispo: null, 
-  currentOrgaUserId: null, mesInteresses: []
+  user: null, events: [], orgaEvents: [], mesInscriptions: [], 
+  maListeAttente: [], mesInteresses: [], pendingEventId: null, 
+  pendingEventTitre: null, pendingEventDispo: null, currentOrgaUserId: null
 };
 
 // ════════════════════════════════════════════════════
-//  2. ÉCOUTEUR DE CONNEXION (DÉTECTION AUTOMATIQUE)
+//  2. DÉTECTION DE CONNEXION (DYNAMIQUE)
 // ════════════════════════════════════════════════════
 sb.auth.onAuthStateChange((event, session) => {
-  console.log("Événement Auth :", event);
   state.user = session ? session.user : null;
-  
   updateHeaderUserZone();
-  
   if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'SIGNED_OUT') {
-    loadAnnonces(); // Recharge les missives pour voir/cacher les poubelles
+    loadAnnonces(); // Rafraîchit les poubelles sur les missives
+    loadPublicEvents();
   }
 });
 
@@ -971,7 +969,7 @@ async function sendEmailViaGAS(email, sujet, message) {
       body: JSON.stringify({ email: email, sujet: sujet, message: message }),
       headers: { "Content-Type": "text/plain;charset=utf-8" }
     });
-  } catch (e) { console.error("Erreur d'envoi d'email:", e); }
+  } catch (e) { console.error("Erreur email:", e); }
 }
 
 function formatDatetime(iso) {
@@ -988,7 +986,7 @@ function toLocalInput(iso) {
 }
 
 // ════════════════════════════════════════════════════
-//  4. CHARGEMENT DES MISSIVES (ANNONCES)
+//  4. GESTION DES MISSIVES (ANNONCES)
 // ════════════════════════════════════════════════════
 async function loadAnnonces() {
   const container = document.getElementById('annonces-container');
@@ -996,42 +994,30 @@ async function loadAnnonces() {
   try {
     const { data: { session } } = await sb.auth.getSession();
     const isOrga = session && session.user.app_metadata && session.user.app_metadata.is_admin === true;
-
     const { data, error } = await sb.from('annonces').select('*').order('date_creation', { ascending: false }).limit(5);
     if (error) throw error;
     
-    if (!data || data.length === 0) {
-      container.innerHTML = `<div style="text-align:center; color:var(--ink-light); font-style:italic; font-size:0.9rem;">Aucune missive pour le moment.</div>`;
-      return;
-    }
-    
-    container.innerHTML = data.map(a => `
-      <div style="background: white; padding: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #58abbc; position: relative; margin-bottom: 10px;">
+    container.innerHTML = (data || []).map(a => `
+      <div style="background: white; padding: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #58abbc; position: relative; margin-bottom:10px;">
         ${isOrga ? `<button onclick="supprimerMissive('${a.id}')" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: #b91c1c; cursor: pointer; font-size: 1.1rem;">🗑️</button>` : ''}
         <h3 style="margin: 0 0 8px 0; font-size: 1.05rem; color: var(--ink); font-family: 'Cinzel', serif;">${a.titre}</h3>
         <p style="margin: 0 0 12px 0; font-size: 0.9rem; color: #475569; line-height: 1.5; white-space: pre-wrap;">${a.contenu}</p>
-        <div style="font-size: 0.75rem; color: var(--ink-light); text-align: right; border-top: 1px dashed var(--border); padding-top: 8px;">
-          Par <b>${a.auteur_nom}</b> le ${new Date(a.date_creation).toLocaleDateString('fr-FR')}
-        </div>
+        <div style="font-size: 0.75rem; color: var(--ink-light); text-align: right; border-top: 1px dashed var(--border); padding-top: 8px;">Par <b>${a.auteur_nom}</b> le ${new Date(a.date_creation).toLocaleDateString('fr-FR')}</div>
       </div>`).join('');
-  } catch (err) { container.innerHTML = `<div style="color:var(--red-blood); font-size:0.8rem;">Erreur de lecture des parchemins.</div>`; }
+  } catch (err) { console.error(err); }
 }
 
 async function supprimerMissive(id) {
-  if (!confirm("Oyez ! Voulez-vous vraiment supprimer cette missive ?")) return;
-  try {
-    showToast('Vaporisation...');
-    const { error } = await sb.from('annonces').delete().eq('id', id);
-    if (error) throw error;
-    showToast('✦ Missive effacée.');
-    await loadAnnonces();
-  } catch (err) { showToast("❌ La missive résiste."); }
+  if (!confirm("Vaporiser cette missive ?")) return;
+  await sb.from('annonces').delete().eq('id', id);
+  loadAnnonces();
 }
 
 // ════════════════════════════════════════════════════
-//  5. GESTION DES ÉVÉNEMENTS PUBLICS
+//  5. GESTION DES ÉVÉNEMENTS (ORGA & PUBLIC)
 // ════════════════════════════════════════════════════
 async function loadPublicEvents() {
+  const grid = document.getElementById('public-events-grid');
   try {
     const today = new Date(); today.setHours(0,0,0,0);
     const { data: events } = await sb.from('evenements').select('*').gte('date_debut', today.toISOString()).order('date_debut', { ascending: true });
@@ -1059,104 +1045,100 @@ async function loadPublicEvents() {
 function renderPublicEvents(list) {
   const grid = document.getElementById('public-events-grid');
   if (!grid) return;
-  if (!list.length) { grid.innerHTML = '<div class="empty-state">Aucun événement à venir.</div>'; return; }
-
   grid.innerHTML = list.map(ev => {
-    const placesDispo = ev.places_reelles_dispo;
-    const complet = placesDispo <= 0;
+    const pDispo = ev.places_reelles_dispo;
     const inscrit = state.mesInscriptions.includes(ev.id);
     const enAttente = state.maListeAttente.includes(ev.id);
     const interesse = state.mesInteresses.includes(ev.id);
-
     let btnHtml = '';
     if (inscrit) btnHtml = `<span class="badge-inscrit">✦ Inscrit·e</span>`;
-    else if (enAttente) btnHtml = `<span class="badge-attente">⏳ Liste d'attente</span>`;
+    else if (enAttente) btnHtml = `<span class="badge-attente">⏳ Attente</span>`;
     else if (interesse) btnHtml = `<span class="badge-interesse">👀 Intéressé·e</span>`;
-    else if (complet) btnHtml = `<button class="btn btn-sm btn-danger" onclick="handleInscriptionClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${placesDispo})">Liste d'attente</button>`;
-    else btnHtml = `<button class="btn btn-sm" onclick="handleInscriptionClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${placesDispo})">S'inscrire</button>
-                    <button class="btn-ghost" onclick="handleInteresseClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">👀 Intéressé·e</button>`;
+    else if (pDispo <= 0) btnHtml = `<button class="btn btn-sm btn-danger" onclick="handleInscriptionClick('${ev.id}', '${ev.titre}', ${pDispo})">Attente</button>`;
+    else btnHtml = `<button class="btn btn-sm" onclick="handleInscriptionClick('${ev.id}', '${ev.titre}', ${pDispo})">S'inscrire</button>`;
 
-    return `
-    <div class="event-card">
-      <div class="event-card-header"><div class="event-card-titre">${ev.titre}</div><div class="event-card-type">${ev.type || '—'}</div></div>
+    return `<div class="event-card">
+      <div class="event-card-header"><div class="event-card-titre">${ev.titre}</div></div>
       <div class="event-card-body">
-        <div class="event-info-item"><span class="event-info-label">Début</span><span class="event-info-val">${formatDatetime(ev.date_debut)}</span></div>
         <div class="event-info-item"><span class="event-info-label">Lieu</span><span class="event-info-val">📍 ${ev.lieu || '—'}</span></div>
+        <div class="event-info-item"><span class="event-info-label">Début</span><span class="event-info-val">${formatDatetime(ev.date_debut)}</span></div>
       </div>
       <div class="event-card-footer">
-        <div class="jauge-text">${placesDispo} / ${ev.places_totales} places</div>
-        <div style="display:flex;gap:8px;justify-content:flex-end">${btnHtml}</div>
+        <div class="jauge-text">${pDispo} / ${ev.places_totales} places</div>
+        <div style="display:flex;gap:5px;">${btnHtml}</div>
       </div>
     </div>`;
   }).join('');
 }
 
 // ════════════════════════════════════════════════════
-//  6. AUTHENTICATION ET MODALES
+//  6. ACCÈS ORGANISATEUR (TON BUREAU)
 // ════════════════════════════════════════════════════
-async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const mdp = document.getElementById('login-mdp').value;
-  if (!email || !mdp) return;
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: mdp });
-  if (error) { showMsg('err-login', 'Identifiants incorrects.'); return; }
-  if (!data.user.email_confirmed_at) { 
-    await sb.auth.signOut(); 
-    showMsg('err-login', '✉ Veuillez confirmer votre email.'); 
+function openOrgaLogin() { 
+  document.getElementById('orga-pwd').value = ''; 
+  hideMsg('err-orga'); 
+  openModal('modal-orga-auth'); 
+}
+
+async function doLoginOrga() { 
+  if (document.getElementById('orga-pwd').value !== ORGA_PASSWORD) { 
+    showMsg('err-orga', 'Mot de passe incorrect.'); 
     return; 
-  }
-  closeModal('modal-auth');
+  } 
+  closeModal('modal-orga-auth'); 
+  document.getElementById('public-screen').style.display = 'none'; 
+  document.getElementById('orga-screen').style.display = 'block'; 
+  showOrgaTab('events', document.getElementById('otab-events')); 
+  await loadOrgaEvents(); 
+  await loadOrgaMessagerie(); 
 }
 
-async function doRegister() {
-  const prenom = document.getElementById('reg-prenom').value.trim();
-  const nom = document.getElementById('reg-nom').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const mdp = document.getElementById('reg-mdp').value;
-  if (!prenom || !email || !mdp) return;
-  const { data, error } = await sb.auth.signUp({ email, password: mdp, options: { data: { prenom, nom } } });
-  if (error) { showMsg('err-reg', error.message); return; }
-  await sb.from('profils').upsert({ id: data.user.id, prenom, nom, email });
-  showMsg('ok-reg', '✦ Compte créé ! Vérifie tes mails.', 'success');
+function logoutOrga() { 
+  document.getElementById('orga-screen').style.display = 'none'; 
+  document.getElementById('public-screen').style.display = ''; 
 }
 
-async function updateHeaderUserZone() {
-  const zone = document.getElementById('header-user-zone');
-  if (!zone) return;
+async function loadOrgaEvents() {
+  const tbody = document.getElementById('orga-events-body');
+  const { data } = await sb.from('evenements').select('*').order('date_debut', { ascending: true });
+  state.orgaEvents = data || [];
+  tbody.innerHTML = state.orgaEvents.map(ev => `<tr>
+    <td><strong>${ev.titre}</strong></td>
+    <td>${new Date(ev.date_debut).toLocaleDateString()}</td>
+    <td>${ev.places_disponibles}/${ev.places_totales}</td>
+    <td>
+      <button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${ev.titre}')">👁</button>
+      <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏</button>
+      <button class="btn btn-sm btn-danger" onclick="supprimerEvent('${ev.id}')">🗑</button>
+    </td>
+  </tr>`).join('');
+}
 
-  if (state.user) {
-    // 1. On vérifie si l'utilisateur est Admin
-    const isOrga = state.user.app_metadata && state.user.app_metadata.is_admin === true;
-    
-    // 2. On construit le menu
-    zone.innerHTML = `
-      ${isOrga ? `<button class="btn-ghost" onclick="window.location.href='orga.html'" style="color:var(--teal); font-weight:bold;">🏰 Bureau de l'Orga</button>` : ''}
-      <button class="btn-ghost" onclick="ouvrirEspaceJoueur()" style="position:relative">
-        ✦ ${state.user.user_metadata?.prenom || 'Moi'}
-        <span id="header-notif-dot" style="display:none;position:absolute;top:2px;right:2px;width:8px;height:8px;background:var(--red-blood);border-radius:50%"></span>
-      </button>
-      <button class="btn-ghost" onclick="logoutJoueur()">Déconnexion</button>
-    `;
-    
-    // Gestion du petit point de notification
-    checkNouveauxMessages().then(() => { 
-      const dot = document.getElementById('notif-msg-dot'); 
-      const hdot = document.getElementById('header-notif-dot'); 
-      if (hdot && dot) hdot.style.display = dot.style.display; 
-    });
+async function saveEvent() { 
+  const id = document.getElementById('e-id').value;
+  const titre = document.getElementById('e-titre').value;
+  const rawDebut = document.getElementById('e-date-debut').value;
+  const date_debut = rawDebut ? new Date(rawDebut).toISOString() : null;
+  const lieu = document.getElementById('e-lieu').value;
+  const places_totales = parseInt(document.getElementById('e-places-totales').value) || 0;
+
+  if (id) {
+    await sb.from('evenements').update({ titre, date_debut, lieu, places_totales }).eq('id', id);
   } else {
-    zone.innerHTML = `<button class="btn btn-sm" onclick="openAuthModal()">Se connecter</button>`;
+    await sb.from('evenements').insert({ titre, date_debut, lieu, places_totales, places_disponibles: places_totales });
   }
+  closeModal('modal-event');
+  loadOrgaEvents();
 }
 
-async function logoutJoueur() { 
-  await sb.auth.signOut(); 
-  state.user = null; 
-  retourAccueil(); 
+async function supprimerEvent(id) {
+  if (!confirm("Supprimer l'événement ?")) return;
+  await sb.from('evenements').delete().eq('id', id);
+  loadOrgaEvents();
 }
 
 // ════════════════════════════════════════════════════
-//  7. INITIALISATION FINALE
+//  7. INTERFACE ET INITIALISATION FINALE
 // ════════════════════════════════════════════════════
 window.addEventListener('load', async () => {
   const { data: { session } } = await sb.auth.getSession();
@@ -1166,22 +1148,28 @@ window.addEventListener('load', async () => {
   await loadAnnonces();
 });
 
-// Fonctions UI de base
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
-function openAuthModal() { switchAuthTab('connexion'); openModal('modal-auth'); }
-function switchAuthTab(t) {
-  document.getElementById('form-connexion').style.display = t==='connexion'?'':'none';
-  document.getElementById('form-inscription').style.display = t==='inscription'?'':'none';
+function showMsg(id, txt, type='error') { const el = document.getElementById(id); el.textContent=txt; el.style.display='block'; el.className=type==='success'?'msg-success':'msg-error'; }
+function hideMsg(id) { document.getElementById(id).style.display='none'; }
+function showOrgaTab(tab, btn) { 
+  document.querySelectorAll('#orga-screen .joueur-tab-btn').forEach(b => b.classList.remove('active')); 
+  btn.classList.add('active'); 
+  document.getElementById('orga-tab-events').style.display = tab === 'events' ? '' : 'none'; 
+  document.getElementById('orga-tab-messages').style.display = tab === 'messages' ? '' : 'none'; 
 }
-function showMsg(id, txt, type='error') { 
-  const el = document.getElementById(id); 
-  if(el) { el.textContent=txt; el.style.display='block'; el.className=type==='success'?'msg-success':'msg-error'; } 
+function updateHeaderUserZone() {
+  const zone = document.getElementById('header-user-zone');
+  if (state.user) {
+    zone.innerHTML = `<button class="btn-ghost" onclick="ouvrirEspaceJoueur()">✦ ${state.user.user_metadata?.prenom || 'Moi'}</button>
+                      <button class="btn-ghost" onclick="logoutJoueur()">Déconnexion</button>`;
+  } else {
+    zone.innerHTML = `<button class="btn btn-sm" onclick="openAuthModal()">Se connecter</button>`;
+  }
 }
+async function logoutJoueur() { await sb.auth.signOut(); window.location.reload(); }
 
-// --- AJOUTE ICI TOUTES TES AUTRES FONCTIONS (Calendrier, Orga, Inscriptions, Messagerie) ---
-// Note : Copie-les une par une sans reprendre les blocs Config/Init du début.
   
 </script>
 </body>
