@@ -676,8 +676,7 @@ input:-webkit-autofill:focus {
           <option value="Grandeur nature">Grandeur nature</option>
           <option value="Inventaire/Rangement">Inventaire/Rangement</option>
           <option value="Jeepform">Jeepform</option>
-          <option value="Jeu de rôles sur tables">Jeu de rôles sur tables</option>
-          <option value="Jeu de société">Jeu de société</option>
+          <option value="Jeu de rôles sur tables">Jeu de société</option>
           <option value="Jeu immersif">Jeu immersif</option>
           <option value="Jeux sportif">Jeux sportif</option>
           <option value="Murder party">Murder party</option>
@@ -931,60 +930,25 @@ input:-webkit-autofill:focus {
 
 <script>
 // ════════════════════════════════════════════════════
-//  1. CONFIGURATION ET INITIALISATION
+//  CONFIG ET URL DU SCRIPT D'ENVOI D'EMAILS
 // ════════════════════════════════════════════════════
 const SUPABASE_URL  = 'https://zutgjwnmolzwkbkdzfko.supabase.co';
 const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1dGdqd25tb2x6d2tia2R6ZmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NDczMTksImV4cCI6MjA5MTUyMzMxOX0.qQ0pCnU9JoPaHmaB-p9vvo5-8rN6LPjNIwf81SaYJbs';
 const ORGA_PASSWORD = 'Faerie2024!';
-const GAS_URL       = 'https://script.google.com/macros/s/AKfycbyvEKDVoslH3d5BnZhLaY7RO_JtTDDEfnRbZLzezZ8PNmWUi5yXEfPsZOhnBgHNaqij/exec';
-function openModal(id) { 
-  document.getElementById(id).classList.add('open'); 
-}
 
-function closeModal(id) { 
-  document.getElementById(id).classList.remove('open'); 
-}
+// L'adresse de ton facteur Google !
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyvEKDVoslH3d5BnZhLaY7RO_JtTDDEfnRbZLzezZ8PNmWUi5yXEfPsZOhnBgHNaqij/exec';
 
-function openAuthModal() { 
-  state.pendingEventId = null; 
-  if(document.getElementById('auth-context')) document.getElementById('auth-context').style.display = 'none';
-  switchAuthTab('connexion'); 
-  openModal('modal-auth'); 
-}
-
-function switchAuthTab(tab) {
-  document.getElementById('form-connexion').style.display = (tab === 'connexion' ? '' : 'none');
-  document.getElementById('form-inscription').style.display = (tab === 'inscription' ? '' : 'none');
-  document.getElementById('tab-connexion').classList.toggle('active', tab === 'connexion');
-  document.getElementById('tab-inscription').classList.toggle('active', tab === 'inscription');
-}
-
-// On crée le client Supabase en premier !
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  
-// ════════════════════════════════════════════════════
-//  2. DÉTECTION DE CONNEXION (DYNAMIQUE)
-// ════════════════════════════════════════════════════
-sb.auth.onAuthStateChange((event, session) => {
-  state.user = session ? session.user : null;
-  updateHeaderUserZone();
-  if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'SIGNED_OUT') {
-    loadAnnonces(); // Rafraîchit les poubelles sur les missives
-    loadPublicEvents();
-  }
-});
-  
 
 const state = {
-  user: null, events: [], orgaEvents: [], mesInscriptions: [], 
-  maListeAttente: [], mesInteresses: [], pendingEventId: null, 
-  pendingEventTitre: null, pendingEventDispo: null, currentOrgaUserId: null
+  user: null, events: [], orgaEvents: [], mesInscriptions: [], mesInscriptionsData: [],
+  pendingEventId: null, pendingEventTitre: null, pendingEventDispo: null, currentOrgaUserId: null,
+  mesInteresses: []
 };
 
-
-
 // ════════════════════════════════════════════════════
-//  3. FONCTIONS SYSTÈME ET EMAILS
+//  FONCTION D'ENVOI D'EMAILS
 // ════════════════════════════════════════════════════
 async function sendEmailViaGAS(email, sujet, message) {
   try {
@@ -993,481 +957,916 @@ async function sendEmailViaGAS(email, sujet, message) {
       body: JSON.stringify({ email: email, sujet: sujet, message: message }),
       headers: { "Content-Type": "text/plain;charset=utf-8" }
     });
-  } catch (e) { console.error("Erreur email:", e); }
+  } catch (e) {
+    console.error("Erreur d'envoi d'email:", e);
+  }
 }
 
+// ════════════════════════════════════════════════════
+//  HELPERS DATE
+// ════════════════════════════════════════════════════
 function formatDatetime(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
   return d.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'long', year: 'numeric' }) + ' à ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
-
 function toLocalInput(iso) {
   if (!iso) return '';
   const d = new Date(iso);
+  // On décale manuellement pour compenser le fuseau horaire local du navigateur
   const offset = d.getTimezoneOffset() * 60000;
-  return new Date(d.getTime() - offset).toISOString().slice(0, 16);
+  const localTime = new Date(d.getTime() - offset);
+  return localTime.toISOString().slice(0, 16);
 }
 
 // ════════════════════════════════════════════════════
-//  4. GESTION DES MISSIVES (ANNONCES)
-// ════════════════════════════════════════════════════
-async function loadAnnonces() {
-  const container = document.getElementById('annonces-container');
-  if (!container) return;
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    const isOrga = session && session.user.app_metadata && session.user.app_metadata.is_admin === true;
-    const { data, error } = await sb.from('annonces').select('*').order('date_creation', { ascending: false }).limit(5);
-    if (error) throw error;
-    
-    container.innerHTML = (data || []).map(a => `
-      <div style="background: white; padding: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #58abbc; position: relative; margin-bottom:10px;">
-        ${isOrga ? `<button onclick="supprimerMissive('${a.id}')" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: #b91c1c; cursor: pointer; font-size: 1.1rem;">🗑️</button>` : ''}
-        <h3 style="margin: 0 0 8px 0; font-size: 1.05rem; color: var(--ink); font-family: 'Cinzel', serif;">${a.titre}</h3>
-        <p style="margin: 0 0 12px 0; font-size: 0.9rem; color: #475569; line-height: 1.5; white-space: pre-wrap;">${a.contenu}</p>
-        <div style="font-size: 0.75rem; color: var(--ink-light); text-align: right; border-top: 1px dashed var(--border); padding-top: 8px;">Par <b>${a.auteur_nom}</b> le ${new Date(a.date_creation).toLocaleDateString('fr-FR')}</div>
-      </div>`).join('');
-  } catch (err) { console.error(err); }
-}
-
-async function supprimerMissive(id) {
-  if (!confirm("Vaporiser cette missive ?")) return;
-  await sb.from('annonces').delete().eq('id', id);
-  loadAnnonces();
-}
-
-// ════════════════════════════════════════════════════
-//  5. GESTION DES ÉVÉNEMENTS (ORGA & PUBLIC)
+//  CHARGEMENT PUBLIQUE ET FILTRAGE
 // ════════════════════════════════════════════════════
 async function loadPublicEvents() {
   const grid = document.getElementById('public-events-grid');
   try {
-    const today = new Date(); today.setHours(0,0,0,0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const { data: events } = await sb.from('evenements').select('*').gte('date_debut', today.toISOString()).order('date_debut', { ascending: true });
     const { data: allInscriptions } = await sb.from('inscriptions').select('event_id');
     
     state.events = (events || []).map(ev => {
-      ev.places_reelles_dispo = ev.places_totales - (allInscriptions || []).filter(i => i.event_id === ev.id).length;
+      const occupes = (allInscriptions || []).filter(i => i.event_id === ev.id).length;
+      ev.places_reelles_dispo = ev.places_totales - occupes;
       return ev;
     });
 
     if (state.user) {
-      const [i, a, int] = await Promise.all([
-        sb.from('inscriptions').select('event_id').eq('user_id', state.user.id),
-        sb.from('liste_attente').select('event_id').eq('user_id', state.user.id),
-        sb.from('interesses').select('event_id').eq('user_id', state.user.id)
-      ]);
-      state.mesInscriptions = (i.data || []).map(x => x.event_id);
-      state.maListeAttente = (a.data || []).map(x => x.event_id);
-      state.mesInteresses = (int.data || []).map(x => x.event_id);
+      const { data: inscr } = await sb.from('inscriptions').select('event_id').eq('user_id', state.user.id);
+      state.mesInscriptions = (inscr || []).map(i => i.event_id);
+      const { data: attente } = await sb.from('liste_attente').select('event_id').eq('user_id', state.user.id);
+      state.maListeAttente = (attente || []).map(i => i.event_id);
+      const { data: interesse } = await sb.from('interesses').select('event_id').eq('user_id', state.user.id);
+      state.mesInteresses = (interesse || []).map(i => i.event_id);
     }
     renderPublicEvents(state.events);
-  } catch(e) { console.error(e); }
+  } catch(e) { 
+    console.error(e);
+    if (grid) grid.innerHTML = `<div class="empty-state">Erreur de chargement.</div>`;
+  }
+}
+
+function filterEvents() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const type = document.getElementById('filter-type').value;
+  renderPublicEvents(state.events.filter(ev =>
+    (!q || ev.titre.toLowerCase().includes(q) || (ev.lieu || '').toLowerCase().includes(q)) &&
+    (!type || ev.type === type)
+  ));
 }
 
 function renderPublicEvents(list) {
   const grid = document.getElementById('public-events-grid');
-  if (!grid) return;
-  grid.innerHTML = list.map(ev => {
-    const pDispo = ev.places_reelles_dispo;
-    const inscrit = state.mesInscriptions.includes(ev.id);
-    const enAttente = state.maListeAttente.includes(ev.id);
-    const interesse = state.mesInteresses.includes(ev.id);
-    let btnHtml = '';
-    if (inscrit) btnHtml = `<span class="badge-inscrit">✦ Inscrit·e</span>`;
-    else if (enAttente) btnHtml = `<span class="badge-attente">⏳ Attente</span>`;
-    else if (interesse) btnHtml = `<span class="badge-interesse">👀 Intéressé·e</span>`;
-    else if (pDispo <= 0) btnHtml = `<button class="btn btn-sm btn-danger" onclick="handleInscriptionClick('${ev.id}', '${ev.titre}', ${pDispo})">Attente</button>`;
-    else btnHtml = `<button class="btn btn-sm" onclick="handleInscriptionClick('${ev.id}', '${ev.titre}', ${pDispo})">S'inscrire</button>`;
+  if (!list.length) { grid.innerHTML = '<div class="empty-state">Aucun événement à venir.</div>'; return; }
 
-    return `<div class="event-card">
-      <div class="event-card-header"><div class="event-card-titre">${ev.titre}</div></div>
+  grid.innerHTML = list.map(ev => {
+    const placesTot   = ev.places_totales || 0;
+    const placesDispo = ev.places_reelles_dispo;
+    const pct         = placesTot > 0 ? Math.round((1 - placesDispo / placesTot) * 100) : 100;
+    const complet     = placesDispo <= 0;
+    const inscrit     = state.mesInscriptions.includes(ev.id);
+    const enAttente   = state.maListeAttente && state.maListeAttente.includes(ev.id);
+    const interesse   = state.mesInteresses && state.mesInteresses.includes(ev.id);
+    const debut       = ev.date_debut ? formatDatetime(ev.date_debut) : (ev.date ? new Date(ev.date).toLocaleDateString('fr-FR') : '—');
+    const fin         = ev.date_fin ? formatDatetime(ev.date_fin) : null;
+
+    let btnHtml = '';
+    if (inscrit) {
+      btnHtml = `<span class="badge-inscrit">✦ Inscrit·e</span>`;
+    } else if (enAttente) {
+      btnHtml = `<span class="badge-attente">⏳ Liste d'attente</span>`;
+    } else if (interesse) {
+      btnHtml = `<span class="badge-interesse">👀 Intéressé·e</span>`;
+    } else if (complet) {
+      btnHtml = `<button class="btn btn-sm btn-danger" onclick="handleInscriptionClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${placesDispo})">Liste d'attente</button>`;
+    } else {
+      btnHtml = `
+        <button class="btn btn-sm" onclick="handleInscriptionClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${placesDispo})">S'inscrire</button>
+        <button class="btn-ghost" onclick="handleInteresseClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">👀 Intéressé·e</button>`;
+    }
+
+    return `
+    <div class="event-card">
+      <div class="event-card-header"><div class="event-card-titre">${ev.titre}</div><div class="event-card-type">${ev.type || '—'}</div></div>
       <div class="event-card-body">
-        <div class="event-info-item"><span class="event-info-label">Lieu</span><span class="event-info-val">📍 ${ev.lieu || '—'}</span></div>
-        <div class="event-info-item"><span class="event-info-label">Début</span><span class="event-info-val">${formatDatetime(ev.date_debut)}</span></div>
+        <div class="event-info-item"><span class="event-info-label">Début</span><span class="event-info-val"> ${debut}</span></div>
+        ${fin ? `<div class="event-info-item"><span class="event-info-label">Fin</span><span class="event-info-val"> ${fin}</span></div>` : '<div></div>'}
+        <div class="event-info-item">
+          <span class="event-info-label">Lieu</span>
+          <span class="event-info-val">📍 ${ev.lieu || '—'}</span>
+          ${ev.lien_maps ? `<a href="${ev.lien_maps}" target="_blank" style="display:inline-block; margin-top:4px; font-family:'Cinzel', serif; font-size:0.7rem; color:var(--ink-light); text-decoration:none; border:1px solid var(--border); padding:2px 8px; border-radius:3px; background:#f8fafc;">🗺️ Ouvrir la carte</a>` : ''}
+        </div>
+        <div class="event-info-item"><span class="event-info-label">Organisateurs</span><span class="event-info-val">${ev.organisateurs || '—'}</span></div>
       </div>
+      ${ev.description ? `<div class="event-description">${ev.description}</div>` : ''}
       <div class="event-card-footer">
-        <div class="jauge-text">${pDispo} / ${ev.places_totales} places</div>
-        <div style="display:flex;gap:5px;">${btnHtml}</div>
+        <div class="jauge-wrap">
+          <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
+          <span class="jauge-text">${placesDispo} / ${placesTot}</span>
+          ${complet && !inscrit && !enAttente && !interesse ? '<span class="badge-attente">COMPLET</span>' : ''}
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${btnHtml}</div>
       </div>
     </div>`;
   }).join('');
 }
 
+  async function handleInteresseClick(eventId, titre) {
+  if (!state.user) {
+    document.getElementById('auth-context').style.display = '';
+    document.getElementById('auth-context').textContent = `Pour marquer votre intérêt pour « ${titre} », connectez-vous ou créez un compte.`;
+    document.getElementById('modal-auth-titre').textContent = 'Connexion requise';
+    switchAuthTab('connexion'); openModal('modal-auth');
+    state.pendingEventId = eventId; state.pendingEventTitre = titre;
+    return;
+  }
+  try {
+    await sb.from('interesses').insert({ event_id: eventId, user_id: state.user.id });
+    showToast('👀 Intérêt enregistré !');
+    await loadPublicEvents();
+  } catch(e) {
+    if (e.message.includes('23505')) showToast('Déjà enregistré !');
+    else console.error(e);
+  }
+}
+
 // ════════════════════════════════════════════════════
-//  6. ACCÈS ORGANISATEUR (TON BUREAU)
+//  INSCRIPTION / DESINSCRIPTION
 // ════════════════════════════════════════════════════
-function openOrgaLogin() { 
-  document.getElementById('orga-pwd').value = ''; 
-  hideMsg('err-orga'); 
-  openModal('modal-orga-auth'); 
+function handleInscriptionClick(eventId, titre, placesDispo) {
+  state.pendingEventId = eventId; state.pendingEventTitre = titre;
+  state.pendingEventDispo = placesDispo;
+  if (!state.user) {
+    document.getElementById('auth-context').style.display = '';
+    document.getElementById('auth-context').textContent = `Pour vous inscrire à « ${titre} », connectez-vous ou créez un compte.`;
+    document.getElementById('modal-auth-titre').textContent = 'Connexion requise';
+    switchAuthTab('connexion'); openModal('modal-auth');
+  } else { ouvrirConfirmInscription(); }
 }
 
-async function doLoginOrga() { 
-  if (document.getElementById('orga-pwd').value !== ORGA_PASSWORD) { 
-    showMsg('err-orga', 'Mot de passe incorrect.'); 
-    return; 
-  } 
-  closeModal('modal-orga-auth'); 
-  document.getElementById('public-screen').style.display = 'none'; 
-  document.getElementById('orga-screen').style.display = 'block'; 
-  showOrgaTab('events', document.getElementById('otab-events')); 
-  await loadOrgaEvents(); 
-  await loadOrgaMessagerie(); 
+function ouvrirConfirmInscription() {
+  const detail = document.getElementById('modal-insc-detail');
+  const titre = document.getElementById('modal-insc-titre');
+  const footer = document.getElementById('modal-insc-footer');
+  titre.textContent = state.pendingEventTitre;
+  
+  if (state.pendingEventDispo > 0) {
+    detail.innerHTML = `Il reste <strong>${state.pendingEventDispo} place(s)</strong>.<br>Que souhaitez-vous faire ?`;
+    footer.innerHTML = `<button class="btn" onclick="confirmInscription('officielle')">S'inscrire</button>
+                        <button class="btn-ghost" onclick="confirmInscription('attente')">Liste d'attente</button>
+                        <button class="btn-ghost" onclick="closeModal('modal-inscription')">Annuler</button>`;
+  } else {
+    detail.innerHTML = `L'événement est <strong>complet</strong>. Voulez-vous rejoindre la liste d'attente ?`;
+    footer.innerHTML = `<button class="btn" onclick="confirmInscription('attente')">Rejoindre la liste d'attente</button>
+                        <button class="btn-ghost" onclick="closeModal('modal-inscription')">Annuler</button>`;
+  }
+  hideMsg('err-insc'); hideMsg('ok-insc'); openModal('modal-inscription');
 }
 
-function logoutOrga() { 
-  document.getElementById('orga-screen').style.display = 'none'; 
-  document.getElementById('public-screen').style.display = ''; 
+async function confirmInscription(typeChoisi) {
+  try {
+    if (typeChoisi === 'officielle') {
+      const { error } = await sb.from('inscriptions').insert({ event_id: state.pendingEventId, user_id: state.user.id });
+      if (error) throw error;
+      showToast('✦ Inscription confirmée !');
+      // ENVOI DU MAIL DE CONFIRMATION
+      sendEmailViaGAS(
+        state.user.email, 
+        `Confirmation d'inscription : ${state.pendingEventTitre}`, 
+        `<h3>Félicitations !</h3><p>Ton inscription à l'événement <b>${state.pendingEventTitre}</b> est bien confirmée.</p><p>Prépare-toi bien pour <a href="https://www.xn--farie-csa.fr/%C3%A9v%C3%A9nements" style="background:#64748b; color:#fff; padding:8px 16px; text-decoration:none; border-radius:4px;">l'aventure</a> !</p>`
+      );
+    } else {
+      const { error } = await sb.from('liste_attente').insert({ event_id: state.pendingEventId, user_id: state.user.id });
+      if (error) throw error;
+      showToast("⚠ Ajouté·e à la liste d'attente");
+      // ENVOI DU MAIL DE LISTE D'ATTENTE
+      sendEmailViaGAS(
+        state.user.email, 
+        `Liste d'attente : ${state.pendingEventTitre}`, 
+        `<h3>Bonjour,</h3><p>Tu es bien inscrit·e sur la liste d'attente pour l'événement <b>${state.pendingEventTitre}</b>.</p><p>Nous te préviendrons par message si une place se libère !</p>`
+      );
+    }
+    closeModal('modal-inscription'); await loadPublicEvents();
+  } catch(e) { showMsg('err-insc', e.message.includes('23505') ? 'Déjà inscrit·e !' : e.message); }
 }
 
+async function seDesinscrire(eventId) {
+  if (!state.user) {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) state.user = session.user;
+    else { showToast('❌ Vous devez être connecté.'); return; }
+  }
+
+  // Modale de confirmation custom (pas de confirm() natif)
+  const ok = await new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.85);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px';
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:8px;padding:30px 34px;max-width:400px;width:100%;text-align:center;box-shadow:0 15px 50px rgba(0,0,0,0.4)">
+        <div style="font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;margin-bottom:12px;color:#1e293b">Confirmer la désinscription ?</div>
+        <p style="font-family:'Crimson Text',serif;color:#64748b;margin-bottom:24px">Cette action retirera votre inscription à cet événement.</p>
+        <div style="display:flex;gap:12px;justify-content:center">
+          <button id="confirm-oui" style="padding:10px 28px;background:#1e293b;color:#fff;border:none;border-radius:4px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:2px;cursor:pointer">Confirmer</button>
+          <button id="confirm-non" style="padding:10px 28px;background:transparent;border:1px solid #e2e8f0;color:#64748b;border-radius:4px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:2px;cursor:pointer">Annuler</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#confirm-oui').onclick = () => { document.body.removeChild(overlay); resolve(true); };
+    overlay.querySelector('#confirm-non').onclick = () => { document.body.removeChild(overlay); resolve(false); };
+  });
+
+  if (!ok) return;
+
+  try {
+    showToast('Sorcier à l\'œuvre...');
+    await Promise.all([
+      sb.from('inscriptions').delete().eq('event_id', eventId).eq('user_id', state.user.id),
+      sb.from('liste_attente').delete().eq('event_id', eventId).eq('user_id', state.user.id)
+    ]);
+    state.mesInscriptions = (state.mesInscriptions || []).filter(id => id !== eventId);
+    state.maListeAttente = (state.maListeAttente || []).filter(id => id !== eventId);
+    await loadMesInscriptions();
+    await loadPublicEvents();
+    showToast('✦ Désinscription réussie');
+  } catch (e) {
+    console.error("Erreur désinscription:", e);
+    showToast('❌ Erreur lors de la désinscription.');
+  }
+  await Promise.all([
+  sb.from('inscriptions').delete().eq('event_id', eventId).eq('user_id', state.user.id),
+  sb.from('liste_attente').delete().eq('event_id', eventId).eq('user_id', state.user.id),
+  sb.from('interesses').delete().eq('event_id', eventId).eq('user_id', state.user.id)
+  ]);
+}
+
+// ════════════════════════════════════════════════════
+//  ESPACE JOUEUR
+// ════════════════════════════════════════════════════
+function ouvrirEspaceJoueur() {
+  const prenom = state.user.user_metadata?.prenom || state.user.email;
+  document.getElementById('joueur-screen-label').textContent = `⚔ Espace de ${prenom}`;
+  document.getElementById('public-screen').style.display = 'none';
+  document.getElementById('joueur-screen').style.display = '';
+  showJoueurTab('inscriptions', document.getElementById('jtab-inscriptions'));
+  loadMesInscriptions(); checkNouveauxMessages();
+}
+
+function retourAccueil() { document.getElementById('joueur-screen').style.display = 'none'; document.getElementById('public-screen').style.display = ''; }
+
+function showJoueurTab(tab, btn) {
+  document.querySelectorAll('.joueur-tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('joueur-tab-inscriptions').style.display = tab === 'inscriptions' ? '' : 'none';
+  document.getElementById('joueur-tab-messages').style.display = tab === 'messages' ? '' : 'none';
+  if (tab === 'messages') { loadMessages(); }
+}
+
+async function loadMesInscriptions() {
+  const grid = document.getElementById('mes-inscriptions-grid');
+  grid.innerHTML = '<div class="empty-state">Chargement…</div>';
+  try {
+    const { data: intData } = await sb.from('interesses').select('event_id').eq('user_id', state.user.id);
+    state.mesInteresses = (intData || []).map(i => i.event_id);
+
+    const allIds = [...new Set([...state.mesInscriptions, ...state.maListeAttente, ...state.mesInteresses])];
+    if (!allIds.length) {
+      grid.innerHTML = '<div class="empty-state">Vous n\'êtes inscrit·e à aucun événement pour l\'instant.</div>';
+      return;
+    }
+
+    const { data: evs } = await sb.from('evenements').select('*').in('id', allIds).order('date_debut', { ascending: true });
+    grid.innerHTML = (evs || []).map(ev => {
+      const debut = ev.date_debut ? formatDatetime(ev.date_debut) : '—';
+      const enAttente = state.maListeAttente.includes(ev.id);
+      const interesse = state.mesInteresses.includes(ev.id);
+
+      let badge = '';
+      let actionBtn = '';
+
+      if (interesse) {
+        badge = '<span class="badge-interesse">👀 Intéressé·e</span>';
+        actionBtn = `<button class="btn btn-sm" onclick="confirmerDepuisInteret('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${ev.places_reelles_dispo ?? ev.places_disponibles})">Confirmer mon inscription</button>`;
+      } else if (enAttente) {
+        badge = '<span class="badge-attente">⏳ Liste d\'attente</span>';
+      } else {
+        badge = '<span class="badge-inscrit">✦ Inscrit·e</span>';
+      }
+
+      return `
+      <div class="event-card">
+        <div class="event-card-header"><div class="event-card-titre">${ev.titre}</div></div>
+        <div class="event-card-body"><div class="event-info-item"><span class="event-info-label">Début</span><span class="event-info-val">📅 ${debut}</span></div></div>
+        <div class="event-card-footer">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${badge}${actionBtn}</div>
+          <button class="btn-ghost btn-sm" onclick="seDesinscrire('${ev.id}')">Se désinscrire</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) { console.error(e); }
+}
+
+async function confirmerDepuisInteret(eventId, titre, placesDispo) {
+  try {
+    await sb.from('interesses').delete().eq('event_id', eventId).eq('user_id', state.user.id);
+    state.pendingEventId = eventId;
+    state.pendingEventTitre = titre;
+    state.pendingEventDispo = placesDispo;
+    ouvrirConfirmInscription();
+  } catch(e) { console.error(e); }
+}
+
+// ════════════════════════════════════════════════════
+//  MESSAGERIES
+// ════════════════════════════════════════════════════
+async function loadMessages() {
+  const fil = document.getElementById('messages-fil');
+  fil.innerHTML = '<div class="empty-state">Chargement…</div>';
+  try {
+    const { data, error } = await sb.from('messages').select('*').eq('user_id', state.user.id).order('created_at', { ascending: true });
+    if (error) throw error;
+    if (!data.length) { fil.innerHTML = '<div class="empty-state">Aucun message pour l\'instant.</div>'; return; }
+    fil.innerHTML = data.map(m => {
+      const date = new Date(m.created_at).toLocaleString('fr-FR');
+      const side = m.auteur === 'orga' ? 'orga' : 'joueur';
+      const label = m.auteur === 'orga' ? '⚔ Organisateur' : '✦ Vous';
+      return `<div class="msg-bubble ${side}"><div class="msg-bubble-meta">${label} — ${date}</div>${m.contenu}</div>`;
+    }).join('');
+    fil.scrollTop = fil.scrollHeight;
+    await sb.from('messages').update({ lu_joueur: true }).eq('user_id', state.user.id).eq('lu_joueur', false);
+    document.getElementById('notif-msg-dot').style.display = 'none';
+  } catch(e) { console.error(e); }
+}
+
+async function checkNouveauxMessages() {
+  if (!state.user) return;
+  const { data } = await sb.from('messages').select('id').eq('user_id', state.user.id).eq('lu_joueur', false).eq('auteur', 'orga');
+  const dot = document.getElementById('notif-msg-dot');
+  if (dot) dot.style.display = (data && data.length > 0) ? '' : 'none';
+}
+
+async function envoyerMessage() {
+  const contenu = document.getElementById('msg-nouveau').value.trim();
+  if (!contenu) return;
+  try {
+    await sb.from('messages').insert({ user_id: state.user.id, auteur: 'joueur', contenu, lu_orga: false, lu_joueur: true });
+    document.getElementById('msg-nouveau').value = '';
+    await loadMessages(); showToast('✦ Message envoyé !');
+    
+    // ALERTE EMAIL POUR L'ORGA
+    sendEmailViaGAS(
+      "contact+messagesevents@xn--farie-csa.fr", 
+      "Nouveau message de " + (state.user.user_metadata?.prenom || state.user.email), 
+      `<p>Un joueur a envoyé un nouveau message sur l'espace Faérie :</p><blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #64748b;">${contenu}</blockquote><p>Connectez-vous à l'espace Organisateur pour lui répondre.</p>`
+    );
+
+  } catch(e) { console.error(e); }
+}
+
+async function loadOrgaMessagerie() {
+  const { data } = await sb.from('messages').select('user_id, auteur, lu_orga').order('created_at', { ascending: false });
+  if (!data) return;
+  
+  // On récupère le "bottin" de tous les joueurs pour traduire les ID en prénoms
+  const { data: profils } = await sb.from('profils').select('id, prenom, nom');
+  const annuaire = {};
+  if (profils) {
+    profils.forEach(p => annuaire[p.id] = `${p.prenom} ${p.nom}`);
+  }
+
+  const joueurs = {};
+  for (const m of data) {
+    if (!joueurs[m.user_id]) joueurs[m.user_id] = { nonLus: 0 };
+    if (m.auteur === 'joueur' && !m.lu_orga) joueurs[m.user_id].nonLus++;
+  }
+  
+  const sel = document.getElementById('orga-joueur-select');
+  sel.innerHTML = '<option value="">— Sélectionner un joueur —</option>' + Object.keys(joueurs).map(uid => {
+    // On va chercher le vrai nom, ou on affiche l'ID si le profil est introuvable
+    const nomAffichage = annuaire[uid] || `Joueur inconnu (${uid.substring(0,5)})`;
+    return `<option value="${uid}">${nomAffichage} ${joueurs[uid].nonLus > 0 ? `(${joueurs[uid].nonLus} non lu)` : ''}</option>`;
+  }).join('');
+  
+  const totalNonLus = Object.values(joueurs).reduce((a, b) => a + b.nonLus, 0);
+  const dot = document.getElementById('notif-orga-dot');
+  if (dot) dot.style.display = totalNonLus > 0 ? '' : 'none';
+}
+
+async function loadOrgaConversation(userId) {
+  state.currentOrgaUserId = userId;
+  const fil = document.getElementById('orga-messages-fil');
+  const replyZone = document.getElementById('orga-reply-zone');
+  if (!userId) { fil.innerHTML = '<div class="empty-state">Sélectionnez un joueur.</div>'; replyZone.style.display = 'none'; return; }
+  fil.innerHTML = '<div class="empty-state">Chargement…</div>'; replyZone.style.display = '';
+  try {
+    // On récupère le nom du joueur pour l'afficher au-dessus de ses bulles
+    const { data: profil } = await sb.from('profils').select('prenom, nom').eq('id', userId).single();
+    const nomJoueur = profil ? `${profil.prenom} ${profil.nom}` : 'Joueur';
+
+    const { data } = await sb.from('messages').select('*').eq('user_id', userId).order('created_at', { ascending: true });
+    if (!data || !data.length) { fil.innerHTML = '<div class="empty-state">Aucun message.</div>'; return; }
+    fil.innerHTML = data.map(m => {
+      const date = new Date(m.created_at).toLocaleString('fr-FR');
+      const side = m.auteur === 'orga' ? 'orga' : 'joueur';
+      const label = m.auteur === 'orga' ? '⚔ Vous' : `✦ ${nomJoueur}`;
+      return `<div class="msg-bubble ${side}"><div class="msg-bubble-meta">${label} — ${date}</div>${m.contenu}</div>`;
+    }).join('');
+    fil.scrollTop = fil.scrollHeight;
+    await sb.from('messages').update({ lu_orga: true }).eq('user_id', userId).eq('auteur', 'joueur');
+    await loadOrgaMessagerie();
+  } catch(e) { console.error(e); }
+}
+
+async function envoyerMessageOrga() {
+  const contenu = document.getElementById('orga-msg-nouveau').value.trim();
+  if (!contenu || !state.currentOrgaUserId) return;
+  try {
+    // 1. On sauvegarde le message dans la base de données
+    await sb.from('messages').insert({ user_id: state.currentOrgaUserId, auteur: 'orga', contenu, lu_orga: true, lu_joueur: false });
+    document.getElementById('orga-msg-nouveau').value = '';
+    await loadOrgaConversation(state.currentOrgaUserId); 
+    showToast('✦ Réponse envoyée !');
+    
+    // 2. On cherche l'adresse email du joueur dans la table des profils
+    const { data: profil } = await sb.from('profils').select('email, prenom').eq('id', state.currentOrgaUserId).single();
+    
+    // 3. Si on trouve bien son email, on demande au Facteur Google de livrer l'alerte !
+    if (profil && profil.email) {
+      const prenom = profil.prenom || 'Joueur';
+      sendEmailViaGAS(
+        profil.email, 
+        "Nouveau message de l'organisation - Faérie", 
+        `<h3>Bonjour ${prenom},</h3><p>L'équipe d'orga de Faérie t'a répondu sur ton espace des événements :</p><blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #64748b;">${contenu}</blockquote><p><a href="https://www.xn--farie-csa.fr/%C3%A9v%C3%A9nements" style="background:#64748b; color:#fff; padding:8px 16px; text-decoration:none; border-radius:4px;">Connecte-toi à ton espace</a> pour poursuivre la conversation.</p>`
+      );
+    }
+    
+  } catch(e) { console.error(e); }
+}
+
+// ════════════════════════════════════════════════════
+//  AUTH, LOGIN, REGISTER
+// ════════════════════════════════════════════════════
+function switchAuthTab(tab) {
+  document.getElementById('tab-connexion').classList.toggle('active', tab === 'connexion');
+  document.getElementById('tab-inscription').classList.toggle('active', tab === 'inscription');
+  document.getElementById('form-connexion').style.display = tab === 'connexion' ? '' : 'none';
+  document.getElementById('form-inscription').style.display = tab === 'inscription' ? '' : 'none';
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const mdp = document.getElementById('login-mdp').value;
+  hideMsg('err-login');
+  if (!email || !mdp) return;
+  
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: mdp });
+  if (error) {
+    showMsg('err-login', 'Email ou mot de passe incorrect. Si vous n\'avez pas encore de compte, cliquez sur "Créer un compte".');
+    return;
+  }
+  
+  // Vérification confirmation email
+  if (!data.user.email_confirmed_at) {
+    await sb.auth.signOut();
+    showMsg('err-login', '✉ Veuillez confirmer votre adresse email avant de vous connecter. Vérifiez votre boîte mail.');
+    return;
+  }
+  
+  state.user = data.user;
+  closeModal('modal-auth');
+  updateHeaderUserZone();
+  await loadPublicEvents();
+  if (state.pendingEventId && !state.mesInscriptions.includes(state.pendingEventId)) ouvrirConfirmInscription();
+}
+
+async function doRegister() {
+  const prenom = document.getElementById('reg-prenom').value.trim(); 
+  const nom = document.getElementById('reg-nom').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const mdp = document.getElementById('reg-mdp').value;
+  
+  if (!prenom || !nom || !email || !mdp) { showMsg('err-reg', 'Champs obligatoires.'); return; }
+  
+  try {
+    // 1. On crée le compte (Supabase envoie le mail à cet instant)
+    const { data, error } = await sb.auth.signUp({ email, password: mdp, options: { data: { prenom, nom } } });
+    if (error) throw error;
+    
+    // 2. On crée le profil public
+    await sb.from('profils').upsert({ id: data.user.id, prenom, nom, email: email });
+    
+    // 3. ON ARRÊTE TOUT ICI : Pas de doLoginDirect !
+    showMsg('ok-reg', '✦ Compte créé ! Vérifie tes mails pour confirmer avant de te connecter.', 'success');
+    
+  } catch (err) { 
+    showMsg('err-reg', err.message); 
+  }
+}
+
+async function doLoginDirect(email, password) {
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (!error) { state.user = data.user; closeModal('modal-auth'); updateHeaderUserZone(); await loadPublicEvents(); }
+}
+
+async function logoutJoueur() { await sb.auth.signOut(); state.user = null; state.mesInscriptions = []; state.maListeAttente = []; document.getElementById('joueur-screen').style.display = 'none'; document.getElementById('public-screen').style.display = ''; updateHeaderUserZone(); renderPublicEvents(state.events); }
+
+function updateHeaderUserZone() {
+  const zone = document.getElementById('header-user-zone');
+  if (state.user) {
+    zone.innerHTML = `<button class="btn-ghost" onclick="ouvrirEspaceJoueur()" style="position:relative">✦ ${state.user.user_metadata?.prenom || 'Moi'}<span id="header-notif-dot" style="display:none;position:absolute;top:2px;right:2px;width:8px;height:8px;background:var(--red-blood);border-radius:50%"></span></button><button class="btn-ghost" onclick="logoutJoueur()">Déconnexion</button>`;
+    checkNouveauxMessages().then(() => { const dot = document.getElementById('notif-msg-dot'); const hdot = document.getElementById('header-notif-dot'); if (hdot && dot) hdot.style.display = dot.style.display; });
+  } else { zone.innerHTML = `<button class="btn btn-sm" onclick="openAuthModal()">Se connecter</button>`; }
+}
+function openAuthModal() { document.getElementById('auth-context').style.display = 'none'; document.getElementById('modal-auth-titre').textContent = 'Rejoindre Faérie'; state.pendingEventId = null; switchAuthTab('connexion'); openModal('modal-auth'); }
+function openOrgaLogin() { document.getElementById('orga-pwd').value = ''; hideMsg('err-orga'); openModal('modal-orga-auth'); }
+async function doLoginOrga() { if (document.getElementById('orga-pwd').value !== ORGA_PASSWORD) { showMsg('err-orga', 'Mot de passe incorrect.'); return; } closeModal('modal-orga-auth'); document.getElementById('public-screen').style.display = 'none'; document.getElementById('orga-screen').style.display = 'block'; showOrgaTab('events', document.getElementById('otab-events')); await loadOrgaEvents(); await loadOrgaMessagerie(); }
+function logoutOrga() { document.getElementById('orga-screen').style.display = 'none'; document.getElementById('public-screen').style.display = ''; }
+function showOrgaTab(tab, btn) { document.querySelectorAll('#orga-screen .joueur-tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); document.getElementById('orga-tab-events').style.display = tab === 'events' ? '' : 'none'; document.getElementById('orga-tab-messages').style.display = tab === 'messages' ? '' : 'none'; }
+
+// ════════════════════════════════════════════════════
+//  VUE ORGA ÉVÉNEMENTS
+// ════════════════════════════════════════════════════
 async function loadOrgaEvents() {
   const tbody = document.getElementById('orga-events-body');
-  const { data } = await sb.from('evenements').select('*').order('date_debut', { ascending: true });
-  state.orgaEvents = data || [];
-  tbody.innerHTML = state.orgaEvents.map(ev => `<tr>
-    <td><strong>${ev.titre}</strong></td>
-    <td>${new Date(ev.date_debut).toLocaleDateString()}</td>
-    <td>${ev.places_disponibles}/${ev.places_totales}</td>
-    <td>
-      <button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${ev.titre}')">👁</button>
-      <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏</button>
-      <button class="btn btn-sm btn-danger" onclick="supprimerEvent('${ev.id}')">🗑</button>
-    </td>
-  </tr>`).join('');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Chargement…</td></tr>';
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const { data, error } = await sb.from('evenements').select('*').gte('date_debut', today.toISOString()).order('date_debut', { ascending: true, nullsFirst: false });
+  if (error) { tbody.innerHTML = `<tr><td colspan="6">Erreur</td></tr>`; return; }
+  state.orgaEvents = data || []; renderOrgaTable(state.orgaEvents);
+}
+
+function renderOrgaTable(list) {
+  const tbody = document.getElementById('orga-events-body');
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Aucun événement.</td></tr>'; return; }
+  tbody.innerHTML = list.map(ev => `<tr><td><strong>${ev.titre}</strong></td><td>${ev.date_debut ? new Date(ev.date_debut).toLocaleString('fr-FR') : '—'}</td><td>${ev.lieu || '—'}</td><td>${ev.type || '—'}</td><td>${ev.places_disponibles}/${ev.places_totales}</td><td><button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">👁 Inscrits</button> <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏ Modif</button> <button class="btn btn-sm btn-danger" style="padding: 6px 10px; font-size: 0.7rem;" onclick="supprimerEvent('${ev.id}')">🗑 Supprimer</button></td></tr>`).join('');
+}
+
+async function retirerParticipant(eventId, userId, table, titre) {
+  if (!confirm('Voulez-vous vraiment retirer ce joueur ?')) return;
+  try {
+    const { error } = await sb.from(table).delete().eq('event_id', eventId).eq('user_id', userId);
+    if (error) throw error;
+    showToast('✦ Joueur retiré');
+    voirParticipants(eventId, titre);
+    loadOrgaEvents();
+  } catch (e) {
+    alert("Erreur : " + e.message);
+  }
+}
+
+async function supprimerEvent(eventId) {
+  if (!confirm('Voulez-vous vraiment supprimer cet événement ? Cette action est irréversible et supprimera toutes les inscriptions associées.')) return;
+  try {
+    await sb.from('inscriptions').delete().eq('event_id', eventId);
+    await sb.from('liste_attente').delete().eq('event_id', eventId);
+    const { error } = await sb.from('evenements').delete().eq('id', eventId);
+    if (error) throw error;
+    
+    showToast('✦ Événement supprimé');
+    loadOrgaEvents();
+    loadPublicEvents();
+  } catch (e) {
+    alert("Erreur : " + e.message);
+  }
+}
+  
+async function voirParticipants(eventId, titre) {
+  document.getElementById('view-event-titre').textContent = titre; 
+  const content = document.getElementById('liste-participants-content'); 
+  content.innerHTML = 'Chargement...'; 
+  openModal('modal-liste-participants');
+  try {
+    const { data: inscr } = await sb.from('inscriptions').select('user_id').eq('event_id', eventId);
+    const { data: attente } = await sb.from('liste_attente').select('user_id').eq('event_id', eventId);
+    const { data: interData } = await sb.from('interesses').select('user_id').eq('event_id', eventId);
+
+    const { data: profils } = await sb.from('profils').select('id, prenom, nom');
+    const annuaire = {}; 
+    if (profils) profils.forEach(p => annuaire[p.id] = `${p.prenom} ${p.nom}`);
+    
+    let html = '<h3 style="margin-bottom:10px;">⚔ Inscrits officiels</h3><ul style="list-style:none; padding:0; margin-bottom:20px;">';
+    html += (inscr && inscr.length > 0) ?
+    inscr.map(i => {
+      const nom = annuaire[i.user_id] || `Joueur Inconnu (${i.user_id.substring(0,5)})`;
+      return `<li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:6px; background:#f8fafc; border-radius:4px; border:1px solid #e2e8f0;">
+                <span>👤 ${nom}</span>
+                <button class="btn-ghost" style="padding:2px 8px; color:var(--red-blood); border-color:var(--red-blood);" onclick="retirerParticipant('${eventId}', '${i.user_id}', 'inscriptions', '${titre.replace(/'/g,"\\'")}')">✕</button>
+              </li>`;
+    }).join('') : '<li style="padding:6px;">Personne</li>';
+    
+    html += '</ul><h3 style="margin-bottom:10px;">⏳ Liste d\'attente</h3><ul style="list-style:none; padding:0; margin-bottom:20px;">';
+    html += (attente && attente.length > 0) ?
+    attente.map(a => {
+      const nom = annuaire[a.user_id] || `Joueur Inconnu (${a.user_id.substring(0,5)})`;
+      return `<li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:6px; background:#f8fafc; border-radius:4px; border:1px solid #e2e8f0;">
+                <span>👤 ${nom}</span>
+                <button class="btn-ghost" style="padding:2px 8px; color:var(--red-blood); border-color:var(--red-blood);" onclick="retirerParticipant('${eventId}', '${a.user_id}', 'liste_attente', '${titre.replace(/'/g,"\\'")}')">✕</button>
+              </li>`;
+    }).join('') : '<li style="padding:6px;">Vide</li>';
+
+    html += '</ul><h3 style="margin-bottom:10px;">👀 Intéressé·e·s</h3><ul style="list-style:none; padding:0;">';
+    html += (interData && interData.length > 0) ?
+    interData.map(i => {
+      const nom = annuaire[i.user_id] || `Joueur Inconnu (${i.user_id.substring(0,5)})`;
+      return `<li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:6px; background:#f8fafc; border-radius:4px; border:1px solid #e2e8f0;">
+                <span>👀 ${nom}</span>
+                <button class="btn-ghost" style="padding:2px 8px; color:var(--red-blood); border-color:var(--red-blood);" onclick="retirerParticipant('${eventId}', '${i.user_id}', 'interesses', '${titre.replace(/'/g,"\\'")}')">✕</button>
+              </li>`;
+    }).join('') : '<li style="padding:6px;">Personne</li>';
+
+    content.innerHTML = html + '</ul>';
+  } catch (e) { content.innerHTML = "Erreur : " + e.message; }
+}
+
+function filterOrgaEvents(q) { renderOrgaTable(state.orgaEvents.filter(ev => (ev.titre + (ev.lieu||'') + (ev.type||'')).toLowerCase().includes(q.toLowerCase()))); }
+function openModalCreateEvent() { document.getElementById('modal-event-title').textContent = '+ Nouvel événement';
+document.getElementById('e-id').value = ''; ['e-titre','e-lieu','e-lien-maps','e-organisateurs','e-description','e-date-debut','e-date-fin'].forEach(id => document.getElementById(id).value = ''); document.getElementById('row-places-dispo').style.display = 'none'; openModal('modal-event');
+}
+
+function openModalEditEvent(id) { 
+  const ev = state.orgaEvents.find(e => e.id === id); 
+  if (!ev) return; 
+  
+  document.getElementById('modal-event-title').textContent = '✏ Modifier';
+  document.getElementById('e-id').value = ev.id; 
+  document.getElementById('e-titre').value = ev.titre || ''; 
+  
+  // Correction des dates (utilise le nouveau toLocalInput)
+  document.getElementById('e-date-debut').value = toLocalInput(ev.date_debut); 
+  document.getElementById('e-date-fin').value = toLocalInput(ev.date_fin); 
+  
+  document.getElementById('e-lieu').value = ev.lieu || ''; 
+  document.getElementById('e-lien-maps').value = ev.lien_maps || ''; 
+  document.getElementById('e-organisateurs').value = ev.organisateurs || '';
+  document.getElementById('e-type').value = ev.type || 'Grandeur nature'; 
+  document.getElementById('e-description').value = ev.description || ''; 
+  
+  // Gestion des places (Important pour ne pas casser les inscriptions en cours)
+  document.getElementById('e-places-totales').value = ev.places_totales || ''; 
+  document.getElementById('e-places-dispo').value = ev.places_disponibles || ''; 
+  
+  // On affiche la ligne des places disponibles uniquement en mode "Modification"
+  document.getElementById('row-places-dispo').style.display = ''; 
+  
+  openModal('modal-event'); 
 }
 
 async function saveEvent() { 
-  const id = document.getElementById('e-id').value;
-  const titre = document.getElementById('e-titre').value;
+  const id = document.getElementById('e-id').value; 
+  const titre = document.getElementById('e-titre').value.trim();
+  
+  // --- PROTECTION ANTI-DÉCALAGE HORAIRE ---
+  // On transforme le texte du champ en vraie date ISO pour Supabase
   const rawDebut = document.getElementById('e-date-debut').value;
+  const rawFin = document.getElementById('e-date-fin').value;
+  
   const date_debut = rawDebut ? new Date(rawDebut).toISOString() : null;
-  const lieu = document.getElementById('e-lieu').value;
+  const date_fin = rawFin ? new Date(rawFin).toISOString() : null;
+  // ----------------------------------------
+
+  const lieu = document.getElementById('e-lieu').value.trim(); 
+  const lien_maps = document.getElementById('e-lien-maps').value.trim() || null; 
+  const organisateurs = document.getElementById('e-organisateurs').value.trim();
+  const type = document.getElementById('e-type').value; 
+  const description = document.getElementById('e-description').value.trim() || null; 
   const places_totales = parseInt(document.getElementById('e-places-totales').value) || 0;
+  
+  if (!titre || !date_debut) return; 
+  
+  // On extrait la date simple pour la colonne 'date' (utile pour tes filtres Supabase)
+  const date = date_debut.split('T')[0]; 
+  
+  if (id) { 
+    const places_disponibles = parseInt(document.getElementById('e-places-dispo').value) || 0;
+    await sb.from('evenements').update({ titre, date, date_debut, date_fin, lieu, lien_maps, organisateurs, type, description, places_totales, places_disponibles }).eq('id', id);
+  } else { 
+    await sb.from('evenements').insert({ titre, date, date_debut, date_fin, lieu, lien_maps, organisateurs, type, description, places_totales, places_disponibles: places_totales }); 
+  } 
+  
+  closeModal('modal-event'); 
+  loadOrgaEvents();
+  showToast('✦ Enregistré'); 
+}
 
-  if (id) {
-    await sb.from('evenements').update({ titre, date_debut, lieu, places_totales }).eq('id', id);
-  } else {
-    await sb.from('evenements').insert({ titre, date_debut, lieu, places_totales, places_disponibles: places_totales });
+  // ════════════════════════════════════════════════════
+//  CALENDRIER
+// ════════════════════════════════════════════════════
+let calDate = new Date();
+
+function openCalendrier() {
+  calDate = new Date();
+  renderCalendrier();
+  openModal('modal-calendrier');
+}
+
+function changeMonth(delta) {
+  calDate.setMonth(calDate.getMonth() + delta);
+  renderCalendrier();
+}
+
+function renderCalendrier() {
+  const mois = calDate.getMonth();
+  const annee = calDate.getFullYear();
+  const titre = new Date(annee, mois, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  document.getElementById('cal-titre').textContent = titre.charAt(0).toUpperCase() + titre.slice(1);
+
+  const jours = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+  const today = new Date();
+
+  // Premier jour du mois (0=dim, ajusté pour lundi=0)
+  let premierJour = new Date(annee, mois, 1).getDay();
+  premierJour = (premierJour + 6) % 7; // Lundi en premier
+
+  const dernierJour = new Date(annee, mois + 1, 0).getDate();
+
+  // Événements du mois
+  const evsDuMois = state.events.filter(ev => {
+    if (!ev.date_debut) return false;
+    const d = new Date(ev.date_debut);
+    return d.getMonth() === mois && d.getFullYear() === annee;
+  });
+
+  let html = '<div class="cal-grid">';
+
+  // En-têtes jours
+  jours.forEach(j => { html += `<div class="cal-header-day">${j}</div>`; });
+
+  // Cases vides avant le 1er
+  for (let i = 0; i < premierJour; i++) { html += '<div class="cal-day vide"></div>'; }
+
+  // Jours du mois
+  for (let d = 1; d <= dernierJour; d++) {
+    const isToday = d === today.getDate() && mois === today.getMonth() && annee === today.getFullYear();
+    const evsJour = evsDuMois.filter(ev => new Date(ev.date_debut).getDate() === d);
+    html += `<div class="cal-day${isToday ? ' today' : ''}">
+      <div class="cal-day-num">${d}</div>
+      ${evsJour.map(ev => `<div class="cal-event-pill" title="${ev.titre}">${ev.titre}</div>`).join('')}
+    </div>`;
   }
-  closeModal('modal-event');
-  loadOrgaEvents();
-}
 
-async function supprimerEvent(id) {
-  if (!confirm("Supprimer l'événement ?")) return;
-  await sb.from('evenements').delete().eq('id', id);
-  loadOrgaEvents();
+  html += '</div>';
+  document.getElementById('cal-grid').innerHTML = html;
 }
 
 // ════════════════════════════════════════════════════
-//  7. INTERFACE ET INITIALISATION FINALE
+//  UI & INIT
 // ════════════════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); } function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function showMsg(id, txt, type='error') { const el = document.getElementById(id); if(el){ el.textContent=txt; el.style.display='block'; el.className = type==='success'?'msg-success':'msg-error'; } }
+function hideMsg(id) { const el = document.getElementById(id); if(el) el.style.display='none'; }
+let toastTimer; function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),3200); }
+document.querySelectorAll('.modal-overlay').forEach(el => el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); }));
 window.addEventListener('load', async () => {
+  setTimeout(() => { const s = document.getElementById('search-input'); if(s) s.value=''; const o = document.getElementById('orga-search'); if(o) o.value=''; }, 500);
   const { data: { session } } = await sb.auth.getSession();
-  state.user = session ? session.user : null;
+  if (session) state.user = session.user;
   updateHeaderUserZone();
   await loadPublicEvents();
   await loadAnnonces();
 });
 
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
-function showMsg(id, txt, type='error') { const el = document.getElementById(id); el.textContent=txt; el.style.display='block'; el.className=type==='success'?'msg-success':'msg-error'; }
-function hideMsg(id) { document.getElementById(id).style.display='none'; }
-function showOrgaTab(tab, btn) { 
-  document.querySelectorAll('#orga-screen .joueur-tab-btn').forEach(b => b.classList.remove('active')); 
-  btn.classList.add('active'); 
-  document.getElementById('orga-tab-events').style.display = tab === 'events' ? '' : 'none'; 
-  document.getElementById('orga-tab-messages').style.display = tab === 'messages' ? '' : 'none'; 
-}
-function updateHeaderUserZone() {
-  const zone = document.getElementById('header-user-zone');
-  if (state.user) {
-    zone.innerHTML = `<button class="btn-ghost" onclick="ouvrirEspaceJoueur()">✦ ${state.user.user_metadata?.prenom || 'Moi'}</button>
-                      <button class="btn-ghost" onclick="logoutJoueur()">Déconnexion</button>`;
-  } else {
-    zone.innerHTML = `<button class="btn btn-sm" onclick="openAuthModal()">Se connecter</button>`;
+async function supprimerCompteJoueur() {
+  if (!state.user) return;
+
+  // Modale personnalisée
+  const ok = await new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.85);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px';
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:8px;padding:30px 34px;max-width:400px;width:100%;text-align:center;box-shadow:0 15px 50px rgba(0,0,0,0.4)">
+        <div style="font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;margin-bottom:12px;color:#b91c1c">⚠️ Supprimer le compte ?</div>
+        <p style="font-family:'Crimson Text',serif;color:#64748b;margin-bottom:24px">Voulez-vous vraiment supprimer définitivement votre compte, vos messages et toutes vos inscriptions ? Cette action est irréversible.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+          <button id="btn-oui-suppr" style="padding:10px 20px;background:#b91c1c;color:#fff;border:none;border-radius:4px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:1px;cursor:pointer">Oui, supprimer</button>
+          <button id="btn-non-suppr" style="padding:10px 20px;background:transparent;border:1px solid #e2e8f0;color:#64748b;border-radius:4px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:1px;cursor:pointer">Annuler</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#btn-oui-suppr').onclick = () => { document.body.removeChild(overlay); resolve(true); };
+    overlay.querySelector('#btn-non-suppr').onclick = () => { document.body.removeChild(overlay); resolve(false); };
+  });
+
+  if (!ok) return;
+
+  try {
+    showToast('Sorcier à l\'œuvre... Suppression en cours');
+
+    // ⚡️ LA MAGIE EST ICI : On appelle la fonction côté serveur
+    const { error } = await sb.rpc('supprimer_mon_compte');
+    
+    if (error) throw error;
+
+    // On déconnecte le joueur et on vide la mémoire du site
+    await sb.auth.signOut();
+    state.user = null;
+    state.mesInscriptions = [];
+    state.maListeAttente = [];
+    state.mesInteresses = [];
+
+    // On le renvoie à l'accueil
+    document.getElementById('joueur-screen').style.display = 'none';
+    document.getElementById('public-screen').style.display = '';
+    updateHeaderUserZone();
+    await loadPublicEvents();
+
+    showToast('✦ Compte et données supprimés avec succès.');
+
+  } catch (e) {
+    console.error(e);
+    showToast("❌ Erreur lors de la suppression de vos données.");
   }
 }
-async function logoutJoueur() { await sb.auth.signOut(); window.location.reload(); }
-
-  // ════════════════════════════════════════════════════
-//  8. FONCTIONS UI MANQUANTES (RÉPARATION DES BOUTONS)
 // ════════════════════════════════════════════════════
-
-// --- Navigation et Modales basiques ---
-function openCalendrier() { 
-  openModal('modal-calendrier'); 
-}
-
-function filterEvents() { 
-  console.log("Filtrage des événements public à coder..."); 
-}
-
-function filterOrgaEvents(valeur) { 
-  console.log("Filtrage des événements orga à coder pour :", valeur); 
-}
-
-// --- Espace Joueur ---
-function ouvrirEspaceJoueur() {
-  document.getElementById('public-screen').style.display = 'none';
-  document.getElementById('joueur-screen').style.display = 'block';
-}
-
-function retourAccueil() {
-  document.getElementById('joueur-screen').style.display = 'none';
-  document.getElementById('public-screen').style.display = 'block';
-}
-
-function handleInscriptionClick(id, titre, dispo) {
-  // Affiche la modale d'inscription pour l'événement sélectionné
-  document.getElementById('modal-insc-titre').textContent = "Inscription : " + titre;
-  openModal('modal-inscription');
-}
-
-// --- Authentification (À lier avec Supabase) ---
-async function doLogin() {
-  // 1. On récupère les valeurs tapées par l'utilisateur
-  const email = document.getElementById('login-email').value.trim();
-  const mdp = document.getElementById('login-mdp').value;
-  
-  // On cache les anciens messages d'erreur au cas où
-  hideMsg('err-login');
-
-  // 2. Vérification basique
-  if (!email || !mdp) {
-    showMsg('err-login', 'Veuillez remplir tous les champs.');
-    return;
-  }
-
-  // 3. Appel à Supabase pour la connexion
-  const { data, error } = await sb.auth.signInWithPassword({
-    email: email,
-    password: mdp
-  });
-
-  // 4. Gestion du résultat
-  if (error) {
-    // Si Supabase renvoie une erreur (mauvais mot de passe, etc.)
-    showMsg('err-login', "Erreur : " + error.message);
-  } else {
-    // Succès ! On ferme la modale et on affiche une notification
-    closeModal('modal-auth');
-    showToast("Connexion réussie !");
+//  MISSIVES ORGA
+// ════════════════════════════════════════════════════
+async function loadAnnonces() {
+  const container = document.getElementById('annonces-container');
+  if (!container) return;
+  try {
+    const { data, error } = await sb.from('annonces').select('*').order('date_creation', { ascending: false }).limit(5);
+    if (error) throw error;
     
-    // Note : Ton "sb.auth.onAuthStateChange" s'occupe déjà de rafraîchir l'interface
-  }
-}
-
-async function doRegister() {
-  // 1. On récupère les informations
-  const prenom = document.getElementById('reg-prenom').value.trim();
-  const nom = document.getElementById('reg-nom').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const mdp = document.getElementById('reg-mdp').value;
-  
-  hideMsg('err-reg');
-  hideMsg('ok-reg');
-
-  // 2. Vérification
-  if (!prenom || !nom || !email || !mdp) {
-    showMsg('err-reg', 'Veuillez remplir tous les champs.');
-    return;
-  }
-
-  // 3. Appel à Supabase pour créer le compte
-  const { data, error } = await sb.auth.signUp({
-    email: email,
-    password: mdp,
-    options: {
-      data: {
-        prenom: prenom,
-        nom: nom
-      }
+    if (data.length === 0) {
+      container.innerHTML = `<div style="text-align:center; color:var(--ink-light); font-style:italic; font-size:0.9rem;">Aucune missive pour le moment.</div>`;
+      return;
     }
-  });
-
-  // 4. Gestion du résultat
-  if (error) {
-    showMsg('err-reg', "Erreur d'inscription : " + error.message);
-  } else {
-    // Succès ! On affiche le message vert
-    showMsg('ok-reg', "Compte créé avec succès ! Vous pouvez maintenant vous connecter.", 'success');
     
-    // Petit bonus : on bascule automatiquement sur l'onglet de connexion après 2 secondes
-    setTimeout(() => {
-      switchAuthTab('connexion');
-      document.getElementById('login-email').value = email;
-    }, 2000);
+    container.innerHTML = data.map(a => `
+      <div style="background: white; padding: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #58abbc; position: relative;">
+        <h3 style="margin: 0 0 8px 0; font-size: 1.05rem; color: var(--ink); font-family: 'Cinzel', serif;">${a.titre}</h3>
+        <p style="margin: 0 0 12px 0; font-size: 0.9rem; color: #475569; line-height: 1.5; white-space: pre-wrap;">${a.contenu}</p>
+        <div style="font-size: 0.75rem; color: var(--ink-light); text-align: right; border-top: 1px dashed var(--border); padding-top: 8px;">
+          Par <b>${a.auteur_nom}</b> le ${new Date(a.date_creation).toLocaleDateString('fr-FR')}
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    console.error("Erreur missives :", err);
+    container.innerHTML = `<div style="color:var(--red-blood); font-size:0.8rem;">Impossible de lire les parchemins.</div>`;
   }
-}
-
-// --- Espace Organisateur ---
-async function loadOrgaMessagerie() {
-  // Cette fonction manquait et faisait planter le login Orga !
-  console.log("Chargement de la messagerie organisateur...");
-}
-
-function openModalCreateEvent() {
-  // Vider les champs avant d'ouvrir
-  document.getElementById('e-id').value = '';
-  document.getElementById('e-titre').value = '';
-  document.getElementById('e-lieu').value = '';
-  document.getElementById('modal-event-title').textContent = "+ Nouvel événement";
-  openModal('modal-event');
 }
 
 function ouvrirModaleMissive() {
-  // Vider les champs
   document.getElementById('m-titre').value = '';
-  document.getElementById('m-auteur').value = '';
+  document.getElementById('m-auteur').value = 'L\'équipe Orga';
   document.getElementById('m-contenu').value = '';
+  hideMsg('err-missive');
   openModal('modal-missive');
 }
 
 async function sauvegarderMissive() {
-  console.log("Sauvegarde de la missive dans Supabase à coder...");
-  closeModal('modal-missive');
-}
+  const titre = document.getElementById('m-titre').value.trim();
+  const auteur_nom = document.getElementById('m-auteur').value.trim();
+  const contenu = document.getElementById('m-contenu').value.trim();
 
-function voirParticipants(id, titre) {
-  document.getElementById('view-event-titre').textContent = titre;
-  document.getElementById('liste-participants-content').innerHTML = "<em>Chargement des participants...</em>";
-  openModal('modal-liste-participants');
-}
-
-function openModalEditEvent(id) {
-  document.getElementById('modal-event-title').textContent = "Modifier l'événement";
-  // Ici, il faudra charger les infos de l'événement dans les champs
-  openModal('modal-event');
-}
-
-// --- Afficher les événements du joueur ---
-function renderMesInscriptions() {
-  const grid = document.getElementById('mes-inscriptions-grid');
-
-  // Si le joueur n'a aucune inscription, on affiche un message vide
-  if (!state.user || state.mesInscriptions.length === 0) {
-    grid.innerHTML = '<div class="empty-state">Vous n\'êtes inscrit à aucun événement pour le moment.</div>';
-    return;
+  if (!titre || !contenu) { 
+    showMsg('err-missive', 'Le titre et le message sont obligatoires.'); 
+    return; 
   }
-
-  // On trie pour ne garder que les événements du joueur
-  const myEvents = state.events.filter(ev => state.mesInscriptions.includes(ev.id));
-
-  if (myEvents.length === 0) {
-    grid.innerHTML = '<div class="empty-state">Vous n\'êtes inscrit à aucun événement pour le moment.</div>';
-    return;
-  }
-
-  // On crée l'affichage des événements pour remplacer le "Chargement..."
-  grid.innerHTML = myEvents.map(ev => {
-    return `<div class="event-card">
-      <div class="event-card-header">
-        <div class="event-card-titre">${ev.titre}</div>
-        <span class="badge-inscrit">✦ Inscrit·e</span>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-// --- Ouvrir l'espace joueur et lancer le chargement ---
-function ouvrirEspaceJoueur() {
-  document.getElementById('public-screen').style.display = 'none';
-  document.getElementById('joueur-screen').style.display = 'block';
-  
-  // C'est cette ligne qui efface le mot "Chargement..." !
-  renderMesInscriptions(); 
-}
-
-// --- Faire fonctionner les onglets ---
-function showJoueurTab(tab, btn) {
-  // On gère la couleur du bouton cliqué
-  document.querySelectorAll('#joueur-screen .joueur-tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-
-  // On affiche le bon contenu en dessous
-  document.getElementById('joueur-tab-inscriptions').style.display = (tab === 'inscriptions') ? 'block' : 'none';
-  document.getElementById('joueur-tab-messages').style.display = (tab === 'messages') ? 'block' : 'none';
-
-  // On recharge les bonnes données selon l'onglet !
-  if (tab === 'inscriptions') {
-    renderMesInscriptions();
-  } else if (tab === 'messages') {
-    loadJoueurMessages(); // C'est cette ligne qui fait la magie pour l'onglet Messages !
-  }
-}
-
-// --- Charger et afficher les messages du joueur ---
-async function loadJoueurMessages() {
-  const fil = document.getElementById('messages-fil');
-  
-  // Si le joueur n'est pas connecté, on arrête
-  if (!state.user) return;
 
   try {
-    // On essaie de récupérer les messages dans Supabase
-    const { data, error } = await sb.from('messages')
-      .select('*')
-      .eq('user_id', state.user.id)
-      .order('date_creation', { ascending: true });
+    showToast('Publication de la missive...');
+    
+    // 1. Sauvegarde dans Supabase
+    const { error } = await sb.from('annonces').insert({ titre, contenu, auteur_nom });
+    if (error) throw error;
 
-    // S'il n'y a pas de messages (ou si la table n'existe pas encore)
-    if (error || !data || data.length === 0) {
-      fil.innerHTML = '<div class="empty-state">Vous n\'avez aucun message. Écrivez à l\'équipe orga ci-dessous !</div>';
-      return;
-    }
-
-    // S'il y a des messages, on les affiche sous forme de bulles
-    fil.innerHTML = data.map(m => {
-      // On vérifie qui a envoyé le message pour aligner à gauche ou à droite
-      const isJoueur = m.expediteur === 'joueur';
-      const bubbleClass = isJoueur ? 'msg-bubble joueur' : 'msg-bubble orga';
-      
-      return `
-        <div class="${bubbleClass}">
-          <div class="msg-bubble-meta">${new Date(m.date_creation).toLocaleString('fr-FR')}</div>
-          <div>${m.contenu}</div>
+    // 2. On récupère TOUS les emails des joueurs
+    const { data: profils } = await sb.from('profils').select('email');
+    
+    if (profils && profils.length > 0) {
+      const sujetMail = "📜 Nouvelle Missive : " + titre;
+      const corpsMail = `
+        <div style="font-family: serif; color: #1e293b; max-width: 600px; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px;">
+          <h2 style="color: #58abbc;">Oyez, oyez !</h2>
+          <p>Une nouvelle missive a été publiée par <b>${auteur_nom}</b> :</p>
+          <div style="background: #f8fafc; padding: 15px; border-left: 4px solid #58abbc; font-style: italic; margin: 15px 0;">
+            ${contenu.replace(/\n/g, '<br>')}
+          </div>
+          <p><a href="https://www.xn--farie-csa.fr/%C3%A9v%C3%A9nements" style="display: inline-block; background: #58abbc; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">Lire et répondre sur le site</a></p>
         </div>
       `;
-    }).join('');
-    
-    // On fait défiler la zone vers le bas pour voir le dernier message
-    fil.scrollTop = fil.scrollHeight;
 
-  } catch (e) {
-    // En cas de problème, on enlève le mot "Chargement" au moins !
-    fil.innerHTML = '<div class="empty-state">Commencez la conversation avec les orgas ici.</div>';
-  }
-}
+      // 3. ENVOI VIA LE FACTEUR GOOGLE (SÉCURISÉ)
+      // On boucle sur chaque profil pour envoyer le mail
+      for (const p of profils) {
+        if (p.email) {
+          await sendEmailViaGAS(p.email, sujetMail, corpsMail);
+        }
+      }
+    }
 
-// --- Envoyer un nouveau message ---
-async function envoyerMessage() {
-  const textarea = document.getElementById('msg-nouveau');
-  const contenu = textarea.value.trim();
-  
-  // On ne fait rien si la zone de texte est vide
-  if (!contenu) return;
-
-  try {
-    // On envoie le message dans la base de données Supabase
-    await sb.from('messages').insert({
-      user_id: state.user.id,
-      contenu: contenu,
-      expediteur: 'joueur'
-    });
-    
-    // On vide la zone de texte
-    textarea.value = ''; 
-    
-    // On recharge la liste des messages pour voir celui qu'on vient d'envoyer !
-    loadJoueurMessages(); 
-    
-  } catch(e) {
-    showMsg('err-msg', "Erreur lors de l'envoi du message.");
+    closeModal('modal-missive');
+    showToast('✦ Missive publiée et e-mails envoyés !');
+    await loadAnnonces(); 
+  } catch (err) {
+    console.error(err);
+    showMsg('err-missive', "Erreur lors de la publication.");
   }
 }
   
