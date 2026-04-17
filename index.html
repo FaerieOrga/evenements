@@ -680,21 +680,28 @@ input:-webkit-autofill:focus {
       .home-layout[data-active="missives"] .dates-col { display: none; }
       
       .mobile-tabs button {
-          flex: 1;
-          padding: 12px;
-          font-family: 'Cinzel', serif;
-          font-size: 0.8rem;
-          border: 1px solid var(--border);
-          background: white;
-          border-radius: 6px;
-          cursor: pointer;
-      }
-      
-      .mobile-tabs button.active {
-          background: var(--ink);
-          color: white;
-          border-color: var(--ink);
-      }
+        flex: 1;
+        padding: 10px;
+        font-family: 'Cinzel', serif;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        border: 1px solid #cbd5e1;
+        background: rgba(255, 255, 255, 0.8);
+        color: #64748b;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+    }
+    
+    /* Le bouton quand il est sélectionné */
+    .mobile-tabs button.active {
+        background: #58abbc; /* Ton bleu thématique */
+        color: white;
+        border-color: #58abbc;
+        box-shadow: 0 4px 10px rgba(88, 171, 188, 0.3);
+        font-weight: bold;
+    }
   }                                                     
 </style>
 </head>
