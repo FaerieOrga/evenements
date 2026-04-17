@@ -1831,17 +1831,44 @@ async function sauvegarderMissive() {
   try {
     showToast('Envoi de la missive en cours...');
     
-    // 1. Sauvegarde sur le site
+    // 1. Sauvegarde de la missive sur Supabase
     const { error } = await sb.from('annonces').insert({ titre, contenu, auteur_nom });
     if (error) throw error;
 
-    // 2. ⚡️ CONNEXION BREVO ICI ⚡️
-    // C'est ici que tu peux insérer le code que Claude t'a fait pour Brevo.
-    // Par exemple, un fetch vers Make/Zapier :
-    // await fetch('TON_URL_WEBHOOK', { method: 'POST', body: JSON.stringify({ titre, contenu }) });
+    // 2. ⚡️ APPEL À TON FACTEUR GOOGLE ⚡️
+    // On récupère les emails des joueurs
+    const { data: profils } = await sb.from('profils').select('email');
+    
+    if (profils && profils.length > 0) {
+      const sujetMail = "📜 Nouvelle Missive : " + titre;
+      
+      // On prépare le contenu du mail
+      const corpsMail = `
+        <div style="font-family: 'Georgia', serif; color: #1e293b; max-width: 600px;">
+          <h2 style="color: #58abbc;">Oyez, oyez !</h2>
+          <p>Une nouvelle missive a été publiée par <b>${auteur_nom}</b> :</p>
+          <div style="background: #f8fafc; padding: 15px; border-left: 4px solid #58abbc; font-style: italic;">
+            ${contenu.replace(/\n/g, '<br>')}
+          </div>
+          <p style="margin-top:20px;">
+            <a href="https://www.xn--farie-csa.fr/%C3%A9v%C3%A9nements" style="font-weight:bold; color:#1e293b;">
+              Lire et répondre sur le site
+            </a>
+          </p>
+        </div>
+      `;
+
+      // On envoie le mail à chaque joueur via ton script Google existant
+      for (const p of profils) {
+        if (p.email) {
+          // On appelle TA fonction avec tes paramètres : (email, sujet, message)
+          await sendEmailViaGAS(p.email, sujetMail, corpsMail);
+        }
+      }
+    }
 
     closeModal('modal-missive');
-    showToast('✦ Missive publiée !');
+    showToast('✦ Missive publiée et e-mails envoyés !');
     await loadAnnonces(); 
   } catch (err) {
     console.error(err);
