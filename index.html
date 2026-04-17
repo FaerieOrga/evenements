@@ -1010,9 +1010,9 @@ async function loadPublicEvents() {
     today.setHours(0, 0, 0, 0);
     const { data: events } = await sb.from('evenements').select('*').gte('date_debut', today.toISOString()).order('date_debut', { ascending: true });
     const { data: allInscriptions } = await sb.from('inscriptions').select('event_id');
-    const { data: allProfils } = await sb.from('profils').select('id, prenom');
-            state.allProfils = allProfils || [];
-            state.allInscriptionsData = allInscriptions || [];
+    const { data: profils } = await sb.from('profils').select('id, prenom, nom');
+    state.allProfils = profils || [];
+    state.allInscriptionsData = allInscriptions || [];
     
     state.events = (events || []).map(ev => {
       const occupes = (allInscriptions || []).filter(i => i.event_id === ev.id).length;
@@ -1060,12 +1060,13 @@ function renderPublicEvents(list) {
     const debut       = ev.date_debut ? formatDatetime(ev.date_debut) : (ev.date ? new Date(ev.date).toLocaleDateString('fr-FR') : '—');
     const fin         = ev.date_fin ? formatDatetime(ev.date_fin) : null;
     const inscritsIci = (state.allInscriptionsData || []).filter(i => i.event_id === ev.id);
-    const noms = inscritsIci.map(ins => {
-      const p = (state.allProfils || []).find(prof => prof.id === ins.user_id);
-      return p ? (p.prenom || "Aventurier") : "Aventurier";
-    }).join(', ');
+    const annuaire = {};
+      (state.allProfils || []).forEach(p => {
+      annuaire[p.id] = (p.prenom && p.nom) ? `${p.prenom} ${p.nom}` : (p.prenom || p.email || "Aventurier");
+      });
+    const inscritsIci = (state.allInscriptionsData || []).filter(i => i.event_id === ev.id);
+    const noms = inscritsIci.map(i => annuaire[i.user_id] || "Joueur Inconnu").join(', ');
     const bulle = noms ? "Inscrits : " + noms : "Aucun inscrit";
-
     let btnHtml = '';
     if (inscrit) {
       btnHtml = `<span class="badge-inscrit">✦ Inscrit·e</span>`;
