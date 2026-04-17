@@ -1230,12 +1230,79 @@ function handleInscriptionClick(id, titre, dispo) {
 
 // --- Authentification (À lier avec Supabase) ---
 async function doLogin() {
-  console.log("Connexion du joueur à coder avec Supabase");
-  // Exemple rapide : const { data, error } = await sb.auth.signInWithPassword({ email: ..., password: ... })
+  // 1. On récupère les valeurs tapées par l'utilisateur
+  const email = document.getElementById('login-email').value.trim();
+  const mdp = document.getElementById('login-mdp').value;
+  
+  // On cache les anciens messages d'erreur au cas où
+  hideMsg('err-login');
+
+  // 2. Vérification basique
+  if (!email || !mdp) {
+    showMsg('err-login', 'Veuillez remplir tous les champs.');
+    return;
+  }
+
+  // 3. Appel à Supabase pour la connexion
+  const { data, error } = await sb.auth.signInWithPassword({
+    email: email,
+    password: mdp
+  });
+
+  // 4. Gestion du résultat
+  if (error) {
+    // Si Supabase renvoie une erreur (mauvais mot de passe, etc.)
+    showMsg('err-login', "Erreur : " + error.message);
+  } else {
+    // Succès ! On ferme la modale et on affiche une notification
+    closeModal('modal-auth');
+    showToast("Connexion réussie !");
+    
+    // Note : Ton "sb.auth.onAuthStateChange" s'occupe déjà de rafraîchir l'interface
+  }
 }
 
 async function doRegister() {
-  console.log("Inscription du joueur à coder avec Supabase");
+  // 1. On récupère les informations
+  const prenom = document.getElementById('reg-prenom').value.trim();
+  const nom = document.getElementById('reg-nom').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const mdp = document.getElementById('reg-mdp').value;
+  
+  hideMsg('err-reg');
+  hideMsg('ok-reg');
+
+  // 2. Vérification
+  if (!prenom || !nom || !email || !mdp) {
+    showMsg('err-reg', 'Veuillez remplir tous les champs.');
+    return;
+  }
+
+  // 3. Appel à Supabase pour créer le compte
+  const { data, error } = await sb.auth.signUp({
+    email: email,
+    password: mdp,
+    options: {
+      data: {
+        prenom: prenom,
+        nom: nom
+      }
+    }
+  });
+
+  // 4. Gestion du résultat
+  if (error) {
+    showMsg('err-reg', "Erreur d'inscription : " + error.message);
+  } else {
+    // Succès ! On affiche le message vert
+    showMsg('ok-reg', "Compte créé avec succès ! Vous pouvez maintenant vous connecter.", 'success');
+    
+    // Petit bonus : on bascule automatiquement sur l'onglet de connexion après 2 secondes
+    setTimeout(() => {
+      switchAuthTab('connexion');
+      document.getElementById('login-email').value = email;
+    }, 2000);
+  }
 }
 
 // --- Espace Organisateur ---
