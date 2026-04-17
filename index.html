@@ -1344,6 +1344,60 @@ function openModalEditEvent(id) {
   // Ici, il faudra charger les infos de l'événement dans les champs
   openModal('modal-event');
 }
+
+// --- Afficher les événements du joueur ---
+function renderMesInscriptions() {
+  const grid = document.getElementById('mes-inscriptions-grid');
+
+  // Si le joueur n'a aucune inscription, on affiche un message vide
+  if (!state.user || state.mesInscriptions.length === 0) {
+    grid.innerHTML = '<div class="empty-state">Vous n\'êtes inscrit à aucun événement pour le moment.</div>';
+    return;
+  }
+
+  // On trie pour ne garder que les événements du joueur
+  const myEvents = state.events.filter(ev => state.mesInscriptions.includes(ev.id));
+
+  if (myEvents.length === 0) {
+    grid.innerHTML = '<div class="empty-state">Vous n\'êtes inscrit à aucun événement pour le moment.</div>';
+    return;
+  }
+
+  // On crée l'affichage des événements pour remplacer le "Chargement..."
+  grid.innerHTML = myEvents.map(ev => {
+    return `<div class="event-card">
+      <div class="event-card-header">
+        <div class="event-card-titre">${ev.titre}</div>
+        <span class="badge-inscrit">✦ Inscrit·e</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// --- Ouvrir l'espace joueur et lancer le chargement ---
+function ouvrirEspaceJoueur() {
+  document.getElementById('public-screen').style.display = 'none';
+  document.getElementById('joueur-screen').style.display = 'block';
+  
+  // C'est cette ligne qui efface le mot "Chargement..." !
+  renderMesInscriptions(); 
+}
+
+// --- Faire fonctionner les onglets ---
+function showJoueurTab(tab, btn) {
+  // On gère la couleur du bouton cliqué
+  document.querySelectorAll('#joueur-screen .joueur-tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  // On affiche le bon contenu en dessous
+  document.getElementById('joueur-tab-inscriptions').style.display = (tab === 'inscriptions') ? 'block' : 'none';
+  document.getElementById('joueur-tab-messages').style.display = (tab === 'messages') ? 'block' : 'none';
+
+  // On recharge la liste si on clique sur l'onglet Inscriptions
+  if (tab === 'inscriptions') {
+    renderMesInscriptions();
+  }
+}
   
 </script>
 </body>
