@@ -1194,6 +1194,89 @@ function updateHeaderUserZone() {
 }
 async function logoutJoueur() { await sb.auth.signOut(); window.location.reload(); }
 
+  // ════════════════════════════════════════════════════
+//  8. FONCTIONS UI MANQUANTES (RÉPARATION DES BOUTONS)
+// ════════════════════════════════════════════════════
+
+// --- Navigation et Modales basiques ---
+function openCalendrier() { 
+  openModal('modal-calendrier'); 
+}
+
+function filterEvents() { 
+  console.log("Filtrage des événements public à coder..."); 
+}
+
+function filterOrgaEvents(valeur) { 
+  console.log("Filtrage des événements orga à coder pour :", valeur); 
+}
+
+// --- Espace Joueur ---
+function ouvrirEspaceJoueur() {
+  document.getElementById('public-screen').style.display = 'none';
+  document.getElementById('joueur-screen').style.display = 'block';
+}
+
+function retourAccueil() {
+  document.getElementById('joueur-screen').style.display = 'none';
+  document.getElementById('public-screen').style.display = 'block';
+}
+
+function handleInscriptionClick(id, titre, dispo) {
+  // Affiche la modale d'inscription pour l'événement sélectionné
+  document.getElementById('modal-insc-titre').textContent = "Inscription : " + titre;
+  openModal('modal-inscription');
+}
+
+// --- Authentification (À lier avec Supabase) ---
+async function doLogin() {
+  console.log("Connexion du joueur à coder avec Supabase");
+  // Exemple rapide : const { data, error } = await sb.auth.signInWithPassword({ email: ..., password: ... })
+}
+
+async function doRegister() {
+  console.log("Inscription du joueur à coder avec Supabase");
+}
+
+// --- Espace Organisateur ---
+async function loadOrgaMessagerie() {
+  // Cette fonction manquait et faisait planter le login Orga !
+  console.log("Chargement de la messagerie organisateur...");
+}
+
+function openModalCreateEvent() {
+  // Vider les champs avant d'ouvrir
+  document.getElementById('e-id').value = '';
+  document.getElementById('e-titre').value = '';
+  document.getElementById('e-lieu').value = '';
+  document.getElementById('modal-event-title').textContent = "+ Nouvel événement";
+  openModal('modal-event');
+}
+
+function ouvrirModaleMissive() {
+  // Vider les champs
+  document.getElementById('m-titre').value = '';
+  document.getElementById('m-auteur').value = '';
+  document.getElementById('m-contenu').value = '';
+  openModal('modal-missive');
+}
+
+async function sauvegarderMissive() {
+  console.log("Sauvegarde de la missive dans Supabase à coder...");
+  closeModal('modal-missive');
+}
+
+function voirParticipants(id, titre) {
+  document.getElementById('view-event-titre').textContent = titre;
+  document.getElementById('liste-participants-content').innerHTML = "<em>Chargement des participants...</em>";
+  openModal('modal-liste-participants');
+}
+
+function openModalEditEvent(id) {
+  document.getElementById('modal-event-title').textContent = "Modifier l'événement";
+  // Ici, il faudra charger les infos de l'événement dans les champs
+  openModal('modal-event');
+}
   
 </script>
 </body>
