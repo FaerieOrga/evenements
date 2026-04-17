@@ -764,12 +764,11 @@ input:-webkit-autofill:focus {
           Messages joueurs
           <span class="notif-dot" id="notif-orga-dot" style="display:none"></span>
         </button>
+        <button class="joueur-tab-btn" id="otab-missives" onclick="showOrgaTab('missives', this)">Missives</button>
       </div>
-
       <div id="orga-tab-events">
         <div class="orga-toolbar">
           <button class="btn btn-sm" onclick="openModalCreateEvent()">+ Nouvel événement</button>
-          <button class="btn btn-sm btn-orga" style="background:#58abbc" onclick="ouvrirModaleMissive()">📜 Nouvelle Missive</button>
           <input type="text" id="orga-search" placeholder="Filtrer…" style="max-width:220px;margin-left:auto" oninput="filterOrgaEvents(this.value)" autocomplete="new-password" onfocus="this.value=''">
         </div>
         <table class="orga-table">
@@ -782,7 +781,7 @@ input:-webkit-autofill:focus {
         </table>
       </div>
 
-      <div id="orga-tab-messages" style="display:none">
+<div id="orga-tab-messages" style="display:none">
         <div class="orga-msg-joueur-select">
           <label style="text-transform:none;font-size:0.9rem;margin-bottom:0">Conversation avec :</label>
           <select id="orga-joueur-select" onchange="loadOrgaConversation(this.value)" style="max-width:280px">
@@ -797,6 +796,19 @@ input:-webkit-autofill:focus {
           <button class="btn btn-sm" onclick="envoyerMessageOrga()">Répondre</button>
         </div>
         <div class="msg-error" id="err-orga-msg"></div>
+      </div> <div id="orga-tab-missives" style="display:none">
+        <div class="orga-toolbar">
+          <button class="btn btn-sm btn-orga" style="background:#58abbc" onclick="ouvrirModaleMissive()">📜 Nouvelle Missive</button>
+        </div>
+        <table class="orga-table">
+          <thead>
+            <tr><th>Date</th><th>Titre</th><th>Auteur</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="orga-missives-body">
+            <tr><td colspan="4" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement…</td></tr>
+          </tbody>
+        </table>
+      </div>
       </div>
     </div>
   </div>
@@ -907,6 +919,7 @@ input:-webkit-autofill:focus {
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('modal-missive')">✕</button>
     <div class="modal-title">📜 Rédiger une Missive</div>
+    <input type="hidden" id="m-id">
     <div class="form-group"><label>Titre de l'annonce</label><input type="text" id="m-titre" placeholder="Oyez, oyez !"></div>
     <div class="form-group"><label>Auteur</label><input type="text" id="m-auteur" placeholder="L'équipe Orga"></div>
     <div class="form-group"><label>Message</label><textarea id="m-contenu" placeholder="Votre annonce pour les joueurs..."></textarea></div>
@@ -1485,8 +1498,16 @@ function openAuthModal() { document.getElementById('auth-context').style.display
 function openOrgaLogin() { document.getElementById('orga-pwd').value = ''; hideMsg('err-orga'); openModal('modal-orga-auth'); }
 async function doLoginOrga() { if (document.getElementById('orga-pwd').value !== ORGA_PASSWORD) { showMsg('err-orga', 'Mot de passe incorrect.'); return; } closeModal('modal-orga-auth'); document.getElementById('public-screen').style.display = 'none'; document.getElementById('orga-screen').style.display = 'block'; showOrgaTab('events', document.getElementById('otab-events')); await loadOrgaEvents(); await loadOrgaMessagerie(); }
 function logoutOrga() { document.getElementById('orga-screen').style.display = 'none'; document.getElementById('public-screen').style.display = ''; }
-function showOrgaTab(tab, btn) { document.querySelectorAll('#orga-screen .joueur-tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); document.getElementById('orga-tab-events').style.display = tab === 'events' ? '' : 'none'; document.getElementById('orga-tab-messages').style.display = tab === 'messages' ? '' : 'none'; }
-
+function showOrgaTab(tab, btn) { 
+  document.querySelectorAll('#orga-screen .joueur-tab-btn').forEach(b => b.classList.remove('active')); 
+  btn.classList.add('active'); 
+  document.getElementById('orga-tab-events').style.display = tab === 'events' ? '' : 'none'; 
+  document.getElementById('orga-tab-messages').style.display = tab === 'messages' ? '' : 'none'; 
+  document.getElementById('orga-tab-missives').style.display = tab === 'missives' ? '' : 'none';
+  
+  if (tab === 'missives') loadOrgaMissives(); // Charge la table quand on clique !
+}
+  
 // ════════════════════════════════════════════════════
 //  VUE ORGA ÉVÉNEMENTS
 // ════════════════════════════════════════════════════
@@ -1811,7 +1832,34 @@ async function loadAnnonces() {
   }
 }
 
+// --- CHARGER LA TABLE ORGA ---
+async function loadOrgaMissives() {
+  const tbody = document.getElementById('orga-missives-body');
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Chargement…</td></tr>';
+  
+  const { data, error } = await sb.from('annonces').select('*').order('date_creation', { ascending: false });
+  if (error) { tbody.innerHTML = `<tr><td colspan="4">Erreur</td></tr>`; return; }
+  
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Aucune missive.</td></tr>'; return; }
+  
+  state.orgaMissives = data; // On les stocke en mémoire pour l'édition
+  
+  tbody.innerHTML = data.map(m => `
+    <tr>
+      <td>${new Date(m.date_creation).toLocaleDateString('fr-FR')}</td>
+      <td><strong>${m.titre}</strong></td>
+      <td>${m.auteur_nom}</td>
+      <td>
+        <button class="btn btn-sm" onclick="openModalEditMissive('${m.id}')">✏ Modif</button>
+        <button class="btn btn-sm btn-danger" style="padding: 6px 10px; font-size: 0.7rem;" onclick="supprimerMissive('${m.id}')">🗑</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// --- OUVRIR LA MODALE (CRÉATION) ---
 function ouvrirModaleMissive() {
+  document.getElementById('m-id').value = '';
   document.getElementById('m-titre').value = '';
   document.getElementById('m-auteur').value = 'L\'équipe Orga';
   document.getElementById('m-contenu').value = '';
@@ -1819,54 +1867,83 @@ function ouvrirModaleMissive() {
   openModal('modal-missive');
 }
 
+// --- OUVRIR LA MODALE (MODIFICATION) ---
+function openModalEditMissive(id) {
+  const m = state.orgaMissives.find(x => x.id === id);
+  if (!m) return;
+  document.getElementById('m-id').value = m.id;
+  document.getElementById('m-titre').value = m.titre;
+  document.getElementById('m-auteur').value = m.auteur_nom;
+  document.getElementById('m-contenu').value = m.contenu;
+  hideMsg('err-missive');
+  openModal('modal-missive');
+}
+
+// --- SAUVEGARDER (CRÉATION OU UPDATE) ---
 async function sauvegarderMissive() {
+  const id = document.getElementById('m-id').value;
   const titre = document.getElementById('m-titre').value.trim();
   const auteur_nom = document.getElementById('m-auteur').value.trim();
   const contenu = document.getElementById('m-contenu').value.trim();
 
   if (!titre || !contenu) { 
-    showMsg('err-missive', 'Le titre et le message sont obligatoires.'); 
-    return; 
+    showMsg('err-missive', 'Le titre et le message sont obligatoires.'); return; 
   }
 
   try {
-    showToast('Publication de la missive...');
+    showToast(id ? 'Modification...' : 'Publication...');
     
-    // 1. Sauvegarde dans Supabase
-    const { error } = await sb.from('annonces').insert({ titre, contenu, auteur_nom });
-    if (error) throw error;
+    if (id) {
+      // MISE À JOUR
+      const { error } = await sb.from('annonces').update({ titre, contenu, auteur_nom }).eq('id', id);
+      if (error) throw error;
+    } else {
+      // NOUVELLE MISSIVE
+      const { error } = await sb.from('annonces').insert({ titre, contenu, auteur_nom });
+      if (error) throw error;
 
-    // 2. On récupère TOUS les emails des joueurs
-    const { data: profils } = await sb.from('profils').select('email');
-    
-    if (profils && profils.length > 0) {
-      const sujetMail = "📜 Nouvelle Missive : " + titre;
-      const corpsMail = `
-        <div style="font-family: serif; color: #1e293b; max-width: 600px; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px;">
-          <h2 style="color: #58abbc;">Oyez, oyez !</h2>
-          <p>Une nouvelle missive a été publiée par <b>${auteur_nom}</b> :</p>
-          <div style="background: #f8fafc; padding: 15px; border-left: 4px solid #58abbc; font-style: italic; margin: 15px 0;">
-            ${contenu.replace(/\n/g, '<br>')}
-          </div>
-          <p><a href="https://www.xn--farie-csa.fr/%C3%A9v%C3%A9nements" style="display: inline-block; background: #58abbc; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">Lire et répondre sur le site</a></p>
-        </div>
-      `;
-
-      // 3. ENVOI VIA LE FACTEUR GOOGLE (SÉCURISÉ)
-      // On boucle sur chaque profil pour envoyer le mail
-      for (const p of profils) {
-        if (p.email) {
-          await sendEmailViaGAS(p.email, sujetMail, corpsMail);
+      // On n'envoie les emails QU'À LA CRÉATION
+      const { data: profils } = await sb.from('profils').select('email');
+      if (profils && profils.length > 0) {
+        const sujetMail = "📜 Nouvelle Missive : " + titre;
+        const corpsMail = `
+          <div style="font-family: serif; color: #1e293b; max-width: 600px; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px;">
+            <h2 style="color: #58abbc;">Oyez, oyez !</h2>
+            <p>Une nouvelle missive a été publiée par <b>${auteur_nom}</b> :</p>
+            <div style="background: #f8fafc; padding: 15px; border-left: 4px solid #58abbc; font-style: italic; margin: 15px 0;">
+              ${contenu.replace(/\n/g, '<br>')}
+            </div>
+            <p><a href="https://www.xn--farie-csa.fr/%C3%A9v%C3%A9nements" style="display: inline-block; background: #58abbc; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">Lire et répondre sur le site</a></p>
+          </div>`;
+        for (const p of profils) {
+          if (p.email) await sendEmailViaGAS(p.email, sujetMail, corpsMail);
         }
       }
     }
 
     closeModal('modal-missive');
-    showToast('✦ Missive publiée et e-mails envoyés !');
-    await loadAnnonces(); 
+    showToast(id ? '✦ Missive modifiée !' : '✦ Missive publiée et e-mails envoyés !');
+    await loadAnnonces(); // Maj page d'accueil
+    await loadOrgaMissives(); // Maj onglet
   } catch (err) {
     console.error(err);
-    showMsg('err-missive', "Erreur lors de la publication.");
+    showMsg('err-missive', "Erreur lors de la sauvegarde.");
+  }
+}
+
+// --- SUPPRIMER ---
+async function supprimerMissive(id) {
+  if (!confirm("Oyez ! Voulez-vous vraiment faire disparaître cette missive à jamais ?")) return;
+  try {
+    showToast('Magie en cours...');
+    const { error } = await sb.from('annonces').delete().eq('id', id);
+    if (error) throw error;
+    showToast('✦ La missive a été vaporisée.');
+    await loadAnnonces();
+    await loadOrgaMissives();
+  } catch (err) {
+    console.error(err);
+    showToast("❌ Erreur : La missive résiste.");
   }
 }
   
