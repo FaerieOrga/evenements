@@ -1342,23 +1342,51 @@ async function envoyerMessage() {
 
 async function loadOrgaMessagerie() {
   try {
-    // 1. On récupère tous les messages
-    const { data: allMessages, error: msgError } = await sb.from('messages')
-      .select('user_id, auteur, lu_orga')
-      .order('created_at', { ascending: false });
+    // 1. On récupère TOUS les profils (tous les inscrits au site)
+    const { data: profils, error: profError } = await sb.from('profils')
+      .select('id, prenom, nom, email')
+      .order('prenom', { ascending: true });
     
-    if (msgError) throw msgError;
-    if (!allMessages) return;
+    if (profError) throw profError;
 
-    // 2. On récupère les profils existants pour faire le lien ID -> Nom
-    const { data: profils } = await sb.from('profils').select('id, prenom, nom, email');
-    const annuaire = {};
-    if (profils) {
-      profils.forEach(p => {
-        // On préfère "Prénom Nom", sinon on prend l'email
-        annuaire[p.id] = (p.prenom || p.nom) ? `${p.prenom || ''} ${p.nom || ''}`.trim() : p.email;
+    // 2. On récupère les infos sur les messages non lus
+    const { data: nonLus } = await sb.from('messages')
+      .select('user_id')
+      .eq('lu_orga', false)
+      .eq('auteur', 'joueur');
+
+    const statsNonLus = {};
+    if (nonLus) {
+      nonLus.forEach(m => {
+        statsNonLus[m.user_id] = (statsNonLus[m.user_id] || 0) + 1;
       });
     }
+    
+    // 3. On remplit la liste déroulante avec TOUT LE MONDE
+    const sel = document.getElementById('orga-joueur-select');
+    let html = '<option value="">— Sélectionner un joueur à contacter —</option>';
+    
+    if (profils) {
+      profils.forEach(p => {
+        const nomAffichage = (p.prenom || p.nom) ? `${p.prenom || ''} ${p.nom || ''}`.trim() : p.email;
+        const nb = statsNonLus[p.id] || 0;
+        const badge = nb > 0 ? ` 🔴 (${nb} non lu)` : '';
+        
+        html += `<option value="${p.id}">${nomAffichage}${badge}</option>`;
+      });
+    }
+    
+    sel.innerHTML = html;
+    
+    // 4. Pastille de notification globale
+    const totalNonLus = nonLus ? nonLus.length : 0;
+    const dot = document.getElementById('notif-orga-dot');
+    if (dot) dot.style.display = totalNonLus > 0 ? '' : 'none';
+
+  } catch (e) {
+    console.error("Erreur messagerie orga (contact total):", e);
+  }
+}
 
     // 3. On regroupe les messages par joueur
     const joueurs = {};
