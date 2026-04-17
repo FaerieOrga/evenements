@@ -1393,9 +1393,11 @@ function showJoueurTab(tab, btn) {
   document.getElementById('joueur-tab-inscriptions').style.display = (tab === 'inscriptions') ? 'block' : 'none';
   document.getElementById('joueur-tab-messages').style.display = (tab === 'messages') ? 'block' : 'none';
 
-  // On recharge la liste si on clique sur l'onglet Inscriptions
+  // On recharge les bonnes données selon l'onglet !
   if (tab === 'inscriptions') {
     renderMesInscriptions();
+  } else if (tab === 'messages') {
+    loadJoueurMessages(); // C'est cette ligne qui fait la magie pour l'onglet Messages !
   }
 }
 
