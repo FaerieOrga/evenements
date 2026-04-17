@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrée en Faérie</title>
+    <style>
+        body { 
+            font-family: serif; 
+            background: #ffffff;
+            color: #1e293b;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+        .box { 
+            text-align: center; 
+            border: 2px solid #58abbc;
+            padding: 40px; 
+            border-radius: 12px; 
+            background: #f8fafc;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1 { color: #58abbc; margin-top: 0; }
+        p { font-size: 1.1em; line-height: 1.6; }
+        button { 
+            background: #58abbc;
+            color: white; 
+            border: none; 
+            padding: 18px 35px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 1.2em; 
+            font-weight: bold; 
+            margin-top: 25px; 
+            transition: 0.3s ease; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        button:hover { 
+            background: #468a99;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>📜 Un dernier pas...</h1>
+        <p>Pour valider votre inscription,<br>veuillez cliquer sur le sceau ci-dessous.</p>
+        <button id="btn-final">VALIDER MON INSCRIPTION</button>
+    </div>
+    <script>
+        document.getElementById('btn-final').onclick = function() {
+            const params = new URLSearchParams(window.location.search);
+            const lienSupa = params.get('link');
+            if (lienSupa) {
+                window.location.href = lienSupa;
+            } else {
+                alert("Oups ! Le lien semble corrompu. Retentez l'inscription.");
+            }
+        };
+    </script>
+</body>
+</html>
