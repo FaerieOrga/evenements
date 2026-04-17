@@ -1833,16 +1833,13 @@ async function loadAnnonces() {
 }
 
 // --- CHARGER LA TABLE ORGA ---
+// 2. Table Organisateur (Version spéciale Google Sites)
 async function loadOrgaMissives() {
   const tbody = document.getElementById('orga-missives-body');
-  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Chargement…</td></tr>';
-  
+  if (!tbody) return;
   const { data, error } = await sb.from('annonces').select('*').order('date_creation', { ascending: false });
-  if (error) { tbody.innerHTML = `<tr><td colspan="4">Erreur</td></tr>`; return; }
-  
-  if (!data.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Aucune missive.</td></tr>'; return; }
-  
-  state.orgaMissives = data; // On les stocke en mémoire pour l'édition
+  if (error || !data) return;
+  state.orgaMissives = data;
   
   tbody.innerHTML = data.map(m => `
     <tr>
@@ -1850,11 +1847,10 @@ async function loadOrgaMissives() {
       <td><strong>${m.titre}</strong></td>
       <td>${m.auteur_nom}</td>
       <td>
-        <button class="btn btn-sm" onclick="openModalEditMissive('${m.id}')">✏ Modif</button>
-        <button class="btn btn-sm btn-danger" style="padding: 6px 10px; font-size: 0.7rem;" onclick="supprimerMissive('${m.id}')">🗑</button>
+        <button class="btn btn-sm" onclick="openModalEditMissive('${m.id}')">MODIFIER</button>
+        <button class="btn btn-sm btn-danger" onclick="supprimerMissive('${m.id}')">SUPPRIMER</button>
       </td>
-    </tr>
-  `).join('');
+    </tr>`).join('');
 }
 
 // --- OUVRIR LA MODALE (CRÉATION) ---
