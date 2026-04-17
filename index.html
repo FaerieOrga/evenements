@@ -1799,14 +1799,21 @@ async function loadAnnonces() {
     }
     
     container.innerHTML = data.map(a => `
-      <div style="background: white; padding: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #58abbc;">
-        <h3 style="margin: 0 0 8px 0; font-size: 1.05rem; color: var(--ink); font-family: 'Cinzel', serif;">${a.titre}</h3>
-        <p style="margin: 0 0 12px 0; font-size: 0.9rem; color: #475569; line-height: 1.5; white-space: pre-wrap;">${a.contenu}</p>
-        <div style="font-size: 0.75rem; color: var(--ink-light); text-align: right; border-top: 1px dashed var(--border); padding-top: 8px;">
-          Par <b>${a.auteur_nom}</b> le ${new Date(a.date_creation).toLocaleDateString('fr-FR')}
-        </div>
-      </div>
-    `).join('');
+  <div style="background: white; padding: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #58abbc; position: relative;">
+    
+    <button onclick="supprimerMissive('${a.id}')" 
+            style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: #b91c1c; cursor: pointer; font-size: 1.1rem;" 
+            title="Supprimer la missive">
+      🗑️
+    </button>
+
+    <h3 style="margin: 0 0 8px 0; font-size: 1.05rem; color: var(--ink); font-family: 'Cinzel', serif; padding-right: 25px;">${a.titre}</h3>
+    <p style="margin: 0 0 12px 0; font-size: 0.9rem; color: #475569; line-height: 1.5; white-space: pre-wrap;">${a.contenu}</p>
+    <div style="font-size: 0.75rem; color: var(--ink-light); text-align: right; border-top: 1px dashed var(--border); padding-top: 8px;">
+      Par <b>${a.auteur_nom}</b> le ${new Date(a.date_creation).toLocaleDateString('fr-FR')}
+    </div>
+  </div>
+`).join('');
   } catch (err) {
     console.error("Erreur missives :", err);
     container.innerHTML = `<div style="color:var(--red-blood); font-size:0.8rem;">Impossible de lire les parchemins.</div>`;
@@ -1871,6 +1878,23 @@ async function sauvegarderMissive() {
     showMsg('err-missive', "Erreur lors de la publication.");
   }
 }
+async function supprimerMissive(id) {
+  if (!confirm("Oyez ! Voulez-vous vraiment faire disparaître cette missive à jamais ?")) return;
+
+  try {
+    showToast('Magie en cours... Suppression de la missive');
+    const { error } = await sb.from('annonces').delete().eq('id', id);
+
+    if (error) throw error;
+
+    showToast('✦ La missive a été vaporisée.');
+    await loadAnnonces(); // Recharge la liste immédiatement
+  } catch (err) {
+    console.error(err);
+    showToast("❌ Erreur : La missive résiste à la suppression.");
+  }
+}
+  
 </script>
 </body>
 </html>
