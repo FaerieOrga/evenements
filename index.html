@@ -1009,7 +1009,7 @@ async function loadPublicEvents() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const { data: events } = await sb.from('evenements').select('*').gte('date_debut', today.toISOString()).order('date_debut', { ascending: true });
-    const { data: allInscriptions } = await sb.from('inscriptions').select('event_id');
+    const { data: allInscriptions } = await sb.from('inscriptions').select('event_id, user_id');
     const { data: profils } = await sb.from('profils').select('id, prenom, nom');
     state.allProfils = profils || [];
     state.allInscriptionsData = allInscriptions || [];
@@ -1064,7 +1064,6 @@ function renderPublicEvents(list) {
       (state.allProfils || []).forEach(p => {
       annuaire[p.id] = (p.prenom && p.nom) ? `${p.prenom} ${p.nom}` : (p.prenom || p.email || "Aventurier");
       });
-    const inscritsIci = (state.allInscriptionsData || []).filter(i => i.event_id === ev.id);
     const noms = inscritsIci.map(i => annuaire[i.user_id] || "Joueur Inconnu").join(', ');
     const bulle = noms ? "Inscrits : " + noms : "Aucun inscrit";
     let btnHtml = '';
