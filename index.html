@@ -129,7 +129,7 @@ input:-webkit-autofill:focus {
 /* ── BOUTONS ── */
 .btn {
   display: inline-block;
-  padding: 8px 18px;    /* Réduit de 10px/28px à 8px/18px */
+  padding: 6px 16px;    /* Réduit de 10px/28px à 8px/18px */
   background: #58abbc;
   color: #ffffff;
   border: none;
@@ -148,7 +148,26 @@ input:-webkit-autofill:focus {
   box-shadow: 0 4px 12px rgba(88, 171, 188, 0.4);
   transform: translateY(-1px);
 }
-.btn-ghost:hover { background: #f1f5f9; color: var(--ink); }
+.btn-ghost {
+  display: inline-block;
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  color: var(--ink-light);
+  padding: 8px 18px;    /* Même taille que le bouton bleu */
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;   /* Même taille que le bouton bleu */
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+}
+
+.btn-ghost:hover { 
+  background: #f1f5f9; 
+  color: var(--ink); 
+  border-color: #94a3b8;
+}
 
 /* ── MESSAGES ── */
 .msg-error {
@@ -1125,7 +1144,7 @@ function renderPublicEvents(list) {
     } else if (enAttente) {
       btnHtml = `<span class="badge-attente">⏳ Liste d'attente</span>`;
     } else if (interesse) {
-      btnHtml = `<span class="badge-interesse">👀 Intéressé·e</span>`;
+      btnHtml = `<span class="badge-interesse">👀Intéressé·e</span>`;
     } else if (complet) {
       btnHtml = `<button class="btn btn-sm btn-danger" onclick="handleInscriptionClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${placesDispo})">Liste d'attente</button>`;
     } else {
