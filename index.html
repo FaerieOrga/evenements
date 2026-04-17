@@ -1792,7 +1792,7 @@ async function loadAnnonces() {
   try {
     // 1. On vérifie qui est connecté via Supabase
     const { data: { session } } = await sb.auth.getSession();
-    const isOrga = session && session.user.email === 'avada@hotmail.fr'; // Remplace par ton mail exact
+    const isOrga = session && session.user.email === 'contact@xn--farie-csa.fr'; // Remplace par ton mail exact
 
     const { data, error } = await sb.from('annonces').select('*').order('date_creation', { ascending: false }).limit(5);
     if (error) throw error;
