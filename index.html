@@ -1826,53 +1826,41 @@ async function sauvegarderMissive() {
   const auteur_nom = document.getElementById('m-auteur').value.trim();
   const contenu = document.getElementById('m-contenu').value.trim();
 
-  if (!titre || !contenu) { showMsg('err-missive', 'Le titre et le message sont obligatoires.'); return; }
-
   try {
-    showToast('Envoi de la missive en cours...');
+    showToast('Envoi direct via Brevo...');
     
-    // 1. Sauvegarde de la missive sur Supabase
-    const { error } = await sb.from('annonces').insert({ titre, contenu, auteur_nom });
-    if (error) throw error;
+    // On récupère juste ton mail pour le test
+    const { data: profils } = await sb.from('profils').select('email').limit(1);
 
-    // 2. ⚡️ APPEL À TON FACTEUR GOOGLE ⚡️
-    // On récupère les emails des joueurs
-    const { data: profils } = await sb.from('profils').select('email');
+    const payload = {
+      "sender": { "name": "Faérie", "email": "contact@xn--farie-csa.fr" },
+      "to": [{ "email": "contact@xn--farie-csa.fr" }], // Test sur ton propre mail
+      "subject": "Test Direct Brevo : " + titre,
+      "htmlContent": contenu
+    };
+
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'api-key': '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',
+        'content-type': 'application/json',
+        'accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await res.json();
+    console.log("Réponse Brevo:", result);
     
-    if (profils && profils.length > 0) {
-      const sujetMail = "📜 Nouvelle Missive : " + titre;
-      
-      // On prépare le contenu du mail
-      const corpsMail = `
-        <div style="font-family: 'Georgia', serif; color: #1e293b; max-width: 600px;">
-          <h2 style="color: #58abbc;">Oyez, oyez !</h2>
-          <p>Une nouvelle missive a été publiée par <b>${auteur_nom}</b> :</p>
-          <div style="background: #f8fafc; padding: 15px; border-left: 4px solid #58abbc; font-style: italic;">
-            ${contenu.replace(/\n/g, '<br>')}
-          </div>
-          <p style="margin-top:20px;">
-            <a href="https://www.xn--farie-csa.fr/%C3%A9v%C3%A9nements" style="font-weight:bold; color:#1e293b;">
-              Lire et répondre sur le site
-            </a>
-          </p>
-        </div>
-      `;
-
-      // On envoie le mail à chaque joueur via ton script Google existant
-      for (const p of profils) {
-        if (p.email) {
-          // On appelle TA fonction avec tes paramètres : (email, sujet, message)
-          await sendEmailViaGAS(p.email, sujetMail, corpsMail);
-        }
-      }
+    if (res.ok) {
+        showToast('✅ REÇU ! Vérifie tes mails.');
+    } else {
+        showToast('❌ Erreur Brevo: ' + result.message);
     }
 
-    closeModal('modal-missive');
-    showToast('✦ Missive publiée et e-mails envoyés !');
-    await loadAnnonces(); 
   } catch (err) {
     console.error(err);
-    showMsg('err-missive', "Erreur lors de la publication.");
+    showToast('❌ Crash du test.');
   }
 }
 </script>
