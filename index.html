@@ -1341,84 +1341,48 @@ async function envoyerMessage() {
 }
 
 async function loadOrgaMessagerie() {
+  // On récupère l'élément HTML tout de suite
+  const sel = document.getElementById('orga-joueur-select');
+  if (!sel) return;
+
   try {
-    // 1. On récupère TOUS les profils (tous les inscrits au site)
-    const { data: profils, error: profError } = await sb.from('profils')
-      .select('id, prenom, nom, email')
-      .order('prenom', { ascending: true });
-    
+    // 1. Récupération des profils (Thony et les autres)
+    const { data: profils, error: profError } = await sb.from('profils').select('id, prenom, nom, email');
     if (profError) throw profError;
 
-    // 2. On récupère les infos sur les messages non lus
-    const { data: nonLus } = await sb.from('messages')
-      .select('user_id')
-      .eq('lu_orga', false)
-      .eq('auteur', 'joueur');
+    // 2. Récupération simple des messages non lus (on ne prend que l'essentiel)
+    const { data: messagesNonLus } = await sb.from('messages').select('user_id').eq('lu_orga', false);
 
-    const statsNonLus = {};
-    if (nonLus) {
-      nonLus.forEach(m => {
-        statsNonLus[m.user_id] = (statsNonLus[m.user_id] || 0) + 1;
-      });
-    }
-    
-    // 3. On remplit la liste déroulante avec TOUT LE MONDE
-    const sel = document.getElementById('orga-joueur-select');
-    let html = '<option value="">— Sélectionner un joueur à contacter —</option>';
-    
-    if (profils) {
-      profils.forEach(p => {
-        const nomAffichage = (p.prenom || p.nom) ? `${p.prenom || ''} ${p.nom || ''}`.trim() : p.email;
-        const nb = statsNonLus[p.id] || 0;
-        const badge = nb > 0 ? ` 🔴 (${nb} non lu)` : '';
-        
-        html += `<option value="${p.id}">${nomAffichage}${badge}</option>`;
-      });
-    }
-    
-    sel.innerHTML = html;
-    
-    // 4. Pastille de notification globale
-    const totalNonLus = nonLus ? nonLus.length : 0;
-    const dot = document.getElementById('notif-orga-dot');
-    if (dot) dot.style.display = totalNonLus > 0 ? '' : 'none';
-
-  } catch (e) {
-    console.error("Erreur messagerie orga (contact total):", e);
-  }
-}
-
-    // 3. On regroupe les messages par joueur
-    const joueurs = {};
-    allMessages.forEach(m => {
-      if (!joueurs[m.user_id]) {
-        joueurs[m.user_id] = { nonLus: 0 };
-      }
-      if (m.auteur === 'joueur' && !m.lu_orga) {
-        joueurs[m.user_id].nonLus++;
-      }
-    });
-    
-    // 4. On remplit la liste déroulante
-    const sel = document.getElementById('orga-joueur-select');
+    // 3. On prépare la liste
     let html = '<option value="">— Sélectionner un joueur —</option>';
-    
-    Object.keys(joueurs).forEach(uid => {
-      // Si on n'a pas le nom dans l'annuaire, on affiche "Utilisateur (ID...)"
-      const nomAffichage = annuaire[uid] || `Utilisateur inconnu (${uid.substring(0, 5)})`;
-      const badge = joueurs[uid].nonLus > 0 ? ` (${joueurs[uid].nonLus} non lu)` : '';
-      html += `<option value="${uid}">${nomAffichage}${badge}</option>`;
-    });
-    
-    sel.innerHTML = html;
-    
-    // 5. Mise à jour de la petite pastille rouge de notification
-    const totalNonLus = Object.values(joueurs).reduce((a, b) => a + b.nonLus, 0);
-    const dot = document.getElementById('notif-orga-dot');
-    if (dot) dot.style.display = totalNonLus > 0 ? '' : 'none';
 
-  } catch (e) {
-    console.error("Erreur chargement messagerie orga:", e);
+    if (profils && profils.length > 0) {
+      profils.forEach(p => {
+        // Déterminer le nom à afficher (Nom/Prénom ou Email)
+        const nomLabel = (p.prenom || p.nom) ? `${p.prenom || ''} ${p.nom || ''}`.trim() : p.email;
+        
+        // Compter les messages non lus pour ce profil précis
+        const nb = messagesNonLus ? messagesNonLus.filter(m => m.user_id === p.id).length : 0;
+        const badge = nb > 0 ? ` 🔴 (${nb})` : '';
+
+        html += `<option value="${p.id}">${nomLabel}${badge}</option>`;
+      });
+    } else {
+      html = '<option value="">Aucun profil trouvé</option>';
+    }
+
+    sel.innerHTML = html;
+
+    // 4. Pastille rouge sur l'onglet
+    const dot = document.getElementById('notif-orga-dot');
+    if (dot) {
+      dot.style.display = (messagesNonLus && messagesNonLus.length > 0) ? 'inline-block' : 'none';
+    }
+
+  } catch (err) {
+    // SI CA PLANTE : On affiche un message dans la liste mais ON NE BLOQUE PAS le reste du site
+    console.error("Bug messagerie :", err);
+    sel.innerHTML = '<option value="">Erreur de chargement des joueurs</option>';
   }
 }
 async function loadOrgaConversation(userId) {
