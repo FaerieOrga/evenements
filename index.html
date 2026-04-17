@@ -17,1152 +17,226 @@
   --gold-light:   #cbd5e1;
   --border:       #e2e8f0;
   --shadow:       rgba(15, 23, 42, 0.08);
-  --bg-img:       url('https://drive.google.com/uc?export=view&id=142vQlX6NsPL118l3x-VHn9iNx94Vydng');
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   min-height: 100vh;
-  /* On part du bleu de ta barre de menu pour aller vers le bleu clair du fond de ton forum */
-  background: linear-gradient(to bottom, 
-    #58abbc 0%,    /* Bleu de la barre de menu */
-    #66b5c6 50%,   /* Bleu des boutons "Nouvelle discussion" */
-    #e8f4f7 100%   /* Bleu très clair du fond de page du forum */
-  ) fixed;
+  background: linear-gradient(to bottom, #58abbc 0%, #66b5c6 50%, #e8f4f7 100%) fixed;
   font-family: 'Crimson Text', Georgia, serif;
   color: var(--ink);
   font-size: 16px;
   line-height: 1.6;
 }
-body::before {
-  content: '';
-  position: fixed; inset: 0;
-  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.15) 100%);
-  pointer-events: none;
-  z-index: 0;
-}
-#app {
-  position: relative;
-  z-index: 1;
-  max-width: 1300px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 20px 16px 60px;
-}
-.parchment {
-  background: var(--parchment);
-  border: 1px solid rgba(255,255,255,0.8);
-  border-radius: 8px;
-  padding: 36px 40px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.03);
-  position: relative;
-  overflow: hidden;
-}
-.parchment::before, .parchment::after {
-  content: '✦';
-  position: absolute;
-  font-size: 24px;
-  color: #cbd5e1;
-  opacity: 0.5;
-  line-height: 1;
-}
-.parchment::before { top: 12px; left: 16px; }
-.parchment::after  { bottom: 12px; right: 16px; }
-
-/* ── EN-TÊTE ── */
+#app { position: relative; z-index: 1; max-width: 1300px; width: 100%; margin: 0 auto; padding: 20px 16px 60px; }
+.parchment { background: var(--parchment); border: 1px solid rgba(255,255,255,0.8); border-radius: 8px; padding: 36px 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); position: relative; overflow: hidden; }
 .site-header { text-align: center; padding: 32px 0 24px; }
-.site-title {
-  font-family: 'Cinzel', serif;
-  font-size: 2.6rem;
-  font-weight: 700;
-  color: #ffffff;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.6), 0 0 20px rgba(255,255,255,0.2);
-  letter-spacing: 3px;
-  margin-bottom: 6px;
-}
-.site-subtitle {
-  font-family: 'IM Fell English', serif;
-  font-style: italic;
-  color: #bae6fd;
-  font-size: 1.15rem;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-}
-
-/* ── FORMS ── */
+.site-title { font-family: 'Cinzel', serif; font-size: 2.6rem; font-weight: 700; color: #ffffff; text-shadow: 0 2px 12px rgba(0,0,0,0.6); letter-spacing: 3px; }
+.site-subtitle { font-family: 'IM Fell English', serif; font-style: italic; color: #bae6fd; font-size: 1.15rem; }
 .form-group { margin-bottom: 16px; text-align: left; }
-label {
-  display: block;
-  font-family: 'Cinzel', serif;
-  font-size: 0.78rem;
-  letter-spacing: 1.5px;
-  color: var(--ink-light);
-  margin-bottom: 5px;
-  text-transform: uppercase;
-}
-input[type="text"], input[type="email"], input[type="password"],
-input[type="date"], input[type="datetime-local"], input[type="number"], select, textarea {
-  width: 100%;
-  background: #f8fafc;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 9px 12px;
-  font-family: 'Crimson Text', serif;
-  font-size: 1rem;
-  color: var(--ink);
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-input:focus, select:focus, textarea:focus {
-  border-color: #64748b;
-  box-shadow: 0 0 0 2px rgba(100,116,139,0.15);
-}
-textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
-
-/* Empêche le fond bleu/jaune de la saisie automatique */
-input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus {
-  -webkit-text-fill-color: var(--ink);
-  -webkit-box-shadow: 0 0 0px 1000px #f8fafc inset;
-  transition: background-color 5000s ease-in-out 0s;
-}
-
-/* ── BOUTONS ── */
-.btn {
-  display: inline-block;
-  padding: 10px 28px;
-  background: var(--ink);
-  color: #ffffff;
-  border: none;
-  border-radius: 4px;
-  font-family: 'Cinzel', serif;
-  font-size: 0.85rem;
-  letter-spacing: 2px;
-  cursor: pointer;
-  text-transform: uppercase;
-  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
-}
-.btn:hover { background: #334155; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transform: translateY(-1px); }
-.btn-full  { width: 100%; text-align: center; }
-.btn-sm    { padding: 6px 16px; font-size: 0.75rem; }
-.btn-danger { background: var(--red-blood); color: #fff; }
-.btn-danger:hover { background: #991b1b; }
-.btn-orga { background: var(--ink); }
-.btn-orga:hover { background: #334155; }
-.btn-ghost {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--ink-light);
-  padding: 6px 14px;
-  font-family: 'Cinzel', serif;
-  font-size: 0.75rem;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background 0.2s, color 0.2s;
-}
-.btn-ghost:hover { background: #f1f5f9; color: var(--ink); }
-
-/* ── MESSAGES ── */
-.msg-error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: var(--red-blood);
-  padding: 8px 14px;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  margin-top: 10px;
-  display: none;
-}
-.msg-success {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #166534;
-  padding: 8px 14px;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  margin-top: 10px;
-  display: none;
-}
-
-/* ── LOGOUT BAR ── */
-.logout-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding: 10px 16px;
-  background: rgba(255,255,255,0.95);
-  border-radius: 6px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-  color: var(--ink);
-  gap: 10px;
-  flex-wrap: nowrap;
-}
-.logout-bar span { 
-  font-family: 'Cinzel', serif; 
-  font-size: 0.78rem; 
-  letter-spacing: 1px; 
-  font-weight: 600;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex-shrink: 1;
-}
-.logout-bar > div {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-@media (max-width: 600px) {
-  #joueur-logout-bar {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-}
-
-/* ── ONGLETS ── */
-.tab-switch {
-  display: flex;
-  margin-bottom: 24px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  overflow: hidden;
-}
-.tab-switch button {
-  flex: 1;
-  padding: 10px;
-  background: #f8fafc;
-  border: none;
-  border-right: 1px solid var(--border);
-  font-family: 'Cinzel', serif;
-  font-size: 0.85rem;
-  letter-spacing: 1px;
-  color: var(--ink-light);
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-}
-.tab-switch button:last-child { border-right: none; }
-.tab-switch button.active { background: var(--ink); color: #fff; font-weight: 600; }
-
-/* ── FILTRE ── */
-.filter-bar {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  margin-bottom: 22px;
-  flex-wrap: wrap;
-}
-.filter-bar input, .filter-bar select { flex: 1; min-width: 140px; max-width: 260px; }
-
-/* ── CARTES ÉVÉNEMENTS ── */
+label { display: block; font-family: 'Cinzel', serif; font-size: 0.78rem; letter-spacing: 1.5px; color: var(--ink-light); margin-bottom: 5px; text-transform: uppercase; }
+input, select, textarea { width: 100%; background: #f8fafc; border: 1px solid var(--border); border-radius: 4px; padding: 9px 12px; font-family: 'Crimson Text', serif; font-size: 1rem; outline: none; }
+.btn { display: inline-block; padding: 10px 28px; background: var(--ink); color: #ffffff; border: none; border-radius: 4px; font-family: 'Cinzel', serif; font-size: 0.85rem; letter-spacing: 2px; cursor: pointer; text-transform: uppercase; }
+.btn-full { width: 100%; text-align: center; }
+.btn-sm { padding: 6px 16px; font-size: 0.75rem; }
+.btn-danger { background: var(--red-blood); }
+.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--ink-light); padding: 6px 14px; font-family: 'Cinzel', serif; font-size: 0.75rem; cursor: pointer; border-radius: 4px; }
+.msg-error { background: #fef2f2; border: 1px solid #fecaca; color: var(--red-blood); padding: 8px 14px; border-radius: 4px; font-size: 0.9rem; margin-top: 10px; display: none; }
+.msg-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 8px 14px; border-radius: 4px; font-size: 0.9rem; margin-top: 10px; display: none; }
+.logout-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 10px 16px; background: rgba(255,255,255,0.95); border-radius: 6px; }
+.tab-switch { display: flex; margin-bottom: 24px; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+.tab-switch button { flex: 1; padding: 10px; background: #f8fafc; border: none; font-family: 'Cinzel', serif; cursor: pointer; }
+.tab-switch button.active { background: var(--ink); color: #fff; }
+.filter-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 22px; flex-wrap: wrap; }
 .events-grid { display: flex; flex-direction: column; gap: 18px; }
-.event-card {
-  border: 1px solid var(--border);
-  background: #ffffff;
-  border-radius: 6px;
-  transition: box-shadow 0.2s, transform 0.15s;
-}
-.event-card:hover { box-shadow: 0 8px 24px var(--shadow); transform: translateY(-2px); }
-.event-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 16px 20px 12px;
-  border-bottom: 1px solid #f1f5f9;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.event-card-titre {
-  font-family: 'Cinzel', serif;
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--ink);
-  flex: 1;
-}
-.event-card-type {
-  display: inline-block;
-  padding: 4px 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  font-family: 'Cinzel', serif;
-  font-size: 0.68rem;
-  letter-spacing: 1px;
-  background: #f8fafc;
-  color: var(--ink-light);
-  white-space: nowrap;
-}
-.event-card-body {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
-  padding: 14px 20px;
-}
-.event-info-item { display: flex; flex-direction: column; gap: 2px; }
-.event-info-label {
-  font-family: 'Cinzel', serif;
-  font-size: 0.65rem;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--ink-light);
-}
-.event-info-val { font-family: 'Crimson Text', serif; font-size: 0.97rem; color: var(--ink); word-break: break-word; }
-.event-description {
-  font-family: 'Georgia', serif;
-  font-size: 0.85rem;
-  color: var(--ink);
-  line-height: 1.75;
-  padding: 0 20px 14px;
-  border-bottom: 1px solid #f1f5f9;
-  white-space: pre-wrap; /* Maintien des sauts de ligne */
-}
-.event-card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 20px 16px;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.jauge-wrap { display: flex; align-items: center; gap: 8px; }
-.jauge-bar { width: 120px; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
-.jauge-fill { height: 100%; background: #94a3b8; border-radius: 3px; transition: width 0.4s; }
-.jauge-fill.complet { background: var(--red-blood); }
-.jauge-text { font-family: 'Cinzel', serif; font-size: 0.72rem; color: var(--ink-light); white-space: nowrap; }
-.badge-attente {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: var(--red-blood);
-  font-family: 'Cinzel', serif;
-  font-size: 0.68rem;
-  letter-spacing: 1px;
-  padding: 3px 10px;
-  border-radius: 4px;
-}
-.badge-inscrit {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #166534;
-  font-family: 'Cinzel', serif;
-  font-size: 0.68rem;
-  letter-spacing: 1px;
-  padding: 3px 10px;
-  border-radius: 4px;
-}
-
-/* ── ESPACE JOUEUR — ONGLETS ── */
-.joueur-tabs {
-  display: flex;
-  gap: 0;
-  border-bottom: 2px solid var(--border);
-  margin-bottom: 28px;
-}
-.joueur-tab-btn {
-  padding: 10px 22px;
-  background: none;
-  border: none;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
-  font-family: 'Cinzel', serif;
-  font-size: 0.82rem;
-  letter-spacing: 1.5px;
-  color: var(--ink-light);
-  cursor: pointer;
-  text-transform: uppercase;
-  transition: color 0.2s, border-color 0.2s;
-  position: relative;
-}
-.joueur-tab-btn:hover { color: var(--ink); }
-.joueur-tab-btn.active { color: var(--ink); border-bottom-color: var(--ink); font-weight: 700; }
-.notif-dot {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 8px; height: 8px;
-  background: var(--red-blood);
-  border-radius: 50%;
-}
-
-/* ── MESSAGERIE ── */
-.messages-fil {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-height: 400px;
-  overflow-y: auto;
-  padding: 4px 0 16px;
-  margin-bottom: 16px;
-}
-.msg-bubble {
-  max-width: 80%;
-  padding: 12px 16px;
-  border-radius: 6px;
-  font-family: 'Crimson Text', serif;
-  font-size: 1rem;
-  line-height: 1.6;
-  white-space: pre-wrap;
-}
-.msg-bubble.joueur {
-  align-self: flex-end;
-  background: #f8fafc;
-  border: 1px solid var(--border);
-}
-.msg-bubble.orga {
-  align-self: flex-start;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-}
-.msg-bubble-meta {
-  font-family: 'Cinzel', serif;
-  font-size: 0.65rem;
-  letter-spacing: 1px;
-  color: var(--ink-light);
-  margin-bottom: 6px;
-}
-.msg-input-zone {
-  display: flex;
-  gap: 10px;
-  align-items: flex-end;
-}
-.msg-input-zone textarea { min-height: 60px; flex: 1; }
-
-/* ── TABLE ORGA ── */
-.orga-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
-.orga-table th {
-  font-family: 'Cinzel', serif;
-  font-size: 0.72rem;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--ink-light);
-  border-bottom: 2px solid var(--border);
-  padding: 10px 10px;
-  text-align: left;
-}
-.orga-table td { padding: 10px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-.orga-table tr:hover td { background: #f8fafc; }
-.orga-toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
-
-/* ── MODALES ── */
-.modal-overlay {
-  display: none;
-  position: fixed; inset: 0;
-  background: rgba(15, 23, 42, 0.85);
-  z-index: 100;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-}
+.event-card { border: 1px solid var(--border); background: #ffffff; border-radius: 6px; padding: 15px; }
+.event-card-titre { font-family: 'Cinzel', serif; font-size: 1.15rem; font-weight: 700; }
+.joueur-tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 28px; }
+.joueur-tab-btn { padding: 10px 22px; background: none; border: none; font-family: 'Cinzel', serif; cursor: pointer; border-bottom: 3px solid transparent; }
+.joueur-tab-btn.active { border-bottom-color: var(--ink); color: var(--ink); }
+.messages-fil { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; }
+.msg-bubble { max-width: 80%; padding: 12px 16px; border-radius: 6px; margin-bottom: 5px; }
+.msg-bubble.joueur { align-self: flex-end; background: #f8fafc; border: 1px solid var(--border); }
+.msg-bubble.orga { align-self: flex-start; background: #eff6ff; border: 1px solid #bfdbfe; }
+.orga-table { width: 100%; border-collapse: collapse; }
+.orga-table th, .orga-table td { padding: 10px; border-bottom: 1px solid var(--border); text-align: left; }
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
 .modal-overlay.open { display: flex; }
-.modal-box {
-  background: var(--parchment);
-  border: none;
-  border-radius: 8px;
-  box-shadow: 0 15px 50px rgba(0,0,0,0.4);
-  padding: 30px 34px;
-  max-width: 520px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  position: relative;
-}
-.modal-box-wide { max-width: 660px; }
-.modal-title {
-  font-family: 'Cinzel', serif;
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 20px;
-  color: var(--ink);
-  text-align: center;
-}
-.modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 1.4rem; color: var(--ink-light); cursor: pointer; transition: color 0.2s; }
-.modal-close:hover { color: var(--red-blood); }
-
-/* ── TOAST ── */
-.toast {
-  position: fixed;
-  bottom: 24px; right: 24px;
-  background: var(--ink);
-  color: #ffffff;
-  border-radius: 4px;
-  padding: 12px 22px;
-  font-family: 'Cinzel', serif;
-  font-size: 0.8rem;
-  letter-spacing: 1px;
-  box-shadow: 0 10px 30px var(--shadow);
-  z-index: 200;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.3s, transform 0.3s;
-  pointer-events: none;
-}
-.toast.show { opacity: 1; transform: translateY(0); }
-
-  
-
-/* ── PIED DE PAGE ── */
-.site-footer { text-align: center; margin-top: 36px; padding-bottom: 10px; }
-.footer-orga-link {
-  font-family: 'Cinzel', serif;
-  font-size: 0.7rem;
-  letter-spacing: 1px;
-  color: rgba(255,255,255,0.5);
-  cursor: pointer;
-  border: none;
-  background: none;
-  transition: color 0.2s;
-}
-.footer-orga-link:hover { color: #ffffff; }
-
-/* ── ÉTAT VIDE ── */
-.empty-state {
-  font-family: 'IM Fell English', serif;
-  font-style: italic;
-  color: var(--ink-light);
-  padding: 30px 0;
-  text-align: center;
-  font-size: 1.1rem;
-}
-
-/* ── ORGA MESSAGERIE ── */
-.orga-msg-joueur-select {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-.notif-badge-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--red-blood);
-  color: #fff;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  font-family: 'Cinzel', serif;
-  font-size: 0.65rem;
-  font-weight: 700;
-  margin-left: 6px;
-}
-
-  .cal-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-}
-.cal-header-day {
-  font-family: 'Cinzel', serif;
-  font-size: 0.7rem;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--ink-light);
-  text-align: center;
-  padding: 6px 0;
-}
-.cal-day {
-  min-height: 70px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 4px;
-  background: #f8fafc;
-  vertical-align: top;
-}
-.cal-day.today { border-color: #64748b; background: #f1f5f9; }
-.cal-day.vide { background: transparent; border: none; }
-.cal-day-num {
-  font-family: 'Cinzel', serif;
-  font-size: 0.72rem;
-  color: var(--ink-light);
-  margin-bottom: 4px;
-}
-.cal-event-pill {
-  background: #1e293b;
-  color: #fff;
-  border-radius: 3px;
-  padding: 2px 5px;
-  font-family: 'Crimson Text', serif;
-  font-size: 0.75rem;
-  margin-bottom: 2px;
-  cursor: default;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-@media (max-width: 600px) {
-  .cal-day { min-height: 50px; }
-  .cal-event-pill { font-size: 0.65rem; }
-}
-
-@media (max-width: 600px) {
-  .parchment { padding: 22px 18px; }
-  .modal-box { padding: 22px 18px; }
-  .event-card-body { grid-template-columns: 1fr; }
-  .site-title { font-size: 1.7rem; }
-  
-  .orga-table th:nth-child(3), .orga-table td:nth-child(3),
-  .orga-table th:nth-child(4), .orga-table td:nth-child(4) { display: none; }
-  
-  .orga-table { font-size: 0.75rem; } 
-  .orga-table th, .orga-table td { padding: 6px 4px; } 
-  
-  .orga-table td:last-child { 
-    display: flex;
-    flex-direction: column; 
-    gap: 6px; 
-  }
-  .orga-table td:last-child .btn { 
-    padding: 6px 4px; 
-    font-size: 0.6rem;
-    letter-spacing: 0px; 
-    text-align: center; 
-    width: 100%;
-  }
-}
-  .badge-interesse {
-  background: #f0f9ff;
-  border: 1px solid #bae6fd;
-  color: #0369a1;
-  font-family: 'Cinzel', serif;
-  font-size: 0.68rem;
-  letter-spacing: 1px;
-  padding: 3px 10px;
-  border-radius: 4px;
-}
-/* ── LAYOUT ACCUEIL FORCE 50/50 ── */
-.home-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr; 
-  gap: 24px;
-  align-items: start;
-  width: 100%;
-}
-
-/* On réduit la largeur minimale des colonnes pour qu'elles puissent cohabiter */
-.home-layout > div {
-  min-width: 0; 
-}
-
-@media (max-width: 900px) {
-  .home-layout { grid-template-columns: 1fr; } 
-}
-                                                          
+.modal-box { background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 100%; position: relative; }
+.modal-close { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 1.2rem; cursor: pointer; }
+.toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: white; padding: 10px 20px; border-radius: 4px; opacity: 0; transition: 0.3s; }
+.toast.show { opacity: 1; }
+.home-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 900px) { .home-layout { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 <div id="app">
-
   <div id="public-screen">
     <div class="site-header">
       <div class="site-title">⚔ Événements ⚔</div>
       <div class="site-subtitle">Les prochaines aventures vous attendent</div>
     </div>
     <div class="parchment">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-        <div style="font-family:'Cinzel',serif;font-size:1.15rem;font-weight:700;letter-spacing:2px;color:var(--ink)">Événements à venir</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <div style="font-family:'Cinzel',serif;font-size:1.15rem;font-weight:700;">Événements à venir</div>
         <div id="header-user-zone"></div>
       </div>
       <div class="filter-bar">
-        <input type="text" id="search-input" placeholder="Rechercher un événement..." oninput="filterEvents()" autocomplete="one-time-code" name="search-fantasy-unique-id" spellcheck="false">
- 
+        <input type="text" id="search-input" placeholder="Rechercher..." oninput="filterEvents()">
         <select id="filter-type" onchange="filterEvents()">
           <option value="">Tous les types</option>
-          <option value="Assemblée générale">Assemblée générale</option>
-          <option value="Atelier bricolage">Atelier bricolage</option>
-          <option value="Atelier couture">Atelier couture</option>
-          <option value="Atelier craft">Atelier craft</option>
-          <option value="Autre">Autre</option>
           <option value="Grandeur nature">Grandeur nature</option>
-          <option value="Inventaire/Rangement">Inventaire/Rangement</option>
-          <option value="Jeepform">Jeepform</option>
-          <option value="Jeu de rôles sur tables">Jeu de rôles sur tables</option>
-          <option value="Jeu de société">Jeu de société</option>
-          <option value="Jeu immersif">Jeu immersif</option>
-          <option value="Jeux sportif">Jeux sportif</option>
-          <option value="Murder party">Murder party</option>
-          <option value="Repas">Repas</option>
-          <option value="Réunion">Réunion</option>
+          <option value="Jeu de rôles">Jeu de rôles</option>
+          <option value="Autre">Autre</option>
         </select>
         <button class="btn-ghost" onclick="openCalendrier()">📅 Calendrier</button>
       </div>
       <div class="home-layout">
-        
         <div>
-          <div style="border-bottom: 2px solid #58abbc; padding-bottom: 10px; margin-bottom: 15px;">
-            <h2 style="margin: 0; color: var(--ink); font-family: 'Cinzel', serif; font-size: 1.3rem;">📅 Les dates</h2>
-          </div>
-
-          <div class="events-grid" id="public-events-grid">
-            <div class="empty-state">Chargement des événements…</div>
-          </div>
+          <h2 style="font-family:'Cinzel';border-bottom:2px solid #58abbc;padding-bottom:10px;">📅 Les dates</h2>
+          <div class="events-grid" id="public-events-grid"></div>
         </div>
-
-        <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 20px;">
-          <div style="border-bottom: 2px solid #58abbc; padding-bottom: 10px; margin-bottom: 15px;">
-            <h2 style="margin: 0; color: var(--ink); font-family: 'Cinzel', serif; font-size: 1.3rem;">📜 Missives Orga</h2>
-          </div>
-          <div id="annonces-container" style="display: flex; flex-direction: column; gap: 15px;">
-            <div style="text-align: center; color: var(--ink-light); font-style: italic; font-size: 0.9rem;">Lecture des parchemins...</div>
-          </div>
+        <div style="background:#f8fafc;padding:20px;border-radius:8px;">
+          <h2 style="font-family:'Cinzel';border-bottom:2px solid #58abbc;padding-bottom:10px;">📜 Missives Orga</h2>
+          <div id="annonces-container"></div>
         </div>
-        
       </div>
     </div>
-    <div class="site-footer">
+    <div class="site-footer" style="text-align:center;margin-top:20px;">
       <button class="footer-orga-link" onclick="openOrgaLogin()">⚔ Accès organisateur</button>
     </div>
   </div>
 
   <div id="joueur-screen" style="display:none">
-    <div class="logout-bar" style="flex-direction:column;align-items:center;text-align:center;gap:8px">
-    <span id="joueur-screen-label">⚔ Mon Espace</span>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+    <div class="logout-bar">
+      <span id="joueur-screen-label">⚔ Mon Espace</span>
       <button class="btn btn-sm" onclick="retourAccueil()">← Événements</button>
       <button class="btn btn-sm btn-danger" onclick="logoutJoueur()">Déconnexion</button>
-      <button class="btn-ghost" style="color:var(--red-blood); border-color:var(--red-blood); padding:6px 16px; font-size:0.75rem;" onclick="supprimerCompteJoueur()">Supprimer mon compte</button>
     </div>
-  </div>
     <div class="parchment">
       <div class="joueur-tabs">
-        <button class="joueur-tab-btn active" id="jtab-inscriptions" onclick="showJoueurTab('inscriptions', this)">Mes Inscriptions</button>
-        <button class="joueur-tab-btn" id="jtab-messages" onclick="showJoueurTab('messages', this)">
-          Messages
-          <span class="notif-dot" id="notif-msg-dot" style="display:none"></span>
-        </button>
+        <button class="joueur-tab-btn active" onclick="showJoueurTab('inscriptions', this)">Inscriptions</button>
+        <button class="joueur-tab-btn" onclick="showJoueurTab('messages', this)">Messages</button>
       </div>
-
-      <div id="joueur-tab-inscriptions">
-        <div class="events-grid" id="mes-inscriptions-grid">
-          <div class="empty-state">Chargement…</div>
-        </div>
-      </div>
-
+      <div id="joueur-tab-inscriptions"><div class="events-grid" id="mes-inscriptions-grid"></div></div>
       <div id="joueur-tab-messages" style="display:none">
-        <div class="messages-fil" id="messages-fil">
-          <div class="empty-state">Chargement…</div>
-        </div>
+        <div class="messages-fil" id="messages-fil"></div>
         <div class="msg-input-zone">
-          <textarea id="msg-nouveau" placeholder="Écrivez votre message à l'orga…"></textarea>
+          <textarea id="msg-nouveau" placeholder="Votre message..."></textarea>
           <button class="btn btn-sm" onclick="envoyerMessage()">Envoyer</button>
         </div>
-        <div class="msg-error" id="err-msg"></div>
       </div>
     </div>
   </div>
-  
-  <div id="orga-screen" style="display:none">
-    <div class="logout-bar">
-      <span>⚔ Organisateur — Événements</span>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-sm" onclick="logoutOrga()">← Retour à l'accueil</button>
-      </div>
-    </div>
-    <div class="parchment">
-      <div class="joueur-tabs">
-        <button class="joueur-tab-btn active" id="otab-events" onclick="showOrgaTab('events', this)">Événements</button>
-        <button class="joueur-tab-btn" id="otab-messages" onclick="showOrgaTab('messages', this)">
-          Messages joueurs
-          <span class="notif-dot" id="notif-orga-dot" style="display:none"></span>
-        </button>
-      </div>
 
-      <div id="orga-tab-events">
-        <div class="orga-toolbar">
-          <button class="btn btn-sm" onclick="openModalCreateEvent()">+ Nouvel événement</button>
-          <button class="btn btn-sm btn-orga" style="background:#58abbc" onclick="ouvrirModaleMissive()">📜 Nouvelle Missive</button>
-          <input type="text" id="orga-search" placeholder="Filtrer…" style="max-width:220px;margin-left:auto" oninput="filterOrgaEvents(this.value)" autocomplete="new-password" onfocus="this.value=''">
+  <div id="orga-screen" style="display:none">
+    <div class="logout-bar"><span>⚔ Organisateur</span><button class="btn btn-sm" onclick="logoutOrga()">← Retour</button></div>
+    <div class="parchment">
+        <div class="orga-toolbar" style="margin-bottom:15px;">
+            <button class="btn btn-sm" onclick="openModalCreateEvent()">+ Nouvel événement</button>
+            <button class="btn btn-sm" style="background:#58abbc" onclick="ouvrirModaleMissive()">📜 Nouvelle Missive</button>
         </div>
         <table class="orga-table">
-          <thead>
-            <tr><th>Titre</th><th>Début</th><th>Lieu</th><th>Type</th><th>Places</th><th>Actions</th></tr>
-          </thead>
-          <tbody id="orga-events-body">
-            <tr><td colspan="6" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement…</td></tr>
-          </tbody>
+            <thead><tr><th>Titre</th><th>Date</th><th>Places</th><th>Actions</th></tr></thead>
+            <tbody id="orga-events-body"></tbody>
         </table>
-      </div>
-
-      <div id="orga-tab-messages" style="display:none">
-        <div class="orga-msg-joueur-select">
-          <label style="text-transform:none;font-size:0.9rem;margin-bottom:0">Conversation avec :</label>
-          <select id="orga-joueur-select" onchange="loadOrgaConversation(this.value)" style="max-width:280px">
-            <option value="">— Sélectionner un joueur —</option>
-          </select>
-        </div>
-        <div class="messages-fil" id="orga-messages-fil">
-          <div class="empty-state">Sélectionnez un joueur pour voir la conversation.</div>
-        </div>
-        <div class="msg-input-zone" id="orga-reply-zone" style="display:none">
-          <textarea id="orga-msg-nouveau" placeholder="Réponse à ce joueur…"></textarea>
-          <button class="btn btn-sm" onclick="envoyerMessageOrga()">Répondre</button>
-        </div>
-        <div class="msg-error" id="err-orga-msg"></div>
-      </div>
     </div>
   </div>
-
 </div>
 
 <div class="modal-overlay" id="modal-auth">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('modal-auth')">✕</button>
-    <div class="modal-title" id="modal-auth-titre">Rejoindre Faérie</div>
-    <div id="auth-context" style="display:none;font-family:'IM Fell English',serif;font-style:italic;text-align:center;color:var(--ink-light);font-size:1rem;margin-bottom:16px;padding:10px 14px;border:1px solid var(--border);border-radius:4px;background:#f8fafc"></div>
     <div class="tab-switch">
-      <button class="active" id="tab-connexion" onclick="switchAuthTab('connexion')">Se connecter</button>
-      <button id="tab-inscription" onclick="switchAuthTab('inscription')">Créer un compte</button>
+      <button class="active" id="tab-connexion" onclick="switchAuthTab('connexion')">Connexion</button>
+      <button id="tab-inscription" onclick="switchAuthTab('inscription')">Inscription</button>
     </div>
     <div id="form-connexion">
-      <div class="form-group"><label>Adresse e-mail</label><input type="email" id="login-email" placeholder="votre@email.com" onkeydown="if(event.key==='Enter') doLogin()"></div>
-      <div class="form-group"><label>Mot de passe</label><input type="password" id="login-mdp" placeholder="••••••••" onkeydown="if(event.key==='Enter') doLogin()"></div>
-      <button class="btn btn-full" onclick="doLogin()">Se connecter</button>
-      <div class="msg-error" id="err-login"></div><div class="msg-success" id="ok-login"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="login-email"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="login-mdp"></div>
+      <button class="btn btn-full" onclick="doLogin()">Entrer</button>
+      <div class="msg-error" id="err-login"></div>
     </div>
     <div id="form-inscription" style="display:none">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="form-group"><label>Prénom</label><input type="text" id="reg-prenom" placeholder="Votre prénom"></div>
-        <div class="form-group"><label>Nom</label><input type="text" id="reg-nom" placeholder="Votre nom"></div>
-      </div>
-      <div class="form-group"><label>Adresse e-mail</label><input type="email" id="reg-email" placeholder="votre@email.com"></div>
-      <div class="form-group"><label>Mot de passe</label><input type="password" id="reg-mdp" placeholder="••••••••" onkeydown="if(event.key==='Enter') doRegister()"></div>
-      <button class="btn btn-full" onclick="doRegister()">Créer mon compte</button>
+      <div class="form-group"><label>Prénom</label><input type="text" id="reg-prenom"></div>
+      <div class="form-group"><label>Nom</label><input type="text" id="reg-nom"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="reg-email"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="reg-mdp"></div>
+      <button class="btn btn-full" onclick="doRegister()">Créer</button>
       <div class="msg-error" id="err-reg"></div><div class="msg-success" id="ok-reg"></div>
     </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-orga-auth">
-  <div class="modal-box" style="max-width:400px">
+  <div class="modal-box" style="max-width:350px">
     <button class="modal-close" onclick="closeModal('modal-orga-auth')">✕</button>
-    <div class="modal-title">⚔ Accès Organisateur</div>
-    <div class="form-group"><label>Mot de passe organisateur</label><input type="password" id="orga-pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter') doLoginOrga()"></div>
-    <button class="btn btn-orga btn-full" onclick="doLoginOrga()">Accéder</button>
+    <div class="form-group"><label>Code Secret Orga</label><input type="password" id="orga-pwd"></div>
+    <button class="btn btn-full" onclick="doLoginOrga()">Accéder</button>
     <div class="msg-error" id="err-orga"></div>
   </div>
 </div>
 
-<div class="modal-overlay" id="modal-inscription">
-  <div class="modal-box" style="max-width:460px;text-align:center">
-    <button class="modal-close" onclick="closeModal('modal-inscription')">✕</button>
-    <div class="modal-title" id="modal-insc-titre">Inscription</div>
-    <div id="modal-insc-detail" style="font-family:'IM Fell English',serif;font-style:italic;font-size:1.05rem;margin-bottom:24px;color:var(--ink-light)"></div>
-    <div style="display:flex;gap:12px;justify-content:center" id="modal-insc-footer"></div>
-    <div class="msg-error" id="err-insc"></div><div class="msg-success" id="ok-insc"></div>
-  </div>
-</div>
-  
-<div class="modal-overlay" id="modal-liste-participants">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('modal-liste-participants')">✕</button>
-    <div class="modal-title">Participants - <span id="view-event-titre"></span></div>
-    <div id="liste-participants-content" style="font-family:'Crimson Text', serif; min-height: 100px;"></div>
-  </div>
-</div>
-  
-<div class="modal-overlay" id="modal-event">
-  <div class="modal-box modal-box-wide">
-    <button class="modal-close" onclick="closeModal('modal-event')">✕</button>
-    <div class="modal-title" id="modal-event-title">+ Nouvel événement</div>
-    <input type="hidden" id="e-id">
-    <div class="form-group"><label>Titre</label><input type="text" id="e-titre" placeholder="Nom de l'événement"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-      <div class="form-group"><label>Début</label><input type="datetime-local" id="e-date-debut"></div>
-      <div class="form-group"><label>Fin</label><input type="datetime-local" id="e-date-fin"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
-      <div class="form-group"><label>Lieu</label><input type="text" id="e-lieu" placeholder="Nom du lieu"></div>
-      <div class="form-group"><label>Lien Google Maps</label><input type="text" id="e-lien-maps" placeholder="https://maps.app.goo.gl/..."></div>
-      <div class="form-group">
-        <label>Type</label>
-        <select id="e-type">
-          <option value="Assemblée générale">Assemblée générale</option>
-          <option value="Atelier bricolage">Atelier bricolage</option>
-          <option value="Atelier couture">Atelier couture</option>
-          <option value="Atelier craft">Atelier craft</option>
-          <option value="Autre">Autre</option>
-          <option value="Grandeur nature">Grandeur nature</option>
-          <option value="Inventaire/Rangement">Inventaire/Rangement</option>
-          <option value="Jeepform">Jeepform</option>
-          <option value="Jeu de rôles sur tables">Jeu de rôles sur tables</option>
-          <option value="Jeu de société">Jeu de société</option>
-          <option value="Jeu immersif">Jeu immersif</option>
-          <option value="Jeux sportif">Jeux sportif</option>
-          <option value="Murder party">Murder party</option>
-          <option value="Repas">Repas</option>
-          <option value="Réunion">Réunion</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group"><label>Organisateurs</label><input type="text" id="e-organisateurs" placeholder="Noms séparés par des virgules"></div>
-    <div class="form-group"><label>Description / Notes</label><textarea id="e-description" placeholder="Informations, programme, consignes…"></textarea></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-      <div class="form-group"><label>Places totales</label><input type="number" id="e-places-totales" min="1" value="20"></div>
-      <div class="form-group" id="row-places-dispo" style="display:none"><label>Places disponibles</label><input type="number" id="e-places-dispo" min="0"></div>
-    </div>
-    <button class="btn btn-full" style="margin-top:6px" onclick="saveEvent()">Enregistrer</button>
-    <div class="msg-error" id="err-event"></div><div class="msg-success" id="ok-event"></div>
-  </div>
-</div>
-<div class="modal-overlay" id="modal-missive">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('modal-missive')">✕</button>
-    <div class="modal-title">📜 Rédiger une Missive</div>
-    <div class="form-group"><label>Titre de l'annonce</label><input type="text" id="m-titre" placeholder="Oyez, oyez !"></div>
-    <div class="form-group"><label>Auteur</label><input type="text" id="m-auteur" placeholder="L'équipe Orga"></div>
-    <div class="form-group"><label>Message</label><textarea id="m-contenu" placeholder="Votre annonce pour les joueurs..."></textarea></div>
-    <button class="btn btn-full" style="background:#58abbc; margin-top:10px" onclick="sauvegarderMissive()">Publier sur le site</button>
-    <div class="msg-error" id="err-missive"></div>
-  </div>
-</div>
 <div class="toast" id="toast"></div>
 
-  <div class="modal-overlay" id="modal-calendrier">
-  <div class="modal-box modal-box-wide">
-    <button class="modal-close" onclick="closeModal('modal-calendrier')">✕</button>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <button class="btn-ghost" onclick="changeMonth(-1)">◀</button>
-      <div class="modal-title" id="cal-titre" style="margin:0"></div>
-      <button class="btn-ghost" onclick="changeMonth(1)">▶</button>
-    </div>
-    <div id="cal-grid"></div>
-  </div>
-</div>
-
 <script>
-// ════════════════════════════════════════════════════
-//  1. CONFIGURATION ET INITIALISATION
-// ════════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://zutgjwnmolzwkbkdzfko.supabase.co';
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1dGdqd25tb2x6d2tia2R6ZmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NDczMTksImV4cCI6MjA5MTUyMzMxOX0.qQ0pCnU9JoPaHmaB-p9vvo5-8rN6LPjNIwf81SaYJbs';
+// CONFIGURATION
+const SUPABASE_URL = 'https://zutgjwnmolzwkbkdzfko.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1dGdqd25tb2x6d2tia2R6ZmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NDczMTksImV4cCI6MjA5MTUyMzMxOX0.qQ0pCnU9JoPaHmaB-p9vvo5-8rN6LPjNIwf81SaYJbs';
 const ORGA_PASSWORD = 'Faerie2024!';
-const GAS_URL       = 'https://script.google.com/macros/s/AKfycbyvEKDVoslH3d5BnZhLaY7RO_JtTDDEfnRbZLzezZ8PNmWUi5yXEfPsZOhnBgHNaqij/exec';
 
-// On crée le client Supabase en premier !
+// INITIALISATION CLIENT (D'ABORD !)
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const state = {
-  user: null, events: [], orgaEvents: [], mesInscriptions: [], 
-  maListeAttente: [], mesInteresses: [], pendingEventId: null, 
-  pendingEventTitre: null, pendingEventDispo: null, currentOrgaUserId: null
-};
+const state = { user: null, events: [], mesInscriptions: [], maListeAttente: [], mesInteresses: [] };
 
-// ════════════════════════════════════════════════════
-//  2. DÉTECTION DE CONNEXION (DYNAMIQUE)
-// ════════════════════════════════════════════════════
+// AUTH LISTENER
 sb.auth.onAuthStateChange((event, session) => {
   state.user = session ? session.user : null;
   updateHeaderUserZone();
-  if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'SIGNED_OUT') {
-    loadAnnonces(); // Rafraîchit les poubelles sur les missives
-    loadPublicEvents();
-  }
-});
-
-// ════════════════════════════════════════════════════
-//  3. FONCTIONS SYSTÈME ET EMAILS
-// ════════════════════════════════════════════════════
-async function sendEmailViaGAS(email, sujet, message) {
-  try {
-    fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({ email: email, sujet: sujet, message: message }),
-      headers: { "Content-Type": "text/plain;charset=utf-8" }
-    });
-  } catch (e) { console.error("Erreur email:", e); }
-}
-
-function formatDatetime(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  return d.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'long', year: 'numeric' }) + ' à ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-}
-
-function toLocalInput(iso) {
-  if (!iso) return '';
-  const d = new Date(iso);
-  const offset = d.getTimezoneOffset() * 60000;
-  return new Date(d.getTime() - offset).toISOString().slice(0, 16);
-}
-
-// ════════════════════════════════════════════════════
-//  4. GESTION DES MISSIVES (ANNONCES)
-// ════════════════════════════════════════════════════
-async function loadAnnonces() {
-  const container = document.getElementById('annonces-container');
-  if (!container) return;
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    const isOrga = session && session.user.app_metadata && session.user.app_metadata.is_admin === true;
-    const { data, error } = await sb.from('annonces').select('*').order('date_creation', { ascending: false }).limit(5);
-    if (error) throw error;
-    
-    container.innerHTML = (data || []).map(a => `
-      <div style="background: white; padding: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #58abbc; position: relative; margin-bottom:10px;">
-        ${isOrga ? `<button onclick="supprimerMissive('${a.id}')" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: #b91c1c; cursor: pointer; font-size: 1.1rem;">🗑️</button>` : ''}
-        <h3 style="margin: 0 0 8px 0; font-size: 1.05rem; color: var(--ink); font-family: 'Cinzel', serif;">${a.titre}</h3>
-        <p style="margin: 0 0 12px 0; font-size: 0.9rem; color: #475569; line-height: 1.5; white-space: pre-wrap;">${a.contenu}</p>
-        <div style="font-size: 0.75rem; color: var(--ink-light); text-align: right; border-top: 1px dashed var(--border); padding-top: 8px;">Par <b>${a.auteur_nom}</b> le ${new Date(a.date_creation).toLocaleDateString('fr-FR')}</div>
-      </div>`).join('');
-  } catch (err) { console.error(err); }
-}
-
-async function supprimerMissive(id) {
-  if (!confirm("Vaporiser cette missive ?")) return;
-  await sb.from('annonces').delete().eq('id', id);
+  loadPublicEvents();
   loadAnnonces();
-}
-
-// ════════════════════════════════════════════════════
-//  5. GESTION DES ÉVÉNEMENTS (ORGA & PUBLIC)
-// ════════════════════════════════════════════════════
-async function loadPublicEvents() {
-  const grid = document.getElementById('public-events-grid');
-  try {
-    const today = new Date(); today.setHours(0,0,0,0);
-    const { data: events } = await sb.from('evenements').select('*').gte('date_debut', today.toISOString()).order('date_debut', { ascending: true });
-    const { data: allInscriptions } = await sb.from('inscriptions').select('event_id');
-    
-    state.events = (events || []).map(ev => {
-      ev.places_reelles_dispo = ev.places_totales - (allInscriptions || []).filter(i => i.event_id === ev.id).length;
-      return ev;
-    });
-
-    if (state.user) {
-      const [i, a, int] = await Promise.all([
-        sb.from('inscriptions').select('event_id').eq('user_id', state.user.id),
-        sb.from('liste_attente').select('event_id').eq('user_id', state.user.id),
-        sb.from('interesses').select('event_id').eq('user_id', state.user.id)
-      ]);
-      state.mesInscriptions = (i.data || []).map(x => x.event_id);
-      state.maListeAttente = (a.data || []).map(x => x.event_id);
-      state.mesInteresses = (int.data || []).map(x => x.event_id);
-    }
-    renderPublicEvents(state.events);
-  } catch(e) { console.error(e); }
-}
-
-function renderPublicEvents(list) {
-  const grid = document.getElementById('public-events-grid');
-  if (!grid) return;
-  grid.innerHTML = list.map(ev => {
-    const pDispo = ev.places_reelles_dispo;
-    const inscrit = state.mesInscriptions.includes(ev.id);
-    const enAttente = state.maListeAttente.includes(ev.id);
-    const interesse = state.mesInteresses.includes(ev.id);
-    let btnHtml = '';
-    if (inscrit) btnHtml = `<span class="badge-inscrit">✦ Inscrit·e</span>`;
-    else if (enAttente) btnHtml = `<span class="badge-attente">⏳ Attente</span>`;
-    else if (interesse) btnHtml = `<span class="badge-interesse">👀 Intéressé·e</span>`;
-    else if (pDispo <= 0) btnHtml = `<button class="btn btn-sm btn-danger" onclick="handleInscriptionClick('${ev.id}', '${ev.titre}', ${pDispo})">Attente</button>`;
-    else btnHtml = `<button class="btn btn-sm" onclick="handleInscriptionClick('${ev.id}', '${ev.titre}', ${pDispo})">S'inscrire</button>`;
-
-    return `<div class="event-card">
-      <div class="event-card-header"><div class="event-card-titre">${ev.titre}</div></div>
-      <div class="event-card-body">
-        <div class="event-info-item"><span class="event-info-label">Lieu</span><span class="event-info-val">📍 ${ev.lieu || '—'}</span></div>
-        <div class="event-info-item"><span class="event-info-label">Début</span><span class="event-info-val">${formatDatetime(ev.date_debut)}</span></div>
-      </div>
-      <div class="event-card-footer">
-        <div class="jauge-text">${pDispo} / ${ev.places_totales} places</div>
-        <div style="display:flex;gap:5px;">${btnHtml}</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-// ════════════════════════════════════════════════════
-//  6. ACCÈS ORGANISATEUR (TON BUREAU)
-// ════════════════════════════════════════════════════
-function openOrgaLogin() { 
-  document.getElementById('orga-pwd').value = ''; 
-  hideMsg('err-orga'); 
-  openModal('modal-orga-auth'); 
-}
-
-async function doLoginOrga() { 
-  if (document.getElementById('orga-pwd').value !== ORGA_PASSWORD) { 
-    showMsg('err-orga', 'Mot de passe incorrect.'); 
-    return; 
-  } 
-  closeModal('modal-orga-auth'); 
-  document.getElementById('public-screen').style.display = 'none'; 
-  document.getElementById('orga-screen').style.display = 'block'; 
-  showOrgaTab('events', document.getElementById('otab-events')); 
-  await loadOrgaEvents(); 
-  await loadOrgaMessagerie(); 
-}
-
-function logoutOrga() { 
-  document.getElementById('orga-screen').style.display = 'none'; 
-  document.getElementById('public-screen').style.display = ''; 
-}
-
-async function loadOrgaEvents() {
-  const tbody = document.getElementById('orga-events-body');
-  const { data } = await sb.from('evenements').select('*').order('date_debut', { ascending: true });
-  state.orgaEvents = data || [];
-  tbody.innerHTML = state.orgaEvents.map(ev => `<tr>
-    <td><strong>${ev.titre}</strong></td>
-    <td>${new Date(ev.date_debut).toLocaleDateString()}</td>
-    <td>${ev.places_disponibles}/${ev.places_totales}</td>
-    <td>
-      <button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${ev.titre}')">👁</button>
-      <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏</button>
-      <button class="btn btn-sm btn-danger" onclick="supprimerEvent('${ev.id}')">🗑</button>
-    </td>
-  </tr>`).join('');
-}
-
-async function saveEvent() { 
-  const id = document.getElementById('e-id').value;
-  const titre = document.getElementById('e-titre').value;
-  const rawDebut = document.getElementById('e-date-debut').value;
-  const date_debut = rawDebut ? new Date(rawDebut).toISOString() : null;
-  const lieu = document.getElementById('e-lieu').value;
-  const places_totales = parseInt(document.getElementById('e-places-totales').value) || 0;
-
-  if (id) {
-    await sb.from('evenements').update({ titre, date_debut, lieu, places_totales }).eq('id', id);
-  } else {
-    await sb.from('evenements').insert({ titre, date_debut, lieu, places_totales, places_disponibles: places_totales });
-  }
-  closeModal('modal-event');
-  loadOrgaEvents();
-}
-
-async function supprimerEvent(id) {
-  if (!confirm("Supprimer l'événement ?")) return;
-  await sb.from('evenements').delete().eq('id', id);
-  loadOrgaEvents();
-}
-
-// ════════════════════════════════════════════════════
-//  7. INTERFACE ET INITIALISATION FINALE
-// ════════════════════════════════════════════════════
-window.addEventListener('load', async () => {
-  const { data: { session } } = await sb.auth.getSession();
-  state.user = session ? session.user : null;
-  updateHeaderUserZone();
-  await loadPublicEvents();
-  await loadAnnonces();
 });
 
+// UI FUNCTIONS
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function switchAuthTab(tab) {
+  document.getElementById('form-connexion').style.display = tab === 'connexion' ? '' : 'none';
+  document.getElementById('form-inscription').style.display = tab === 'inscription' ? '' : 'none';
+  document.getElementById('tab-connexion').classList.toggle('active', tab === 'connexion');
+  document.getElementById('tab-inscription').classList.toggle('active', tab === 'inscription');
+}
+function openAuthModal() { switchAuthTab('connexion'); openModal('modal-auth'); }
+function showMsg(id, txt, type='error') { 
+    const el = document.getElementById(id); 
+    el.textContent = txt; el.style.display = 'block'; 
+    el.className = type === 'success' ? 'msg-success' : 'msg-error'; 
+}
+function hideMsg(id) { document.getElementById(id).style.display = 'none'; }
 function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
-function showMsg(id, txt, type='error') { const el = document.getElementById(id); el.textContent=txt; el.style.display='block'; el.className=type==='success'?'msg-success':'msg-error'; }
-function hideMsg(id) { document.getElementById(id).style.display='none'; }
-function showOrgaTab(tab, btn) { 
-  document.querySelectorAll('#orga-screen .joueur-tab-btn').forEach(b => b.classList.remove('active')); 
-  btn.classList.add('active'); 
-  document.getElementById('orga-tab-events').style.display = tab === 'events' ? '' : 'none'; 
-  document.getElementById('orga-tab-messages').style.display = tab === 'messages' ? '' : 'none'; 
+
+// AUTH LOGIC
+async function doLogin() {
+  const email = document.getElementById('login-email').value;
+  const mdp = document.getElementById('login-mdp').value;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: mdp });
+  if (error) return showMsg('err-login', "Erreur de connexion");
+  closeModal('modal-auth');
+}
+async function doRegister() {
+  const prenom = document.getElementById('reg-prenom').value;
+  const nom = document.getElementById('reg-nom').value;
+  const email = document.getElementById('reg-email').value;
+  const mdp = document.getElementById('reg-mdp').value;
+  const { data, error } = await sb.auth.signUp({ email, password: mdp, options: { data: { prenom, nom } } });
+  if (error) return showMsg('err-reg', error.message);
+  showMsg('ok-reg', "Compte créé ! Vérifiez vos emails.", "success");
 }
 function updateHeaderUserZone() {
   const zone = document.getElementById('header-user-zone');
   if (state.user) {
-    zone.innerHTML = `<button class="btn-ghost" onclick="ouvrirEspaceJoueur()">✦ ${state.user.user_metadata?.prenom || 'Moi'}</button>
+    zone.innerHTML = `<button class="btn-ghost" onclick="ouvrirEspaceJoueur()">✦ ${state.user.user_metadata.prenom}</button>
                       <button class="btn-ghost" onclick="logoutJoueur()">Déconnexion</button>`;
   } else {
     zone.innerHTML = `<button class="btn btn-sm" onclick="openAuthModal()">Se connecter</button>`;
@@ -1170,7 +244,58 @@ function updateHeaderUserZone() {
 }
 async function logoutJoueur() { await sb.auth.signOut(); window.location.reload(); }
 
-  
+// DATA LOADING
+async function loadAnnonces() {
+  const container = document.getElementById('annonces-container');
+  const { data: { session } } = await sb.auth.getSession();
+  const isOrga = session?.user?.app_metadata?.is_admin === true;
+  const { data } = await sb.from('annonces').select('*').order('date_creation', { ascending: false }).limit(5);
+  container.innerHTML = (data || []).map(a => `
+    <div style="background:white;padding:12px;border-radius:6px;border-left:4px solid #58abbc;position:relative;margin-bottom:10px;box-shadow:0 2px 4px rgba(0,0,0,0.05)">
+      ${isOrga ? `<button onclick="supprimerMissive('${a.id}')" style="position:absolute;top:5px;right:5px;border:none;background:none;cursor:pointer;">🗑️</button>` : ''}
+      <h4 style="margin:0 0 5px 0;font-family:'Cinzel'">${a.titre}</h4>
+      <p style="font-size:0.9rem;margin:0;">${a.contenu}</p>
+    </div>`).join('');
+}
+async function loadPublicEvents() {
+  const grid = document.getElementById('public-events-grid');
+  const { data } = await sb.from('evenements').select('*').order('date_debut', { ascending: true });
+  state.events = data || [];
+  grid.innerHTML = state.events.map(ev => `
+    <div class="event-card">
+      <div class="event-card-titre">${ev.titre}</div>
+      <div style="font-size:0.85rem;color:#64748b;">📍 ${ev.lieu || '—'} | 📅 ${new Date(ev.date_debut).toLocaleDateString()}</div>
+      <div style="margin-top:10px;text-align:right;"><button class="btn btn-sm">Détails</button></div>
+    </div>`).join('');
+}
+
+// ORGA LOGIC
+function openOrgaLogin() { hideMsg('err-orga'); openModal('modal-orga-auth'); }
+function doLoginOrga() {
+  if (document.getElementById('orga-pwd').value !== ORGA_PASSWORD) return showMsg('err-orga', "Code incorrect");
+  closeModal('modal-orga-auth');
+  document.getElementById('public-screen').style.display = 'none';
+  document.getElementById('orga-screen').style.display = 'block';
+  loadOrgaEvents();
+}
+async function loadOrgaEvents() {
+    const { data } = await sb.from('evenements').select('*').order('date_debut', { ascending: true });
+    document.getElementById('orga-events-body').innerHTML = (data || []).map(ev => `
+        <tr>
+            <td>${ev.titre}</td>
+            <td>${new Date(ev.date_debut).toLocaleDateString()}</td>
+            <td>${ev.places_totales}</td>
+            <td><button class="btn btn-sm" onclick="supprimerEvent('${ev.id}')">🗑️</button></td>
+        </tr>`).join('');
+}
+function logoutOrga() { document.getElementById('orga-screen').style.display = 'none'; document.getElementById('public-screen').style.display = 'block'; }
+
+// INIT
+window.addEventListener('load', async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  state.user = session ? session.user : null;
+  updateHeaderUserZone();
+});
 </script>
 </body>
 </html>
