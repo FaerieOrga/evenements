@@ -1032,10 +1032,25 @@ input:-webkit-autofill:focus {
       <div class="empty-state">Chargement des discussions...</div>
     </div>
     
-    <div class="msg-input-zone" id="chat-public-input-zone" style="margin-top: 15px;">
-      <textarea id="chat-public-nouveau" placeholder="Partagez quelque chose avec la communauté..." style="min-height: 50px;"></textarea>
-      <button class="btn btn-sm" style="background: #58abbc;" onclick="envoyerMessageChatPublic()">Envoyer</button>
-    </div>
+    <div id="chat-public-input-zone" style="margin-top: 15px; display: flex; flex-direction: column; gap: 8px;">
+  
+  <div style="display: flex; gap: 5px; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid var(--border);">
+    <button class="btn-ghost" style="padding: 2px 8px; font-weight: bold; color: var(--ink);" onclick="insertFormat('**')">B</button>
+    <button class="btn-ghost" style="padding: 2px 8px; font-style: italic; color: var(--ink);" onclick="insertFormat('*')">I</button>
+    <button class="btn-ghost" style="padding: 2px 8px; text-decoration: line-through; color: var(--ink);" onclick="insertFormat('~~')">S</button>
+    <span style="color: #cbd5e1; margin: 0 4px;">|</span>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🍻')">🍻</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('⚔️')">⚔️</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🐉')">🐉</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😂')">😂</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😔')">😔</button>
+  </div>
+
+  <div style="display: flex; gap: 10px; align-items: flex-end;">
+    <textarea id="chat-public-nouveau" placeholder="Partagez quelque chose... (Utilisez les boutons ou tapez **gras**)" style="min-height: 60px; flex: 1;"></textarea>
+    <button class="btn btn-sm" style="background: #58abbc; height: 100%;" onclick="envoyerMessageChatPublic()">Envoyer</button>
+  </div>
+</div>
     
     <div id="chat-public-login-msg" style="display:none; text-align:center; font-style:italic; color:var(--red-blood); margin-top:15px; padding: 10px; border: 1px dashed var(--red-blood);">
       Vous devez être connecté à votre compte Faérie pour participer à la discussion.
@@ -1878,7 +1893,13 @@ async function loadChatPublic() {
           ${m.prenom} <span style="font-weight: normal; color: var(--ink-light); font-size: 0.6rem;">- ${dateStr}</span>
         </div>
         <div class="${bubbleClass}" style="display: inline-block; text-align: left; margin-top: 2px;">
-          ${m.message.replace(/\n/g, '<br>')}
+          ${m.message
+  .replace(/</g, "&lt;").replace(/>/g, "&gt;") // Sécurité pour empêcher les piratages
+  .replace(/\n/g, '<br>')                      // Active les sauts de ligne
+  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Transforme **texte** en gras
+  .replace(/\*(.*?)\*/g, '<em>$1</em>')             // Transforme *texte* en italique
+  .replace(/~~(.*?)~~/g, '<del>$1</del>')           // Transforme ~~texte~~ en barré
+}
         </div>
       </div>
     `;
@@ -1939,6 +1960,38 @@ async function envoyerMessageChatPublic() {
   }
 }
 
+// --- FONCTIONS BARRE D'OUTILS TAVERNE ---
+
+function insertFormat(tag) {
+  const textarea = document.getElementById('chat-public-nouveau');
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const text = textarea.value;
+  const selectedText = text.substring(start, end);
+
+  // Insère la balise avant et après le texte sélectionné (ou juste la balise si rien n'est sélectionné)
+  const newText = text.substring(0, start) + tag + selectedText + tag + text.substring(end);
+  textarea.value = newText;
+
+  // Replace le curseur au bon endroit
+  textarea.focus();
+  if (selectedText.length === 0) {
+    textarea.selectionStart = textarea.selectionEnd = start + tag.length;
+  } else {
+    textarea.selectionStart = textarea.selectionEnd = start + tag.length * 2 + selectedText.length;
+  }
+}
+
+function insertEmoji(emoji) {
+  const textarea = document.getElementById('chat-public-nouveau');
+  const start = textarea.selectionStart;
+  const text = textarea.value;
+  
+  // Insère l'emoji à la position du curseur
+  textarea.value = text.substring(0, start) + emoji + text.substring(start);
+  textarea.focus();
+  textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+}
   
   // ════════════════════════════════════════════════════
 //  CALENDRIER
