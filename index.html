@@ -149,18 +149,21 @@ input:-webkit-autofill:focus {
   transform: translateY(-1px);
 }
 .btn-ghost {
-  display: inline-block;
+  display: inline-flex;     /* Permet d'aligner l'icône et le texte facilement */
+  align-items: center;      /* Centre verticalement le contenu */
   background: transparent;
   border: 1px solid #cbd5e1;
   color: var(--ink-light);
-  padding: 6px 14px;    /* Même taille que le bouton bleu */
+  padding: 9px 16px;        /* On passe à 9px pour correspondre aux inputs  */
   font-family: 'Cinzel', serif;
-  font-size: 0.55rem;   /* Même taille que le bouton bleu */
+  font-size: 0.75rem;       /* On augmente un peu la taille (au lieu de 0.55rem [cite: 29]) */
   letter-spacing: 1.5px;
   cursor: pointer;
   border-radius: 4px;
   transition: all 0.3s ease;
   text-transform: uppercase;
+  height: 40px;             /* Force une hauteur fixe identique pour tous les éléments */
+  box-sizing: border-box;   /* Garantit que la bordure ne dépasse pas la hauteur [cite: 5] */
 }
 
 .btn-ghost:hover { 
@@ -710,7 +713,18 @@ input:-webkit-autofill:focus {
         box-shadow: 0 4px 10px rgba(88, 171, 188, 0.3);
         font-weight: bold;
     }
-  }                                                     
+  }      
+
+  /* Agrandit les carrés et les icônes de la barre d'outils de la Taverne */
+#chat-public-input-zone .btn-ghost {
+  padding: 10px !important;    /* Agrandit la zone cliquable du carré */
+  font-size: 1.2rem !important; /* Agrandit le B, I, S et les emojis */
+  min-width: 42px;             /* Force une largeur minimale pour un bel aspect carré */
+  height: 42px;                /* Force la hauteur pour que ce soit bien carré */
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
 </style>
 </head>
 <body>
