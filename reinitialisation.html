@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réinitialisation - Faérie</title>
+    <style>
+        body { font-family: serif; background: #ffffff; color: #1e293b; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { text-align: center; border: 2px solid #58abbc; padding: 40px; border-radius: 12px; background: #f8fafc; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 400px; width: 90%; }
+        h1 { color: #58abbc; margin-top: 0; font-family: sans-serif; }
+        input { width: 100%; padding: 10px; margin: 8px 0 16px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 1rem; box-sizing: border-box; }
+        button { background: #58abbc; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: bold; width: 100%; }
+        button:hover { background: #468a99; }
+        .msg { margin-top: 12px; font-size: 0.9rem; }
+        .ok { color: #166534; } .err { color: #b91c1c; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>🔑 Nouveau mot de passe</h1>
+        <p>Choisis ton nouveau mot de passe :</p>
+        <input type="password" id="new-mdp" placeholder="Nouveau mot de passe">
+        <input type="password" id="new-mdp-confirm" placeholder="Confirmer le mot de passe">
+        <button onclick="resetPassword()">Valider</button>
+        <div class="msg" id="msg"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const sb = supabase.createClient(
+            'https://zutgjwnmolzwkbkdzfko.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1dGdqd25tb2x6d2tia2R6ZmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4NzM0NzgsImV4cCI6MjA2MDQ0OTQ3OH0.yI4QNqDyPz7GcOJGiCbCZnmofCJJNaE8sRFegw6nVwM'
+        );
+
+        async function resetPassword() {
+            const mdp = document.getElementById('new-mdp').value;
+            const confirm = document.getElementById('new-mdp-confirm').value;
+            const msg = document.getElementById('msg');
+
+            if (!mdp) { msg.className='msg err'; msg.textContent='Entre un mot de passe.'; return; }
+            if (mdp !== confirm) { msg.className='msg err'; msg.textContent='Les mots de passe ne correspondent pas.'; return; }
+            if (mdp.length < 6) { msg.className='msg err'; msg.textContent='Minimum 6 caractères.'; return; }
+
+            const { error } = await sb.auth.updateUser({ password: mdp });
+            if (error) {
+                msg.className='msg err'; msg.textContent='Erreur : ' + error.message;
+            } else {
+                msg.className='msg ok'; msg.textContent='✦ Mot de passe mis à jour ! Redirection...';
+                setTimeout(() => { window.location.href = 'https://www.xn--farie-csa.fr/%C3%A9v%C3%A9nements'; }, 2000);
+            }
+        }
+    </script>
+</body>
+</html>
