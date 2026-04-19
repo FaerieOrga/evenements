@@ -750,6 +750,10 @@ input:-webkit-autofill:focus {
   <option value="Réunion">Réunion</option>     
         </select>
         <button class="btn-ghost" onclick="openCalendrier()">📅 Calendrier</button>
+        <button class="btn-ghost" style="border-color: #58abbc; color: #58abbc; position: relative;" onclick="openChatPublic()">
+          💬 La Taverne
+          <span class="notif-dot" id="notif-chat-dot" style="display:none; top: -4px; right: -4px;"></span>
+        </button>
       </div>
       <div class="mobile-tabs" id="home-mobile-tabs">
         <button class="active" onclick="switchHomeTab('missives')">📜 Missives</button>
@@ -1018,6 +1022,27 @@ input:-webkit-autofill:focus {
     <div class="msg-error" id="err-missive"></div>
   </div>
 </div>
+
+  <div class="modal-overlay" id="modal-chat-public">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-chat-public')">✕</button>
+    <div class="modal-title" style="color: #58abbc;">💬 La Taverne</div>
+    
+    <div class="messages-fil" id="chat-public-fil" style="height: 350px; background: #f8fafc; padding: 15px; border: 1px inset var(--border); border-radius: 6px;">
+      <div class="empty-state">Chargement des discussions...</div>
+    </div>
+    
+    <div class="msg-input-zone" id="chat-public-input-zone" style="margin-top: 15px;">
+      <textarea id="chat-public-nouveau" placeholder="Partagez quelque chose avec la communauté..." style="min-height: 50px;"></textarea>
+      <button class="btn btn-sm" style="background: #58abbc;" onclick="envoyerMessageChatPublic()">Envoyer</button>
+    </div>
+    
+    <div id="chat-public-login-msg" style="display:none; text-align:center; font-style:italic; color:var(--red-blood); margin-top:15px; padding: 10px; border: 1px dashed var(--red-blood);">
+      Vous devez être connecté à votre compte Faérie pour participer à la discussion.
+    </div>
+  </div>
+</div>
+  
 <div class="toast" id="toast"></div>
 
   <div class="modal-overlay" id="modal-calendrier">
@@ -1796,6 +1821,125 @@ async function saveEvent() {
   showToast('✦ Enregistré'); 
 }
 
+// ==========================================
+// CHAT PUBLIC (LA TAVERNE)
+// ==========================================
+
+async function openChatPublic() {
+  localStorage.setItem('faerie_chat_derniere_visite', new Date().toISOString());
+  if (document.getElementById('notif-chat-dot')) document.getElementById('notif-chat-dot').style.display = 'none';
+  
+  openModal('modal-chat-public');
+  
+  // Gérer l'affichage : Cacher la saisie si non connecté
+  if (state.user) {
+    document.getElementById('chat-public-input-zone').style.display = 'flex';
+    document.getElementById('chat-public-login-msg').style.display = 'none';
+  } else {
+    document.getElementById('chat-public-input-zone').style.display = 'none';
+    document.getElementById('chat-public-login-msg').style.display = 'block';
+  }
+
+  await loadChatPublic();
+}
+
+async function loadChatPublic() {
+  const fil = document.getElementById('chat-public-fil');
+  
+  // On récupère les 50 derniers messages de la table
+  const { data, error } = await sb.from('chat_public')
+    .select('*')
+    .order('created_at', { ascending: true })
+    .limit(50);
+  
+  if (error) { 
+    fil.innerHTML = '<div class="msg-error" style="display:block">Erreur de connexion aux archives de la Taverne.</div>'; 
+    return; 
+  }
+  
+  if (!data || data.length === 0) { 
+    fil.innerHTML = '<div class="empty-state" style="margin-top: 100px;">La Taverne est bien silencieuse... Soyez le premier à parler !</div>'; 
+    return; 
+  }
+
+  fil.innerHTML = data.map(m => {
+    // Vérifier si c'est "mon" message pour l'aligner à droite
+    const isMe = state.user && state.user.id === m.user_id;
+    const bubbleClass = isMe ? 'msg-bubble joueur' : 'msg-bubble orga'; // On recycle tes styles CSS existants
+    const alignStyle = isMe ? 'text-align: right;' : 'text-align: left;';
+    
+    // Formatage de la date (Ex: "Aujourd'hui à 14:30" ou "12/04/2026 à 14:30")
+    const dateMsg = new Date(m.created_at);
+    const dateStr = dateMsg.toLocaleDateString('fr-FR') + ' à ' + dateMsg.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+
+    return `
+      <div style="${alignStyle} margin-bottom: 12px;">
+        <div class="msg-bubble-meta" style="font-weight: 600; color: #58abbc;">
+          ${m.prenom} <span style="font-weight: normal; color: var(--ink-light); font-size: 0.6rem;">- ${dateStr}</span>
+        </div>
+        <div class="${bubbleClass}" style="display: inline-block; text-align: left; margin-top: 2px;">
+          ${m.message.replace(/\n/g, '<br>')}
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  // Scroller automatiquement tout en bas pour voir le dernier message
+  fil.scrollTop = fil.scrollHeight;
+}
+
+async function verifierNouveauxMessagesTaverne() {
+  // On récupère la date de la dernière visite enregistrée sur cet ordinateur/téléphone
+  const derniereVisite = localStorage.getItem('faerie_chat_derniere_visite');
+  
+  // On prépare la question pour Supabase : "Y a-t-il des messages ?"
+  let query = sb.from('chat_public').select('*', { count: 'exact', head: true });
+  
+  // S'il est déjà venu, on ne compte QUE les messages créés APRÈS sa dernière visite
+  if (derniereVisite) {
+    query = query.gt('created_at', derniereVisite);
+  }
+  
+  const { count, error } = await query;
+  
+  const pastille = document.getElementById('notif-chat-dot');
+  if (pastille) {
+    // S'il y a au moins 1 nouveau message, on affiche la pastille rouge
+    if (!error && count > 0) {
+      pastille.style.display = 'block';
+    } else {
+      pastille.style.display = 'none';
+    }
+  }
+}
+
+async function envoyerMessageChatPublic() {
+  if (!state.user) return;
+  
+  const input = document.getElementById('chat-public-nouveau');
+  const message = input.value.trim();
+  if (!message) return;
+
+  // On récupère le prénom du joueur connecté
+  const prenom = state.user.user_metadata?.prenom || 'Anonyme';
+
+  // On enregistre dans Supabase
+  const { error } = await sb.from('chat_public').insert({
+    user_id: state.user.id,
+    prenom: prenom,
+    message: message
+  });
+
+  if (error) {
+    showToast("Erreur lors de l'envoi du message.");
+  } else {
+    // On vide la case et on recharge les messages
+    input.value = '';
+    await loadChatPublic();
+  }
+}
+
+  
   // ════════════════════════════════════════════════════
 //  CALENDRIER
 // ════════════════════════════════════════════════════
@@ -1871,6 +2015,7 @@ window.addEventListener('load', async () => {
   updateHeaderUserZone();
   await loadPublicEvents();
   await loadAnnonces();
+  await verifierNouveauxMessagesTaverne();
 });
 
 async function supprimerCompteJoueur() {
