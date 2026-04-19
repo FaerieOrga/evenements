@@ -1057,6 +1057,7 @@ input:-webkit-autofill:focus {
   <div style="display: flex; flex-wrap: wrap; gap: 5px; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid var(--border);">
     <button class="btn-ghost" style="padding: 2px 8px; font-weight: bold; color: var(--ink);" onclick="insertFormat('**')">B</button>
     <button class="btn-ghost" style="padding: 2px 8px; font-style: italic; color: var(--ink);" onclick="insertFormat('*')">I</button>
+    <button class="btn-ghost" style="padding: 2px 8px; text-decoration: underline; color: var(--ink);" onclick="insertFormat('__')">U</button>
     <button class="btn-ghost" style="padding: 2px 8px; text-decoration: line-through; color: var(--ink);" onclick="insertFormat('~~')">S</button>
     <span style="color: #cbd5e1; margin: 0 4px;">|</span>
     <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🧚')">🧚</button>
@@ -1087,7 +1088,7 @@ input:-webkit-autofill:focus {
   </div>
 
   <div style="display: flex; gap: 10px; align-items: flex-end;">
-    <textarea id="chat-public-nouveau" placeholder="Partagez quelque chose... (Utilisez les boutons ou tapez **gras**)" style="min-height: 60px; flex: 1;"></textarea>
+    <textarea id="chat-public-nouveau" placeholder="Partagez quelque chose..." style="min-height: 60px; flex: 1;"></textarea>
     <button class="btn btn-sm" style="background: #58abbc; height: 100%;" onclick="envoyerMessageChatPublic()">Envoyer</button>
   </div>
 </div>
@@ -1938,7 +1939,9 @@ async function loadChatPublic() {
   .replace(/\n/g, '<br>')                      // Active les sauts de ligne
   .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Transforme **texte** en gras
   .replace(/\*(.*?)\*/g, '<em>$1</em>')             // Transforme *texte* en italique
+  .replace(/__(.*?)__/g, '<u>$1</u>')               // Transforme __texte__ en souligné
   .replace(/~~(.*?)~~/g, '<del>$1</del>')           // Transforme ~~texte~~ en barré
+            
 }
         </div>
       </div>
