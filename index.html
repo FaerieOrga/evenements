@@ -719,7 +719,7 @@ input:-webkit-autofill:focus {
   }      
 
   /* Agrandit les carrés et les icônes de la barre d'outils de la Taverne */
-#chat-public-input-zone .btn-ghost {
+#chat-public-input-zone .btn-ghost, .toolbar-messagerie .btn-ghost {
   padding: 5px !important;
   font-size: 0.8rem !important;
   min-width: 34px;
@@ -833,15 +833,44 @@ input:-webkit-autofill:focus {
       </div>
 
       <div id="joueur-tab-messages" style="display:none">
-        <div class="messages-fil" id="messages-fil">
-          <div class="empty-state">Chargement…</div>
-        </div>
-        <div class="msg-input-zone">
-          <textarea id="msg-nouveau" placeholder="Écrivez votre message à l'orga…"></textarea>
-          <button class="btn btn-sm" onclick="envoyerMessage()">Envoyer</button>
-        </div>
-        <div class="msg-error" id="err-msg"></div>
-      </div>
+  <div class="messages-fil" id="messages-fil">
+    <div class="empty-state">Chargement…</div>
+  </div>
+  
+  <div class="toolbar-messagerie" style="display: flex; flex-wrap: wrap; gap: 5px; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid var(--border); margin-bottom: 5px;">
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🧚')">🧚</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🍻')">🍻</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('⚔️')">⚔️</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🍺')">🍺</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🛡️')">🛡️</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🏹')">🏹</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🧙')">🧙</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🧙‍♀️')">🧙‍♀️</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🧟')">🧟</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('👻')">👻</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('💀')">💀</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😈')">😈</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🧛')">🧛</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😊')">😊</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😢')">😢</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😡')">😡</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🤔')">🤔</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😱')">😱</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😏')">😏</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🥺')">🥺</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😴')">😴</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🤣')">🤣</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😎')">😎</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😤')">😤</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🫡')">🫡</button>
+  </div>
+
+  <div class="msg-input-zone">
+    <textarea id="msg-nouveau" placeholder="Écrivez votre message à l'orga…"></textarea>
+    <button class="btn btn-sm" onclick="envoyerMessage()">Envoyer</button>
+  </div>
+  <div class="msg-error" id="err-msg"></div>
+</div>
     </div>
   </div>
     </div>
@@ -887,10 +916,40 @@ input:-webkit-autofill:focus {
         <div class="messages-fil" id="orga-messages-fil">
           <div class="empty-state">Sélectionnez un joueur pour voir la conversation.</div>
         </div>
-        <div class="msg-input-zone" id="orga-reply-zone" style="display:none">
-          <textarea id="orga-msg-nouveau" placeholder="Réponse à ce joueur…"></textarea>
-          <button class="btn btn-sm" onclick="envoyerMessageOrga()">Répondre</button>
-        </div>
+        <div class="msg-input-zone" id="orga-reply-zone" style="display:none; flex-direction: column; gap: 8px;">
+  <div class="toolbar-messagerie" style="display: flex; flex-wrap: wrap; gap: 5px; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid var(--border); width: 100%;">
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🧚')">🧚</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🍻')">🍻</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('⚔️')">⚔️</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🍺')">🍺</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🛡️')">🛡️</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🏹')">🏹</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🧙')">🧙</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🧙‍♀️')">🧙‍♀️</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🧟')">🧟</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('👻')">👻</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('💀')">💀</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😈')">😈</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🧛')">🧛</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😊')">😊</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😢')">😢</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😡')">😡</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🤔')">🤔</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😱')">😱</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😏')">😏</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🥺')">🥺</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😴')">😴</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🤣')">🤣</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😎')">😎</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😤')">😤</button>
+<button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🫡')">🫡</button>
+  </div>
+  
+  <div style="display: flex; gap: 10px; width: 100%; align-items: flex-end;">
+    <textarea id="orga-msg-nouveau" placeholder="Réponse à ce joueur..." style="min-height: 60px; flex: 1;"></textarea>
+    <button class="btn btn-sm" onclick="envoyerMessageOrga()" style="height: 100%;">Répondre</button>
+  </div>
+</div>
         <div class="msg-error" id="err-orga-msg"></div>
       </div> <div id="orga-tab-missives" style="display:none">
         <div class="orga-toolbar">
@@ -908,7 +967,6 @@ input:-webkit-autofill:focus {
       </div>
     </div>
   </div>
-
 </div>
 
 <div class="modal-overlay" id="modal-auth">
@@ -1481,6 +1539,17 @@ async function confirmerDepuisInteret(eventId, titre, placesDispo) {
   } catch(e) { console.error(e); }
 }
 
+  function formatMessageText(rawText) {
+  if (!rawText) return '';
+  return rawText
+    .replace(/</g, "&lt;").replace(/>/g, "&gt;") // Sécurité contre l'injection de code [cite: 357]
+    .replace(/\n/g, '<br>')                      // Transformation des sauts de ligne [cite: 357]
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Gras [cite: 358]
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')             // Italique [cite: 358]
+    .replace(/__(.*?)__/g, '<u>$1</u>')               // Souligné [cite: 358]
+    .replace(/~~(.*?)~~/g, '<del>$1</del>');          // Barré [cite: 358]
+}
+
 // ════════════════════════════════════════════════════
 //  MESSAGERIES
 // ════════════════════════════════════════════════════
@@ -1495,7 +1564,7 @@ async function loadMessages() {
       const date = new Date(m.created_at).toLocaleString('fr-FR');
       const side = m.auteur === 'orga' ? 'orga' : 'joueur';
       const label = m.auteur === 'orga' ? '⚔ Organisateur' : '✦ Vous';
-      return `<div class="msg-bubble ${side}"><div class="msg-bubble-meta">${label} — ${date}</div>${m.contenu}</div>`;
+      return `<div class="msg-bubble ${side}"><div class="msg-bubble-meta">${label} — ${date}</div>${formatMessageText(m.contenu)}</div>`;
     }).join('');
     fil.scrollTop = fil.scrollHeight;
     await sb.from('messages').update({ lu_joueur: true }).eq('user_id', state.user.id).eq('lu_joueur', false);
@@ -1590,7 +1659,7 @@ async function loadOrgaConversation(userId) {
       const date = new Date(m.created_at).toLocaleString('fr-FR');
       const side = m.auteur === 'orga' ? 'orga' : 'joueur';
       const label = m.auteur === 'orga' ? '⚔ Vous' : `✦ ${nomJoueur}`;
-      return `<div class="msg-bubble ${side}"><div class="msg-bubble-meta">${label} — ${date}</div>${m.contenu}</div>`;
+      return `<div class="msg-bubble ${side}"><div class="msg-bubble-meta">${label} — ${date}</div>${formatMessageText(m.contenu)}</div>`;
     }).join('');
     fil.scrollTop = fil.scrollHeight;
     await sb.from('messages').update({ lu_orga: true }).eq('user_id', userId).eq('auteur', 'joueur');
@@ -2031,6 +2100,26 @@ function insertEmoji(emoji) {
   const text = textarea.value;
   
   // Insère l'emoji à la position du curseur
+  textarea.value = text.substring(0, start) + emoji + text.substring(start);
+  textarea.focus();
+  textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+}
+
+  function insertFormatMessagerie(tag, targetId) {
+  const textarea = document.getElementById(targetId);
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const text = textarea.value;
+  const selectedText = text.substring(start, end);
+  textarea.value = text.substring(0, start) + tag + selectedText + tag + text.substring(end);
+  textarea.focus();
+  textarea.selectionStart = textarea.selectionEnd = start + tag.length + (selectedText.length ? selectedText.length + tag.length : 0);
+}
+
+function insertEmojiMessagerie(emoji, targetId) {
+  const textarea = document.getElementById(targetId);
+  const start = textarea.selectionStart;
+  const text = textarea.value;
   textarea.value = text.substring(0, start) + emoji + text.substring(start);
   textarea.focus();
   textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
