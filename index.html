@@ -481,6 +481,7 @@ input:-webkit-autofill:focus {
   position: relative;
 }
 .modal-box-wide { max-width: 660px; }
+.modal-box-xl { max-width: 1100px; width: 95%; } /* Ajoute cette ligne ici */
 .modal-title {
   font-family: 'Cinzel', serif;
   font-size: 1.4rem;
@@ -1112,11 +1113,11 @@ input:-webkit-autofill:focus {
 </div>
 
   <div class="modal-overlay" id="modal-chat-public">
-  <div class="modal-box">
+  <div class="modal-box modal-box-xl">
     <button class="modal-close" onclick="closeModal('modal-chat-public')">✕</button>
     <div class="modal-title" style="color: #58abbc;">💬 La Taverne</div>
     
-    <div class="messages-fil" id="chat-public-fil" style="height: 350px; background: #f8fafc; padding: 15px; border: 1px inset var(--border); border-radius: 6px;">
+    <div class="messages-fil" id="chat-public-fil" style="height: 700px; background: #f8fafc; padding: 15px; border: 1px inset var(--border); border-radius: 6px;">
       <div class="empty-state">Chargement des discussions...</div>
     </div>
     
