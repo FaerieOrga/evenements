@@ -2094,7 +2094,7 @@ function togglePwd(inputId, btn) {
 function ouvrirMotDePasseOublie() {
   const email = document.getElementById('login-email').value.trim();
   if (!email) { showMsg('err-login', 'Entre ton adresse e-mail d\'abord.'); return; }
-  sb.auth.resetPasswordForEmail(email, { redirectTo: 'https://www.xn--farie-csa.fr/reinitialisation' })
+  sb.auth.resetPasswordForEmail(email, { redirectTo: 'https://faerieorga.github.io/reinitialisation.html' })
     .then(({ error }) => {
       if (error) showMsg('err-login', error.message);
       else showMsg('ok-login', '✦ Un lien de réinitialisation a été envoyé !', 'success');
