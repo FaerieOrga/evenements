@@ -26,10 +26,12 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const sb = supabase.createClient(
+       const sb = supabase.createClient(
     'https://zutgjwnmolzwkbkdzfko.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1dGdqd25tb2x6d2tia2R6ZmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4NzM0NzgsImV4cCI6MjA2MDQ0OTQ3OH0.yI4QNqDyPz7GcOJGiCbCZnmofCJJNaE8sRFegw6nVwM'
 );
+
+let sessionPrete = false;
 
 window.addEventListener('load', async () => {
     const hash = window.location.hash.substring(1);
@@ -38,7 +40,8 @@ window.addEventListener('load', async () => {
     const refresh_token = params.get('refresh_token');
     
     if (access_token && refresh_token) {
-        await sb.auth.setSession({ access_token, refresh_token });
+        const { error } = await sb.auth.setSession({ access_token, refresh_token });
+        if (!error) sessionPrete = true;
     }
 });
 
@@ -47,6 +50,7 @@ async function resetPassword() {
     const confirm = document.getElementById('new-mdp-confirm').value;
     const msg = document.getElementById('msg');
 
+    if (!sessionPrete) { msg.className='msg err'; msg.textContent='Session non prête, réessaie dans 2 secondes.'; return; }
     if (!mdp) { msg.className='msg err'; msg.textContent='Entre un mot de passe.'; return; }
     if (mdp !== confirm) { msg.className='msg err'; msg.textContent='Les mots de passe ne correspondent pas.'; return; }
     if (mdp.length < 6) { msg.className='msg err'; msg.textContent='Minimum 6 caractères.'; return; }
