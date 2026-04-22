@@ -1521,11 +1521,10 @@ async function loadMesInscriptions() {
         badge = '<span class="badge-interesse">👀 Intéressé·e</span>';
         actionBtn = `<button class="btn btn-sm" onclick="confirmerDepuisInteret('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${ev.places_reelles_dispo ?? ev.places_disponibles})">Confirmer mon inscription</button>`;
       } else if (enAttente) {
-  badge = '<span class="badge-attente">⏳ Liste d\'attente</span>';
-  if (ev.places_disponibles > 0) {
-    actionBtn = `<button class="btn btn-sm" onclick="confirmerDepuisAttente('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">S'inscrire maintenant</button>`;
-  }
-}
+        badge = '<span class="badge-attente">⏳ Liste d\'attente</span>';
+        if (ev.places_disponibles > 0) {
+          actionBtn = `<button class="btn btn-sm" onclick="confirmerDepuisAttente('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">S'inscrire maintenant</button>`;
+        }
       } else {
         badge = '<span class="badge-inscrit">✦ Inscrit·e</span>';
       }
