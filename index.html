@@ -1420,7 +1420,7 @@ async function confirmInscription(typeChoisi) {
         `<h3>Bonjour,</h3><p>Tu es bien inscrit·e sur la liste d'attente pour l'événement <b>${state.pendingEventTitre}</b>.</p><p>Nous te préviendrons par message si une place se libère !</p>`
       );
     }
-    closeModal('modal-inscription'); await loadPublicEvents();
+    closeModal('modal-inscription'); await loadPublicEvents(); await loadMesInscriptions();
   } catch(e) { showMsg('err-insc', e.message.includes('23505') ? 'Déjà inscrit·e !' : e.message); }
 }
 
