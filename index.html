@@ -729,6 +729,53 @@ input:-webkit-autofill:focus {
   justify-content: center;
   align-items: center;
 }
+
+  /* ── BOUTONS DE DÉFILEMENT ── */
+.scroll-nav {
+  position: fixed;
+  bottom: 80px; /* Placé au-dessus du "Toast" de notification */
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 99;
+}
+
+.scroll-nav button {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #1e293b;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  font-size: 1.1rem;
+}
+
+.scroll-nav button:hover {
+  background: #58abbc; /* Votre bleu thématique */
+  color: white;
+  border-color: #58abbc;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(88, 171, 188, 0.4);
+}
+
+@media (max-width: 600px) {
+  .scroll-nav {
+    bottom: 20px; /* Sur mobile, on peut les baisser un peu */
+    right: 16px;
+  }
+  .scroll-nav button {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+}
 </style>
 </head>
 <body>
@@ -1192,6 +1239,12 @@ input:-webkit-autofill:focus {
   </div>
 </div>
 
+  <div class="scroll-nav">
+  <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Remonter tout en haut">⬆️</button>
+  <button onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})" title="Descendre tout en bas">⬇️</button>
+</div>
+
+  
 <script>
 // ════════════════════════════════════════════════════
 //  CONFIG ET URL DU SCRIPT D'ENVOI D'EMAILS
