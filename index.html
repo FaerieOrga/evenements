@@ -742,21 +742,25 @@ input:-webkit-autofill:focus {
 }
 
 .scroll-nav button {
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
+  background: transparent; /* Remplacé : fond transparent au lieu de blanc */
+  border: none;            /* Remplacé : plus de bordure */
+  box-shadow: none;        /* Remplacé : plus d'ombre */
   color: #1e293b;
-  border-radius: 50%;
   width: 42px;
   height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   transition: all 0.3s ease;
-  font-size: 1.1rem;
+  font-size: 1.5rem;       /* J'ai un peu grossi l'émoji pour compenser la perte du cercle */
 }
 
+.scroll-nav button:hover {
+  background: transparent; /* Reste transparent au survol */
+  transform: translateY(-3px) scale(1.15); /* Petit effet de rebond au survol */
+  box-shadow: none;
+}
 .scroll-nav button:hover {
   background: #58abbc; /* Votre bleu thématique */
   color: white;
