@@ -1094,6 +1094,17 @@ input:-webkit-autofill:focus {
       <div class="form-group"><label>Places totales</label><input type="number" id="e-places-totales" min="1" value="20"></div>
       <div class="form-group" id="row-places-dispo" style="display:none"><label>Places disponibles</label><input type="number" id="e-places-dispo" min="0"></div>
     </div>
+
+<div class="form-group" style="margin-top:8px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="e-mode-billetterie" onchange="toggleModeBilletterie(this.checked)" style="width:auto">
+        Mode Billetterie (remplace l'inscription par un lien externe)
+      </label>
+    </div>
+    <div id="row-billetterie" style="display:none">
+      <div class="form-group"><label>Lien Billetterie</label><input type="text" id="e-lien-billetterie" value="https://www.xn--farie-csa.fr/billetteries" placeholder="https://..."></div>
+    </div>
+    
     <button class="btn btn-full" style="margin-top:6px" onclick="saveEvent()">Enregistrer</button>
     <div class="msg-error" id="err-event"></div><div class="msg-success" id="ok-event"></div>
   </div>
@@ -1305,7 +1316,9 @@ function renderPublicEvents(list) {
     const noms = inscritsIci.map(i => annuaire[i.user_id] || "Joueur Inconnu").join(', ');
     const bulle = noms ? "Inscrits : " + noms : "Aucun inscrit";
     let btnHtml = '';
-    if (inscrit) {
+    if (ev.lien_billetterie) {
+      btnHtml = `<a href="${ev.lien_billetterie}" target="_blank" class="btn btn-sm" style="text-decoration:none">🎟 Billetterie</a>`;
+    } else if (inscrit) {
       btnHtml = `<span class="badge-inscrit">✦ Inscrit·e</span>`;
     } else if (enAttente) {
       btnHtml = `<span class="badge-attente">⏳ Liste d'attente</span>`;
@@ -1318,7 +1331,6 @@ function renderPublicEvents(list) {
         <button class="btn btn-sm" onclick="handleInscriptionClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${placesDispo})">S'inscrire</button>
         <button class="btn-ghost" onclick="handleInteresseClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">👀 Intéressé·e</button>`;
     }
-
     return `
     <div class="event-card">
       <div class="event-card-header"><div class="event-card-titre">${ev.titre}</div><div class="event-card-type">${ev.type || '—'}</div></div>
@@ -1904,8 +1916,16 @@ async function voirParticipants(eventId, titre) {
 }
 
 function filterOrgaEvents(q) { renderOrgaTable(state.orgaEvents.filter(ev => (ev.titre + (ev.lieu||'') + (ev.type||'')).toLowerCase().includes(q.toLowerCase()))); }
-function openModalCreateEvent() { document.getElementById('modal-event-title').textContent = '+ Nouvel événement';
-document.getElementById('e-id').value = ''; ['e-titre','e-lieu','e-lien-maps','e-organisateurs','e-description','e-date-debut','e-date-fin'].forEach(id => document.getElementById(id).value = ''); document.getElementById('row-places-dispo').style.display = 'none'; openModal('modal-event');
+function openModalCreateEvent() {
+  document.getElementById('modal-event-title').textContent = '+ Nouvel événement';
+  document.getElementById('e-id').value = '';
+  ['e-titre','e-lieu','e-lien-maps','e-organisateurs','e-description','e-date-debut','e-date-fin'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('row-places-dispo').style.display = 'none';
+  document.getElementById('e-mode-billetterie').checked = false;
+  document.getElementById('e-lien-billetterie').value = 'https://www.xn--farie-csa.fr/billetteries';
+  document.getElementById('row-billetterie').style.display = 'none';
+  document.getElementById('e-places-totales').closest('.form-group').parentElement.style.display = '';
+  openModal('modal-event');
 }
 
 function openModalEditEvent(id) { 
@@ -1932,40 +1952,62 @@ function openModalEditEvent(id) {
   
   // On affiche la ligne des places disponibles uniquement en mode "Modification"
   document.getElementById('row-places-dispo').style.display = ''; 
+
+const lienBill = ev.lien_billetterie || '';
+  document.getElementById('e-lien-billetterie').value = lienBill || 'https://www.xn--farie-csa.fr/billetteries';
+  document.getElementById('e-mode-billetterie').checked = !!lienBill;
+  toggleModeBilletterie(!!lienBill);
   
   openModal('modal-event'); 
+}
+
+  function toggleModeBilletterie(checked) {
+  document.getElementById('row-billetterie').style.display = checked ? '' : 'none';
+  document.getElementById('e-places-totales').closest('.form-group').parentElement.style.display = checked ? 'none' : '';
 }
 
 async function saveEvent() { 
   const id = document.getElementById('e-id').value; 
   const titre = document.getElementById('e-titre').value.trim();
   
-  // --- PROTECTION ANTI-DÉCALAGE HORAIRE ---
-  // On transforme le texte du champ en vraie date ISO pour Supabase
+  // --- AJOUT CLAUDE ICI ---
+  const lien_billetterie = document.getElementById('e-mode-billetterie').checked 
+    ? (document.getElementById('e-lien-billetterie').value.trim() || null) 
+    : null;
+  // ------------------------
+
   const rawDebut = document.getElementById('e-date-debut').value;
   const rawFin = document.getElementById('e-date-fin').value;
   
   const date_debut = rawDebut ? new Date(rawDebut).toISOString() : null;
   const date_fin = rawFin ? new Date(rawFin).toISOString() : null;
-  // ----------------------------------------
 
   const lieu = document.getElementById('e-lieu').value.trim(); 
-  const lien_maps = document.getElementById('e-lien-maps').value.trim() || null; 
+  const lien_maps = document.getElementById('e-lien-maps').value.trim() || null;
   const organisateurs = document.getElementById('e-organisateurs').value.trim();
   const type = document.getElementById('e-type').value; 
   const description = document.getElementById('e-description').value.trim() || null; 
   const places_totales = parseInt(document.getElementById('e-places-totales').value) || 0;
-  
+
   if (!titre || !date_debut) return; 
   
-  // On extrait la date simple pour la colonne 'date' (utile pour tes filtres Supabase)
-  const date = date_debut.split('T')[0]; 
-  
+  const date = date_debut.split('T')[0];
+
   if (id) { 
     const places_disponibles = parseInt(document.getElementById('e-places-dispo').value) || 0;
-    await sb.from('evenements').update({ titre, date, date_debut, date_fin, lieu, lien_maps, organisateurs, type, description, places_totales, places_disponibles }).eq('id', id);
+    // On ajoute lien_billetterie dans l'update 
+    await sb.from('evenements').update({ 
+      titre, date, date_debut, date_fin, lieu, lien_maps, 
+      organisateurs, type, description, places_totales, 
+      places_disponibles, lien_billetterie 
+    }).eq('id', id);
   } else { 
-    await sb.from('evenements').insert({ titre, date, date_debut, date_fin, lieu, lien_maps, organisateurs, type, description, places_totales, places_disponibles: places_totales }); 
+    // On ajoute lien_billetterie dans l'insert 
+    await sb.from('evenements').insert({ 
+      titre, date, date_debut, date_fin, lieu, lien_maps, 
+      organisateurs, type, description, places_totales, 
+      places_disponibles: places_totales, lien_billetterie 
+    });
   } 
   
   closeModal('modal-event'); 
