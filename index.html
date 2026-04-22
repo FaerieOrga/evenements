@@ -1521,7 +1521,11 @@ async function loadMesInscriptions() {
         badge = '<span class="badge-interesse">👀 Intéressé·e</span>';
         actionBtn = `<button class="btn btn-sm" onclick="confirmerDepuisInteret('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${ev.places_reelles_dispo ?? ev.places_disponibles})">Confirmer mon inscription</button>`;
       } else if (enAttente) {
-        badge = '<span class="badge-attente">⏳ Liste d\'attente</span>';
+  badge = '<span class="badge-attente">⏳ Liste d\'attente</span>';
+  if (ev.places_disponibles > 0) {
+    actionBtn = `<button class="btn btn-sm" onclick="confirmerDepuisAttente('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">S'inscrire maintenant</button>`;
+  }
+}
       } else {
         badge = '<span class="badge-inscrit">✦ Inscrit·e</span>';
       }
@@ -1548,7 +1552,21 @@ async function confirmerDepuisInteret(eventId, titre, placesDispo) {
     ouvrirConfirmInscription();
   } catch(e) { console.error(e); }
 }
-
+  
+async function confirmerDepuisAttente(eventId, titre) {
+  try {
+    showToast('Sorcier à l\'œuvre...');
+    await sb.from('liste_attente').delete().eq('event_id', eventId).eq('user_id', state.user.id);
+    const { error } = await sb.from('inscriptions').insert({ event_id: eventId, user_id: state.user.id });
+    if (error) throw error;
+    showToast('✦ Inscription confirmée !');
+    await loadPublicEvents();
+    await loadMesInscriptions();
+  } catch(e) {
+    console.error(e);
+    showToast('❌ Erreur lors de l\'inscription.');
+  }
+}
   function formatMessageText(rawText) {
   if (!rawText) return '';
   return rawText
