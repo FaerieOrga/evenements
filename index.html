@@ -1911,7 +1911,7 @@ async function retirerParticipant(eventId, userId, table, titre) {
 async function supprimerEvent(eventId) {
   const ok = await new Promise(resolve => {
     const overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.85);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
     overlay.innerHTML = `
       <div style="background:#fff;border-radius:8px;padding:30px 34px;max-width:420px;width:100%;text-align:center;box-shadow:0 15px 50px rgba(0,0,0,0.4)">
         <div style="font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;margin-bottom:12px;color:#1e293b">Supprimer cet événement ?</div>
@@ -1925,6 +1925,23 @@ async function supprimerEvent(eventId) {
     overlay.querySelector('#suppr-oui').onclick = () => { document.body.removeChild(overlay); resolve(true); };
     overlay.querySelector('#suppr-non').onclick = () => { document.body.removeChild(overlay); resolve(false); };
   });
+
+  if (!ok) return;
+
+  try {
+    showToast('Sorcier à l\'œuvre...');
+    await sb.from('inscriptions').delete().eq('event_id', eventId);
+    await sb.from('liste_attente').delete().eq('event_id', eventId);
+    await sb.from('interesses').delete().eq('event_id', eventId);
+    const { error } = await sb.from('evenements').delete().eq('id', eventId);
+    if (error) throw error;
+    showToast('✦ Événement supprimé');
+    loadOrgaEvents();
+    loadPublicEvents();
+  } catch (e) {
+    showToast('❌ Erreur : ' + e.message);
+  }
+}
 
   if (!ok) return;
 
