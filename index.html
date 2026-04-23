@@ -1265,7 +1265,10 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const state = {
   user: null, events: [], orgaEvents: [], mesInscriptions: [], mesInscriptionsData: [],
   maListeAttente: [],
-
+  pendingEventId: null, pendingEventTitre: null, pendingEventDispo: null, currentOrgaUserId: null,
+  mesInteresses: []
+};
+  
 // ════════════════════════════════════════════════════
 //  FONCTION D'ENVOI D'EMAILS
 // ════════════════════════════════════════════════════
