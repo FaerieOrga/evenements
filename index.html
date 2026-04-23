@@ -1943,21 +1943,6 @@ async function supprimerEvent(eventId) {
     showToast('❌ Erreur : ' + e.message);
   }
 }
-
-  if (!ok) return;
-
-  try {
-    await sb.from('inscriptions').delete().eq('event_id', eventId);
-    await sb.from('liste_attente').delete().eq('event_id', eventId);
-    const { error } = await sb.from('evenements').delete().eq('id', eventId);
-    if (error) throw error;
-    showToast('✦ Événement supprimé');
-    loadOrgaEvents();
-    loadPublicEvents();
-  } catch (e) {
-    showToast('❌ Erreur : ' + e.message);
-  }
-}
   
 async function voirParticipants(eventId, titre) {
   document.getElementById('view-event-titre').textContent = titre; 
