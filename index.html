@@ -1914,13 +1914,13 @@ function showOrgaTab(tab, btn) {
 async function loadOrgaEvents() {
   const tbody = document.getElementById('orga-events-body');
   if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement…</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Chargement…</td></tr>';
   
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   try {
-    // 1. On récupère les événements et toutes les inscriptions
+    // 1. On récupère les événements ET les inscriptions pour faire le compte exact
     const [eventsRes, inscrRes] = await Promise.all([
       sb.from('evenements').select('*').gte('date_debut', today.toISOString()).order('date_debut', { ascending: true, nullsFirst: false }),
       sb.from('inscriptions').select('event_id')
@@ -1929,46 +1929,41 @@ async function loadOrgaEvents() {
     if (eventsRes.error) throw eventsRes.error;
 
     const allInscriptions = inscrRes.data || [];
-    
-    // 2. On calcule les places de manière ultra-sécurisée
+
+    // 2. On calcule les places dispo en direct
     state.orgaEvents = (eventsRes.data || []).map(ev => {
       const occupes = allInscriptions.filter(i => i.event_id === ev.id).length;
-      // On s'assure que places_totales est un nombre, sinon on met 0
-      const total = ev.places_totales || 0; 
-      ev.places_reelles_dispo = total - occupes;
+      ev.places_reelles_dispo = (ev.places_totales || 0) - occupes;
       return ev;
     });
 
     renderOrgaTable(state.orgaEvents);
-  } catch (e) {
-    console.error("Erreur Orga Events:", e);
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--red-blood);">Erreur de chargement des données.</td></tr>`;
+  } catch (error) {
+    console.error("Erreur Orga Events:", error);
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Erreur de chargement.</td></tr>';
   }
 }
 
 function renderOrgaTable(list) {
   const tbody = document.getElementById('orga-events-body');
   if (!list.length) { 
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Aucun événement à venir.</td></tr>'; 
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Aucun événement.</td></tr>'; 
     return; 
   }
   
   tbody.innerHTML = list.map(ev => {
-    // On protège le titre pour éviter de casser les boutons HTML
+    // On protège le titre pour les boutons
     const safeTitre = ev.titre.replace(/'/g, "\\'").replace(/"/g, "&quot;");
     
-    // On sécurise l'affichage des dates et des places
-    const dateStr = ev.date_debut ? new Date(ev.date_debut).toLocaleString('fr-FR') : '—';
+    // On utilise le calcul en direct qu'on vient de faire
     const placesDispo = ev.places_reelles_dispo !== undefined ? ev.places_reelles_dispo : (ev.places_disponibles || 0);
-    const placesTot = ev.places_totales || 0;
 
-    return `
-    <tr>
+    return `<tr>
       <td><strong>${ev.titre}</strong></td>
-      <td>${dateStr}</td>
+      <td>${ev.date_debut ? new Date(ev.date_debut).toLocaleString('fr-FR') : '—'}</td>
       <td>${ev.lieu || '—'}</td>
       <td>${ev.type || '—'}</td>
-      <td>${placesDispo}/${placesTot}</td>
+      <td>${placesDispo}/${ev.places_totales || 0}</td>
       <td>
         <button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${safeTitre}')">👁 Inscrits</button> 
         <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏ Modif</button> 
