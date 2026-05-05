@@ -1749,7 +1749,12 @@ async function loadMessages() {
         </div>
       </div>`;
   }).join('');
-
+  
+  } catch(e) { 
+    console.error(e); 
+  }
+}
+  
 async function checkNouveauxMessages() {
   if (!state.user) return;
   const { data } = await sb.from('messages').select('id').eq('user_id', state.user.id).eq('lu_joueur', false).eq('auteur', 'orga');
