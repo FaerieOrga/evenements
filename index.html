@@ -663,12 +663,23 @@ input:-webkit-autofill:focus {
   .home-layout { grid-template-columns: 1fr; } 
 }
 
-  /* Style pour la petite bulle d'info au survol */
-.slots-info {
-  cursor: help;
-  position: relative;
-  display: inline-block;
-  border-bottom: 1px dotted var(--ink-light); /* Un petit souligné discret pour dire qu'il y a une info */
+/* Style du bouton de places sur l'accueil */
+.slots-info-btn {
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  color: var(--ink-light);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.slots-info-btn:hover {
+  background: #e2e8f0;
+  color: var(--ink);
+  border-color: #cbd5e1;
 }
   
   /* Fond bleu-gris light pour la zone des dates */
@@ -1407,7 +1418,9 @@ function renderPublicEvents(list) {
       <div class="event-card-footer">
         <div class="jauge-wrap">
           <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
-          <span class="jauge-text slots-info" title="${bulle}">${placesDispo} / ${placesTot}</span>
+          <button class="slots-info-btn" onclick="voirParticipantsPublic('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">
+  ${placesDispo} / ${placesTot}
+</button>
           ${complet && !inscrit && !enAttente && !interesse ? '<span class="badge-attente">COMPLET</span>' : ''}
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${btnHtml}</div>
@@ -1638,7 +1651,9 @@ async function loadMesInscriptions() {
         <div class="event-card-footer">
           <div class="jauge-wrap">
             <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
-            <span class="jauge-text slots-info" title="${bulle}">${placesDispo} / ${placesTot}</span>
+            <button class="slots-info-btn" onclick="voirParticipantsPublic('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">
+  ${placesDispo} / ${placesTot}
+</button>
             ${complet && !inscrit && !enAttente ? '<span class="badge-attente">COMPLET</span>' : ''}
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
