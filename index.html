@@ -1024,9 +1024,20 @@ input:-webkit-autofill:focus {
   
   
 <div id="orga-tab-missives" style="display:none">
+        <div class="orga-toolbar">
+          <button class="btn btn-sm" style="background:#58abbc" onclick="ouvrirModaleMissive()">📜 Nouvelle Missive</button>
+        </div>
         <table class="orga-table">
-           </table>
-      </div> <div id="orga-tab-profils" style="display:none">
+          <thead>
+            <tr><th>Date</th><th>Titre</th><th>Auteur</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="orga-missives-body">
+            <tr><td colspan="4" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement des parchemins…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="orga-tab-profils" style="display:none">
         <div class="orga-toolbar">
           <h2 style="font-family:'Cinzel',serif; font-size:1.1rem; color:var(--ink);">👥 Liste des Aventuriers</h2>
           <input type="text" id="profils-search" placeholder="Rechercher un nom ou email..." style="max-width:250px; margin-left:auto" oninput="filterProfils(this.value)">
@@ -1047,10 +1058,9 @@ input:-webkit-autofill:focus {
       </div>
       </div> 
     </div> 
-  </div>
-</div>
-
-<div class="modal-overlay" id="modal-auth">
+  </div> 
+    
+    <div class="modal-overlay" id="modal-auth">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('modal-auth')">✕</button>
     <div class="modal-title" id="modal-auth-titre">Rejoindre Faérie</div>
@@ -2092,6 +2102,35 @@ async function voirParticipantsPublic(eventId, titre) {
     document.getElementById('liste-participants-content').innerHTML = "<div class='msg-error' style='display:block'>Impossible de lire les parchemins.</div>";
   }
 }
+
+  async function voirParticipants(eventId, titre) {
+  const titleEl = document.getElementById('view-event-titre');
+  const contentEl = document.getElementById('liste-participants-content');
+  titleEl.textContent = titre;
+  contentEl.innerHTML = 'Chargement...';
+  openModal('modal-liste-participants');
+
+  try {
+    const { data: inscr } = await sb.from('inscriptions').select('user_id').eq('event_id', eventId);
+    const { data: profils } = await sb.from('profils').select('id, prenom, nom');
+    const annuaire = {};
+    if (profils) profils.forEach(p => annuaire[p.id] = `${p.prenom} ${p.nom}`);
+
+    let html = '<ul style="list-style:none; padding:0;">';
+    if (inscr && inscr.length > 0) {
+      html += inscr.map(i => {
+        const nom = annuaire[i.user_id] || 'Aventurier';
+        return `<li style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; margin-bottom:8px;">
+          <span>👤 ${nom}</span>
+          <button class="btn btn-sm btn-danger" onclick="retirerParticipant('${eventId}','${i.user_id}','inscriptions','${titre.replace(/'/g,"\\'")}')">✕</button>
+        </li>`;
+      }).join('');
+    } else {
+      html += '<li style="text-align:center; padding:20px; font-style:italic;">Aucun inscrit.</li>';
+    }
+    contentEl.innerHTML = html + '</ul>';
+  } catch (e) { contentEl.innerHTML = "Erreur."; }
+}
   
 function filterOrgaEvents(q) { renderOrgaTable(state.orgaEvents.filter(ev => (ev.titre + (ev.lieu||'') + (ev.type||'')).toLowerCase().includes(q.toLowerCase()))); }
 function openModalCreateEvent() {
@@ -2217,30 +2256,22 @@ async function openChatPublic() {
 
 async function loadChatPublic() {
   const fil = document.getElementById('chat-public-fil');
-  
-  // On récupère les 50 derniers messages de la table
-  const { data, error } = await sb.from('chat_public')
-    .select('*')
-    .order('created_at', { ascending: true })
-    .limit(50);
+  const { data, error } = await sb.from('chat_public').select('*').order('created_at', { ascending: true }).limit(50);
   
   if (error) { 
-    fil.innerHTML = '<div class="msg-error" style="display:block">Erreur de connexion aux archives de la Taverne.</div>'; 
-    return; 
+    fil.innerHTML = '<div class="msg-error" style="display:block">Erreur de connexion à la Taverne.</div>'; 
+    return;
   }
   
   if (!data || data.length === 0) { 
-    fil.innerHTML = '<div class="empty-state" style="margin-top: 100px;">La Taverne est bien silencieuse... Soyez le premier à parler !</div>'; 
+    fil.innerHTML = '<div class="empty-state" style="margin-top: 100px;">La Taverne est silencieuse...</div>';
     return; 
   }
 
   fil.innerHTML = data.map(m => {
-    // Vérifier si c'est "mon" message pour l'aligner à droite
     const isMe = state.user && state.user.id === m.user_id;
-    const bubbleClass = isMe ? 'msg-bubble joueur' : 'msg-bubble orga'; // On recycle tes styles CSS existants
+    const bubbleClass = isMe ? 'msg-bubble joueur' : 'msg-bubble orga';
     const alignStyle = isMe ? 'text-align: right;' : 'text-align: left;';
-    
-    // Formatage de la date (Ex: "Aujourd'hui à 14:30" ou "12/04/2026 à 14:30")
     const dateMsg = new Date(m.created_at);
     const dateStr = dateMsg.toLocaleDateString('fr-FR') + ' à ' + dateMsg.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
 
@@ -2250,24 +2281,17 @@ async function loadChatPublic() {
           ${m.prenom} <span style="font-weight: normal; color: var(--ink-light); font-size: 0.6rem;">- ${dateStr}</span>
         </div>
         <div class="${bubbleClass}" style="display: inline-block; text-align: left; margin-top: 2px;">
-          ${m.message
-  .replace(/</g, "&lt;").replace(/>/g, "&gt;") // Sécurité pour empêcher les piratages
-  .replace(/\n/g, '<br>')                      // Active les sauts de ligne
-  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Transforme **texte** en gras
-  .replace(/\*(.*?)\*/g, '<em>$1</em>')             // Transforme *texte* en italique
-  .replace(/__(.*?)__/g, '<u>$1</u>')               // Transforme __texte__ en souligné
-  .replace(/~~(.*?)~~/g, '<del>$1</del>')           // Transforme ~~texte~~ en barré
-            
-}
+          ${m.message.replace(/</g, "<").replace(/>/g, ">").replace(/\n/g, '<br>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/__(.*?)__/g, '<u>$1</u>')
+            .replace(/~~(.*?)~~/g, '<del>$1</del>')}
         </div>
-      </div>
-    `;
+      </div>`;
   }).join('');
   
-  // Scroller automatiquement tout en bas pour voir le dernier message
   fil.scrollTop = fil.scrollHeight;
 }
-
 async function verifierNouveauxMessagesTaverne() {
   // On récupère la date de la dernière visite enregistrée sur cet ordinateur/téléphone
   const derniereVisite = localStorage.getItem('faerie_chat_derniere_visite');
