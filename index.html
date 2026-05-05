@@ -2114,11 +2114,13 @@ async function voirParticipantsPublic(eventId, titre) {
 }
 
   async function voirParticipants(eventId, titre) {
-    console.log("Bouton cliqué pour :", titre);
   const titleEl = document.getElementById('view-event-titre');
   const contentEl = document.getElementById('liste-participants-content');
+  
+  if (!titleEl || !contentEl) return;
+
   titleEl.textContent = titre;
-  contentEl.innerHTML = 'Chargement...';
+  contentEl.innerHTML = '<div class="empty-state">Chargement...</div>';
   openModal('modal-liste-participants');
 
   try {
@@ -2131,17 +2133,22 @@ async function voirParticipantsPublic(eventId, titre) {
     if (inscr && inscr.length > 0) {
       html += inscr.map(i => {
         const nom = annuaire[i.user_id] || 'Aventurier';
+        const safeTitre = titre.replace(/'/g, "\\'").replace(/"/g, "&quot;");
         return `<li style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; margin-bottom:8px;">
           <span>👤 ${nom}</span>
-          <button class="btn btn-sm btn-danger" onclick="retirerParticipant('${eventId}','${i.user_id}','inscriptions','${titre.replace(/'/g,"\\'")}')">✕</button>
+          <button class="btn btn-sm btn-danger" onclick="retirerParticipant('${eventId}','${i.user_id}','inscriptions','${safeTitre}')">✕</button>
         </li>`;
       }).join('');
+      html += '</ul>';
     } else {
-      html += '<li style="text-align:center; padding:20px; font-style:italic;">Aucun inscrit.</li>';
+      html = '<div class="empty-state">Aucun inscrit pour le moment.</div>';
     }
-    contentEl.innerHTML = html + '</ul>';
-  } catch (e) { contentEl.innerHTML = "Erreur."; }
-}
+    contentEl.innerHTML = html;
+  } catch (e) { 
+    console.error("Erreur Orga Liste:", e);
+    contentEl.innerHTML = "Erreur de chargement."; 
+  }
+} 
   
 function filterOrgaEvents(q) { renderOrgaTable(state.orgaEvents.filter(ev => (ev.titre + (ev.lieu||'') + (ev.type||'')).toLowerCase().includes(q.toLowerCase()))); }
 function openModalCreateEvent() {
