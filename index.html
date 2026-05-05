@@ -886,6 +886,11 @@ input:-webkit-autofill:focus {
   <div class="messages-fil" id="messages-fil">
     <div class="empty-state">Chargement…</div>
   </div>
+
+        <div class="msg-input-zone">
+    <textarea id="msg-nouveau" placeholder="Écrivez votre message à l'orga…"></textarea>
+    <button class="btn btn-sm" onclick="envoyerMessage()">Envoyer</button>
+  </div>
   
   <div class="toolbar-messagerie" style="display: flex; flex-wrap: wrap; gap: 5px; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid var(--border); margin-bottom: 5px;">
    <button class="btn-ghost" type="button" onclick="insertFormatMessagerie('**', 'msg-nouveau')">B</button>
@@ -918,11 +923,6 @@ input:-webkit-autofill:focus {
 <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😎')">😎</button>
 <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😤')">😤</button>
 <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🫡')">🫡</button>
-  </div>
-
-  <div class="msg-input-zone">
-    <textarea id="msg-nouveau" placeholder="Écrivez votre message à l'orga…"></textarea>
-    <button class="btn btn-sm" onclick="envoyerMessage()">Envoyer</button>
   </div>
   <div class="msg-error" id="err-msg"></div>
 </div>
@@ -973,6 +973,10 @@ input:-webkit-autofill:focus {
           <div class="empty-state">Sélectionnez un joueur pour voir la conversation.</div>
         </div>
         <div class="msg-input-zone" id="orga-reply-zone" style="display:none; flex-direction: column; gap: 8px;">
+          <div style="display: flex; gap: 10px; width: 100%; align-items: flex-end;">
+    <textarea id="orga-msg-nouveau" placeholder="Réponse à ce joueur..." style="min-height: 60px; flex: 1;"></textarea>
+    <button class="btn btn-sm" onclick="envoyerMessageOrga()" style="height: 100%;">Répondre</button>
+  </div>
   <div class="toolbar-messagerie" style="display: flex; flex-wrap: wrap; gap: 5px; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid var(--border); width: 100%;">
     <button class="btn-ghost" type="button" onclick="insertFormatMessagerie('**', 'msg-nouveau')">B</button>
 <button class="btn-ghost" type="button" onclick="insertFormatMessagerie('*', 'msg-nouveau')">I</button>
@@ -1006,10 +1010,7 @@ input:-webkit-autofill:focus {
 <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🫡')">🫡</button>
   </div>
   
-  <div style="display: flex; gap: 10px; width: 100%; align-items: flex-end;">
-    <textarea id="orga-msg-nouveau" placeholder="Réponse à ce joueur..." style="min-height: 60px; flex: 1;"></textarea>
-    <button class="btn btn-sm" onclick="envoyerMessageOrga()" style="height: 100%;">Répondre</button>
-  </div>
+  
 </div>
         <div class="msg-error" id="err-orga-msg"></div>
       </div> <div id="orga-tab-missives" style="display:none">
