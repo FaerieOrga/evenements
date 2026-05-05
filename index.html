@@ -1913,18 +1913,56 @@ function showOrgaTab(tab, btn) {
 // ════════════════════════════════════════════════════
 async function loadOrgaEvents() {
   const tbody = document.getElementById('orga-events-body');
-  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Chargement…</td></tr>';
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement…</td></tr>';
+  
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const { data, error } = await sb.from('evenements').select('*').gte('date_debut', today.toISOString()).order('date_debut', { ascending: true, nullsFirst: false });
-  if (error) { tbody.innerHTML = `<tr><td colspan="6">Erreur</td></tr>`; return; }
-  state.orgaEvents = data || []; renderOrgaTable(state.orgaEvents);
-}
 
+  try {
+    // On récupère les événements ET les inscriptions pour compter en temps réel
+    const [eventsRes, inscrRes] = await Promise.all([
+      sb.from('evenements').select('*').gte('date_debut', today.toISOString()).order('date_debut', { ascending: true, nullsFirst: false }),
+      sb.from('inscriptions').select('event_id')
+    ]);
+
+    if (eventsRes.error) throw eventsRes.error;
+
+    const allInscriptions = inscrRes.data || [];
+    
+    // On calcule les places comme sur la page publique
+    state.orgaEvents = (eventsRes.data || []).map(ev => {
+      const occupes = allInscriptions.filter(i => i.event_id === ev.id).length;
+      ev.places_reelles_dispo = ev.places_totales - occupes;
+      return ev;
+    });
+
+    renderOrgaTable(state.orgaEvents);
+  } catch (e) {
+    console.error("Erreur Orga Events:", e);
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--red-blood);">Erreur de chargement des données.</td></tr>`;
+  }
+}
+  
 function renderOrgaTable(list) {
   const tbody = document.getElementById('orga-events-body');
-  if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Aucun événement.</td></tr>'; return; }
-  tbody.innerHTML = list.map(ev => `<tr><td><strong>${ev.titre}</strong></td><td>${ev.date_debut ? new Date(ev.date_debut).toLocaleString('fr-FR') : '—'}</td><td>${ev.lieu || '—'}</td><td>${ev.type || '—'}</td><td>${ev.places_disponibles}/${ev.places_totales}</td><td><button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${ev.titre.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">👁 Inscrits</button> <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏ Modif</button> <button class="btn btn-sm btn-danger" style="padding: 6px 10px; font-size: 0.7rem;" onclick="supprimerEvent('${ev.id}')">🗑 Supprimer</button></td></tr>`).join('');
+  if (!list.length) { 
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Aucun événement à venir.</td></tr>'; 
+    return; 
+  }
+  tbody.innerHTML = list.map(ev => `
+    <tr>
+      <td><strong>${ev.titre}</strong></td>
+      <td>${ev.date_debut ? new Date(ev.date_debut).toLocaleString('fr-FR') : '—'}</td>
+      <td>${ev.lieu || '—'}</td>
+      <td>${ev.type || '—'}</td>
+      <td>${ev.places_reelles_dispo}/${ev.places_totales}</td>
+      <td>
+        <button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">👁 Inscrits</button> 
+        <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏ Modif</button> 
+        <button class="btn btn-sm btn-danger" style="padding: 6px 10px; font-size: 0.7rem;" onclick="supprimerEvent('${ev.id}')">🗑 Supprimer</button>
+      </td>
+    </tr>`).join('');
 }
 
 async function retirerParticipant(eventId, userId, table, titre) {
