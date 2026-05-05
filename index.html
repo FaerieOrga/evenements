@@ -1426,7 +1426,7 @@ function renderPublicEvents(list) {
       <div class="event-card-footer">
         <div class="jauge-wrap">
           <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
-          <button class="slots-info-btn" onclick="voirParticipantsPublic('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">
+          <button type="button" class="slots-info-btn" onclick="voirParticipantsPublic('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">
   ${placesDispo} / ${placesTot}
 </button>
           ${complet && !inscrit && !enAttente && !interesse ? '<span class="badge-attente">COMPLET</span>' : ''}
@@ -1659,7 +1659,7 @@ async function loadMesInscriptions() {
         <div class="event-card-footer">
           <div class="jauge-wrap">
             <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
-            <button class="slots-info-btn" onclick="voirParticipantsPublic('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">
+            <button type="button" class="slots-info-btn" onclick="voirParticipantsPublic('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">
   ${placesDispo} / ${placesTot}
 </button>
             ${complet && !inscrit && !enAttente ? '<span class="badge-attente">COMPLET</span>' : ''}
@@ -2047,54 +2047,59 @@ async function supprimerEvent(eventId) {
   }
 }
   
-async function voirParticipants(eventId, titre) {
-  document.getElementById('view-event-titre').textContent = titre; 
-  const content = document.getElementById('liste-participants-content'); 
-  content.innerHTML = 'Chargement...'; 
-  openModal('modal-liste-participants');
+async function voirParticipantsPublic(eventId, titre) {
   try {
-    const { data: inscr } = await sb.from('inscriptions').select('user_id').eq('event_id', eventId);
-    const { data: attente } = await sb.from('liste_attente').select('user_id').eq('event_id', eventId);
-    const { data: interData } = await sb.from('interesses').select('user_id').eq('event_id', eventId);
-
-    const { data: profils } = await sb.from('profils').select('id, prenom, nom');
-    const annuaire = {}; 
-    if (profils) profils.forEach(p => annuaire[p.id] = `${p.prenom} ${p.nom}`);
+    // 1. On prépare la modale 
+    const titleEl = document.getElementById('view-event-titre');
+    const contentEl = document.getElementById('liste-participants-content');
     
-    let html = '<h3 style="margin-bottom:10px;">⚔ Inscrits officiels</h3><ul style="list-style:none; padding:0; margin-bottom:20px;">';
-    html += (inscr && inscr.length > 0) ?
-    inscr.map(i => {
-      const nom = annuaire[i.user_id] || `Joueur Inconnu (${i.user_id.substring(0,5)})`;
-      return `<li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:6px; background:#f8fafc; border-radius:4px; border:1px solid #e2e8f0;">
-                <span>👤 ${nom}</span>
-                <button class="btn-ghost" style="padding:2px 8px; color:var(--red-blood); border-color:var(--red-blood);" onclick="retirerParticipant('${eventId}', '${i.user_id}', 'inscriptions', '${titre.replace(/'/g,"\\'")}')">✕</button>
-              </li>`;
-    }).join('') : '<li style="padding:6px;">Personne</li>';
+    if (!titleEl || !contentEl) {
+        console.error("Éléments de la modale introuvables !");
+        return;
+    }
+
+    titleEl.textContent = titre; 
+    contentEl.innerHTML = '<div class="empty-state">Chargement des aventuriers...</div>'; 
     
-    html += '</ul><h3 style="margin-bottom:10px;">⏳ Liste d\'attente</h3><ul style="list-style:none; padding:0; margin-bottom:20px;">';
-    html += (attente && attente.length > 0) ?
-    attente.map(a => {
-      const nom = annuaire[a.user_id] || `Joueur Inconnu (${a.user_id.substring(0,5)})`;
-      return `<li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:6px; background:#f8fafc; border-radius:4px; border:1px solid #e2e8f0;">
-                <span>👤 ${nom}</span>
-                <button class="btn-ghost" style="padding:2px 8px; color:var(--red-blood); border-color:var(--red-blood);" onclick="retirerParticipant('${eventId}', '${a.user_id}', 'liste_attente', '${titre.replace(/'/g,"\\'")}')">✕</button>
-              </li>`;
-    }).join('') : '<li style="padding:6px;">Vide</li>';
+    // 2. On affiche la modale [cite: 369, 448]
+    openModal('modal-liste-participants'); 
 
-    html += '</ul><h3 style="margin-bottom:10px;">👀 Intéressé·e·s</h3><ul style="list-style:none; padding:0;">';
-    html += (interData && interData.length > 0) ?
-    interData.map(i => {
-      const nom = annuaire[i.user_id] || `Joueur Inconnu (${i.user_id.substring(0,5)})`;
-      return `<li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:6px; background:#f8fafc; border-radius:4px; border:1px solid #e2e8f0;">
-                <span>👀 ${nom}</span>
-                <button class="btn-ghost" style="padding:2px 8px; color:var(--red-blood); border-color:var(--red-blood);" onclick="retirerParticipant('${eventId}', '${i.user_id}', 'interesses', '${titre.replace(/'/g,"\\'")}')">✕</button>
-              </li>`;
-    }).join('') : '<li style="padding:6px;">Personne</li>';
+    // 3. On récupère les données [cite: 201, 268]
+    const [inscrRes, profilsRes] = await Promise.all([
+      sb.from('inscriptions').select('user_id').eq('event_id', eventId),
+      sb.from('profils').select('id, prenom, nom')
+    ]);
 
-    content.innerHTML = html + '</ul>';
-  } catch (e) { content.innerHTML = "Erreur : " + e.message; }
+    if (inscrRes.error) throw inscrRes.error;
+
+    const inscr = inscrRes.data || [];
+    const profils = profilsRes.data || [];
+    
+    const annuaire = {};
+    profils.forEach(p => {
+        annuaire[p.id] = (p.prenom || p.nom) ? `${p.prenom} ${p.nom}`.trim() : "Aventurier anonyme";
+    }); [cite: 214, 269]
+    
+    // 4. On génère le HTML [cite: 374]
+    let html = '<h3 style="margin-bottom:12px; font-family:\'Cinzel\', serif; font-size:1rem; border-bottom:1px solid #eee; padding-bottom:8px;">⚔ Aventuriers inscrits</h3>';
+    html += '<ul style="list-style:none; padding:0; margin:0;">';
+    
+    if (inscr.length > 0) {
+      html += inscr.map(i => {
+        const nom = annuaire[i.user_id] || `Aventurier`;
+        return `<li style="padding:10px; background:#f8fafc; border-radius:4px; border:1px solid #e2e8f0; margin-bottom:8px; font-family:'Crimson Text', serif;">👤 ${nom}</li>`;
+      }).join(''); [cite: 374]
+    } else {
+      html += '<li style="font-style:italic; color:var(--ink-light); padding:20px; text-align:center;">Aucun inscrit pour le moment.</li>';
+    }
+    
+    contentEl.innerHTML = html + '</ul>';
+  } catch (e) {
+    console.error("Erreur liste publique :", e);
+    document.getElementById('liste-participants-content').innerHTML = "<div class='msg-error' style='display:block'>Impossible de lire les parchemins des inscrits.</div>"; [cite: 36, 403]
+  }
 }
-
+  
 function filterOrgaEvents(q) { renderOrgaTable(state.orgaEvents.filter(ev => (ev.titre + (ev.lieu||'') + (ev.type||'')).toLowerCase().includes(q.toLowerCase()))); }
 function openModalCreateEvent() {
   document.getElementById('modal-event-title').textContent = '+ Nouvel événement';
