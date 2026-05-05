@@ -1579,20 +1579,38 @@ async function loadMesInscriptions() {
     }
 
     const { data: evs } = await sb.from('evenements').select('*').in('id', allIds).order('date_debut', { ascending: true });
+    const { data: allInscriptions } = await sb.from('inscriptions').select('event_id, user_id');
+    const { data: profils } = await sb.from('profils').select('id, prenom, nom');
+
+    const annuaire = {};
+    (profils || []).forEach(p => {
+      annuaire[p.id] = (p.prenom && p.nom) ? `${p.prenom} ${p.nom}` : (p.prenom || 'Aventurier');
+    });
+
     grid.innerHTML = (evs || []).map(ev => {
-      const debut = ev.date_debut ? formatDatetime(ev.date_debut) : '—';
-      const enAttente = state.maListeAttente.includes(ev.id);
-      const interesse = state.mesInteresses.includes(ev.id);
+      const occupes = (allInscriptions || []).filter(i => i.event_id === ev.id).length;
+      const placesDispo = ev.places_totales - occupes;
+      const placesTot   = ev.places_totales || 0;
+      const pct         = placesTot > 0 ? Math.round((1 - placesDispo / placesTot) * 100) : 100;
+      const complet     = placesDispo <= 0;
+      const enAttente   = state.maListeAttente.includes(ev.id);
+      const interesse   = state.mesInteresses.includes(ev.id);
+      const inscrit     = state.mesInscriptions.includes(ev.id);
+      const debut       = ev.date_debut ? formatDatetime(ev.date_debut) : '—';
+      const fin         = ev.date_fin ? formatDatetime(ev.date_fin) : null;
+
+      const inscritsIci = (allInscriptions || []).filter(i => i.event_id === ev.id);
+      const noms = inscritsIci.map(i => annuaire[i.user_id] || 'Joueur Inconnu').join(', ');
+      const bulle = noms ? 'Inscrits : ' + noms : 'Aucun inscrit';
 
       let badge = '';
       let actionBtn = '';
-
       if (interesse) {
         badge = '<span class="badge-interesse">👀 Intéressé·e</span>';
-        actionBtn = `<button class="btn btn-sm" onclick="confirmerDepuisInteret('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${ev.places_reelles_dispo ?? ev.places_disponibles})">Confirmer mon inscription</button>`;
+        actionBtn = `<button class="btn btn-sm" onclick="confirmerDepuisInteret('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${placesDispo})">Confirmer mon inscription</button>`;
       } else if (enAttente) {
         badge = '<span class="badge-attente">⏳ Liste d\'attente</span>';
-        if (ev.places_disponibles > 0) {
+        if (placesDispo > 0) {
           actionBtn = `<button class="btn btn-sm" onclick="confirmerDepuisAttente('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">S'inscrire maintenant</button>`;
         }
       } else {
@@ -1601,17 +1619,36 @@ async function loadMesInscriptions() {
 
       return `
       <div class="event-card">
-        <div class="event-card-header"><div class="event-card-titre">${ev.titre}</div></div>
-        <div class="event-card-body"><div class="event-info-item"><span class="event-info-label">Début</span><span class="event-info-val">📅 ${debut}</span></div></div>
+        <div class="event-card-header">
+          <div class="event-card-titre">${ev.titre}</div>
+          <div class="event-card-type">${ev.type || '—'}</div>
+        </div>
+        <div class="event-card-body">
+          <div class="event-info-item"><span class="event-info-label">Début</span><span class="event-info-val">${debut}</span></div>
+          ${fin ? `<div class="event-info-item"><span class="event-info-label">Fin</span><span class="event-info-val">${fin}</span></div>` : '<div></div>'}
+          <div class="event-info-item">
+            <span class="event-info-label">Lieu</span>
+            <span class="event-info-val">📍 ${ev.lieu || '—'}</span>
+            ${ev.lien_maps ? `<a href="${ev.lien_maps}" target="_blank" style="display:inline-block;margin-top:4px;font-family:'Cinzel',serif;font-size:0.7rem;color:var(--ink-light);text-decoration:none;border:1px solid var(--border);padding:2px 8px;border-radius:3px;background:#f8fafc;">🗺️ Ouvrir la carte</a>` : ''}
+          </div>
+          <div class="event-info-item"><span class="event-info-label">Organisateurs</span><span class="event-info-val">${ev.organisateurs || '—'}</span></div>
+        </div>
+        ${ev.description ? `<div class="event-description">${ev.description}</div>` : ''}
         <div class="event-card-footer">
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${badge}${actionBtn}</div>
-          <button class="btn-ghost btn-sm" onclick="seDesinscrire('${ev.id}')">Se désinscrire</button>
+          <div class="jauge-wrap">
+            <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
+            <span class="jauge-text slots-info" title="${bulle}">${placesDispo} / ${placesTot}</span>
+            ${complet && !inscrit && !enAttente ? '<span class="badge-attente">COMPLET</span>' : ''}
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+            ${badge}${actionBtn}
+            <button class="btn-ghost btn-sm" onclick="seDesinscrire('${ev.id}')">Se désinscrire</button>
+          </div>
         </div>
       </div>`;
     }).join('');
   } catch (e) { console.error(e); }
 }
-
 async function confirmerDepuisInteret(eventId, titre, placesDispo) {
   try {
     await sb.from('interesses').delete().eq('event_id', eventId).eq('user_id', state.user.id);
