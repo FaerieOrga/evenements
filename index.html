@@ -742,31 +742,25 @@ input:-webkit-autofill:focus {
 }
 
 .scroll-nav button {
-  background: transparent; /* Remplacé : fond transparent au lieu de blanc */
-  border: none;            /* Remplacé : plus de bordure */
-  box-shadow: none;        /* Remplacé : plus d'ombre */
-  color: #1e293b;
-  width: 42px;
-  height: 42px;
+  background: #58abbc;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 1.5rem;       /* J'ai un peu grossi l'émoji pour compenser la perte du cercle */
+  font-size: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 .scroll-nav button:hover {
-  background: transparent; /* Reste transparent au survol */
-  transform: translateY(-3px) scale(1.15); /* Petit effet de rebond au survol */
-  box-shadow: none;
-}
-.scroll-nav button:hover {
-  background: #58abbc; /* Votre bleu thématique */
-  color: white;
-  border-color: #58abbc;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(88, 171, 188, 0.4);
+  background: #468e9d;
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.4);
 }
 
 @media (max-width: 600px) {
@@ -1406,7 +1400,7 @@ function renderPublicEvents(list) {
       <div class="event-card-footer">
         <div class="jauge-wrap">
           <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
-          <span class="jauge-text slots-info" title="${bulle}">${placesDispo} / ${placesTot}</span>
+          <button type="button" class="slots-info-btn" onclick="voirParticipantsPublic('${ev.id}', '${ev.titre.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">${placesDispo} / ${placesTot}</button>
           ${complet && !inscrit && !enAttente && !interesse ? '<span class="badge-attente">COMPLET</span>' : ''}
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${btnHtml}</div>
@@ -1637,7 +1631,7 @@ async function loadMesInscriptions() {
         <div class="event-card-footer">
           <div class="jauge-wrap">
             <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
-            <span class="jauge-text slots-info" title="${bulle}">${placesDispo} / ${placesTot}</span>
+            <<button type="button" class="slots-info-btn" onclick="voirParticipantsPublic('${ev.id}', '${ev.titre.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">${placesDispo} / ${placesTot}</button>
             ${complet && !inscrit && !enAttente ? '<span class="badge-attente">COMPLET</span>' : ''}
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
@@ -1930,7 +1924,7 @@ async function loadOrgaEvents() {
 function renderOrgaTable(list) {
   const tbody = document.getElementById('orga-events-body');
   if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Aucun événement.</td></tr>'; return; }
-  tbody.innerHTML = list.map(ev => `<tr><td><strong>${ev.titre}</strong></td><td>${ev.date_debut ? new Date(ev.date_debut).toLocaleString('fr-FR') : '—'}</td><td>${ev.lieu || '—'}</td><td>${ev.type || '—'}</td><td>${ev.places_disponibles}/${ev.places_totales}</td><td><button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">👁 Inscrits</button> <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏ Modif</button> <button class="btn btn-sm btn-danger" style="padding: 6px 10px; font-size: 0.7rem;" onclick="supprimerEvent('${ev.id}')">🗑 Supprimer</button></td></tr>`).join('');
+  tbody.innerHTML = list.map(ev => `<tr><td><strong>${ev.titre}</strong></td><td>${ev.date_debut ? new Date(ev.date_debut).toLocaleString('fr-FR') : '—'}</td><td>${ev.lieu || '—'}</td><td>${ev.type || '—'}</td><td>${ev.places_disponibles}/${ev.places_totales}</td><td><button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${ev.titre.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">👁 Inscrits</button> <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏ Modif</button> <button class="btn btn-sm btn-danger" style="padding: 6px 10px; font-size: 0.7rem;" onclick="supprimerEvent('${ev.id}')">🗑 Supprimer</button></td></tr>`).join('');
 }
 
 async function retirerParticipant(eventId, userId, table, titre) {
@@ -1979,6 +1973,31 @@ async function supprimerEvent(eventId) {
   } catch (e) {
     showToast('❌ Erreur : ' + e.message);
   }
+}
+
+async function voirParticipantsPublic(eventId, titre) {
+  const content = document.getElementById('liste-participants-content');
+  document.getElementById('view-event-titre').textContent = titre;
+  content.innerHTML = '<div class="empty-state">Chargement...</div>';
+  openModal('modal-liste-participants');
+
+  try {
+    const { data: inscr } = await sb.from('inscriptions').select('user_id').eq('event_id', eventId);
+    const { data: profils } = await sb.from('profils').select('id, prenom, nom');
+    const annuaire = {};
+    if (profils) profils.forEach(p => annuaire[p.id] = `${p.prenom} ${p.nom}`);
+
+    let html = '<ul style="list-style:none; padding:0;">';
+    if (inscr && inscr.length > 0) {
+      html += inscr.map(i => {
+        const nom = annuaire[i.user_id] || 'Aventurier';
+        return `<li style="padding:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; margin-bottom:8px;">👤 ${nom}</li>`;
+      }).join('');
+    } else {
+      html += '<li style="text-align:center; padding:20px; font-style:italic; color:var(--ink-light);">Aucun inscrit.</li>';
+    }
+    content.innerHTML = html + '</ul>';
+  } catch (e) { content.innerHTML = "Erreur de chargement."; }
 }
   
 async function voirParticipants(eventId, titre) {
