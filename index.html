@@ -159,14 +159,14 @@ input:-webkit-autofill:focus {
   color: var(--ink-light);
   padding: 9px 16px;        /* On passe à 9px pour correspondre aux inputs  */
   font-family: 'Cinzel', serif;
-  font-size: 0.75rem;       /* On augmente un peu la taille (au lieu de 0.55rem [cite: 29]) */
+  font-size: 0.75rem;       /* On augmente un peu la taille (au lieu de 0.55rem ) */
   letter-spacing: 1.5px;
   cursor: pointer;
   border-radius: 4px;
   transition: all 0.3s ease;
   text-transform: uppercase;
   height: 40px;             /* Force une hauteur fixe identique pour tous les éléments */
-  box-sizing: border-box;   /* Garantit que la bordure ne dépasse pas la hauteur [cite: 5] */
+  box-sizing: border-box;   /* Garantit que la bordure ne dépasse pas la hauteur  */
 }
 
 .btn-ghost:hover { 
@@ -1700,12 +1700,12 @@ async function confirmerDepuisAttente(eventId, titre) {
   function formatMessageText(rawText) {
   if (!rawText) return '';
   return rawText
-    .replace(/</g, "&lt;").replace(/>/g, "&gt;") // Sécurité contre l'injection de code [cite: 357]
-    .replace(/\n/g, '<br>')                      // Transformation des sauts de ligne [cite: 357]
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Gras [cite: 358]
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')             // Italique [cite: 358]
-    .replace(/__(.*?)__/g, '<u>$1</u>')               // Souligné [cite: 358]
-    .replace(/~~(.*?)~~/g, '<del>$1</del>');          // Barré [cite: 358]
+    .replace(/</g, "&lt;").replace(/>/g, "&gt;") // Sécurité contre l'injection de code 
+    .replace(/\n/g, '<br>')                      // Transformation des sauts de ligne 
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Gras 
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')             // Italique
+    .replace(/__(.*?)__/g, '<u>$1</u>')               // Souligné 
+    .replace(/~~(.*?)~~/g, '<del>$1</del>');          // Barré 
 }
 
 // ════════════════════════════════════════════════════
@@ -2049,22 +2049,16 @@ async function supprimerEvent(eventId) {
   
 async function voirParticipantsPublic(eventId, titre) {
   try {
-    // 1. On prépare la modale 
     const titleEl = document.getElementById('view-event-titre');
     const contentEl = document.getElementById('liste-participants-content');
     
-    if (!titleEl || !contentEl) {
-        console.error("Éléments de la modale introuvables !");
-        return;
-    }
+    if (!titleEl || !contentEl) return;
 
     titleEl.textContent = titre; 
-    contentEl.innerHTML = '<div class="empty-state">Chargement des aventuriers...</div>'; 
+    contentEl.innerHTML = '<div class="empty-state">Chargement des aventuriers...</div>';
     
-    // 2. On affiche la modale [cite: 369, 448]
-    openModal('modal-liste-participants'); 
+    openModal('modal-liste-participants');
 
-    // 3. On récupère les données [cite: 201, 268]
     const [inscrRes, profilsRes] = await Promise.all([
       sb.from('inscriptions').select('user_id').eq('event_id', eventId),
       sb.from('profils').select('id, prenom, nom')
@@ -2074,13 +2068,12 @@ async function voirParticipantsPublic(eventId, titre) {
 
     const inscr = inscrRes.data || [];
     const profils = profilsRes.data || [];
-    
     const annuaire = {};
+    
     profils.forEach(p => {
         annuaire[p.id] = (p.prenom || p.nom) ? `${p.prenom} ${p.nom}`.trim() : "Aventurier anonyme";
-    }); [cite: 214, 269]
+    });
     
-    // 4. On génère le HTML [cite: 374]
     let html = '<h3 style="margin-bottom:12px; font-family:\'Cinzel\', serif; font-size:1rem; border-bottom:1px solid #eee; padding-bottom:8px;">⚔ Aventuriers inscrits</h3>';
     html += '<ul style="list-style:none; padding:0; margin:0;">';
     
@@ -2088,7 +2081,7 @@ async function voirParticipantsPublic(eventId, titre) {
       html += inscr.map(i => {
         const nom = annuaire[i.user_id] || `Aventurier`;
         return `<li style="padding:10px; background:#f8fafc; border-radius:4px; border:1px solid #e2e8f0; margin-bottom:8px; font-family:'Crimson Text', serif;">👤 ${nom}</li>`;
-      }).join(''); [cite: 374]
+      }).join('');
     } else {
       html += '<li style="font-style:italic; color:var(--ink-light); padding:20px; text-align:center;">Aucun inscrit pour le moment.</li>';
     }
@@ -2096,7 +2089,7 @@ async function voirParticipantsPublic(eventId, titre) {
     contentEl.innerHTML = html + '</ul>';
   } catch (e) {
     console.error("Erreur liste publique :", e);
-    document.getElementById('liste-participants-content').innerHTML = "<div class='msg-error' style='display:block'>Impossible de lire les parchemins des inscrits.</div>"; [cite: 36, 403]
+    document.getElementById('liste-participants-content').innerHTML = "<div class='msg-error' style='display:block'>Impossible de lire les parchemins.</div>";
   }
 }
   
