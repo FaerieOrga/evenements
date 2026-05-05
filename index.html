@@ -1729,16 +1729,26 @@ async function loadMessages() {
     if (error) throw error;
     if (!data.length) { fil.innerHTML = '<div class="empty-state">Aucun message pour l\'instant.</div>'; return; }
     fil.innerHTML = data.map(m => {
-      const date = new Date(m.created_at).toLocaleString('fr-FR');
-      const side = m.auteur === 'orga' ? 'orga' : 'joueur';
-      const label = m.auteur === 'orga' ? '⚔ Organisateur' : '✦ Vous';
-      return `<div class="msg-bubble ${side}"><div class="msg-bubble-meta">${label} — ${date}</div>${formatMessageText(m.contenu)}</div>`;
-    }).join('');
-    fil.scrollTop = fil.scrollHeight;
-    await sb.from('messages').update({ lu_joueur: true }).eq('user_id', state.user.id).eq('lu_joueur', false);
-    document.getElementById('notif-msg-dot').style.display = 'none';
-  } catch(e) { console.error(e); }
-}
+    const isMe = state.user && state.user.id === m.user_id;
+    const bubbleClass = isMe ? 'msg-bubble joueur' : 'msg-bubble orga';
+    const alignStyle = isMe ? 'text-align: right;' : 'text-align: left;';
+    const dateMsg = new Date(m.created_at);
+    const dateStr = dateMsg.toLocaleDateString('fr-FR') + ' à ' + dateMsg.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+
+    return `
+      <div style="${alignStyle} margin-bottom: 12px;">
+        <div class="msg-bubble-meta" style="font-weight: 600; color: #58abbc;">
+          ${m.prenom} <span style="font-weight: normal; color: var(--ink-light); font-size: 0.6rem;">- ${dateStr}</span>
+        </div>
+        <div class="${bubbleClass}" style="display: inline-block; text-align: left; margin-top: 2px;">
+          ${m.message.replace(/</g, "<").replace(/>/g, ">").replace(/\n/g, '<br>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/__(.*?)__/g, '<u>$1</u>')
+            .replace(/~~(.*?)~~/g, '<del>$1</del>')}
+        </div>
+      </div>`;
+  }).join('');
 
 async function checkNouveauxMessages() {
   if (!state.user) return;
