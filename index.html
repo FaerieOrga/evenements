@@ -2114,6 +2114,7 @@ async function voirParticipantsPublic(eventId, titre) {
 }
 
   async function voirParticipants(eventId, titre) {
+    console.log("Bouton cliqué pour :", titre);
   const titleEl = document.getElementById('view-event-titre');
   const contentEl = document.getElementById('liste-participants-content');
   titleEl.textContent = titre;
