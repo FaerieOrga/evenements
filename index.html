@@ -741,54 +741,48 @@ input:-webkit-autofill:focus {
   align-items: center;
 }
 
-  /* ── BOUTONS DE DÉFILEMENT ── */
+/* ── BOUTONS DE DÉFILEMENT (VISIBLES) ── */
 .scroll-nav {
   position: fixed;
-  bottom: 80px; /* Placé au-dessus du "Toast" de notification */
+  bottom: 40px;
   right: 24px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  z-index: 99;
+  gap: 12px;
+  z-index: 999; /* On les force à passer devant absolument TOUT */
 }
 
 .scroll-nav button {
-  background: transparent; /* Remplacé : fond transparent au lieu de blanc */
-  border: none;            /* Remplacé : plus de bordure */
-  box-shadow: none;        /* Remplacé : plus d'ombre */
-  color: #1e293b;
-  width: 42px;
-  height: 42px;
+  background: #58abbc; /* Ton beau bleu thématique pour le fond */
+  color: white;
+  border: none;
+  border-radius: 50%; /* On en fait de beaux boutons bien ronds */
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 1.5rem;       /* J'ai un peu grossi l'émoji pour compenser la perte du cercle */
+  font-size: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3); /* Une bonne ombre pour les détacher de la page */
 }
 
 .scroll-nav button:hover {
-  background: transparent; /* Reste transparent au survol */
-  transform: translateY(-3px) scale(1.15); /* Petit effet de rebond au survol */
-  box-shadow: none;
-}
-.scroll-nav button:hover {
-  background: #58abbc; /* Votre bleu thématique */
-  color: white;
-  border-color: #58abbc;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(88, 171, 188, 0.4);
+  background: #468e9d; /* Un bleu un peu plus foncé au survol */
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.4);
 }
 
 @media (max-width: 600px) {
   .scroll-nav {
-    bottom: 20px; /* Sur mobile, on peut les baisser un peu */
+    bottom: 20px;
     right: 16px;
   }
   .scroll-nav button {
-    width: 36px;
-    height: 36px;
-    font-size: 0.9rem;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
   }
 }
 </style>
@@ -1950,20 +1944,49 @@ function updateHeaderUserZone() {
   } else { zone.innerHTML = `<button class="btn btn-sm" onclick="openAuthModal()">Se connecter</button>`; }
 }
 function openAuthModal() { document.getElementById('auth-context').style.display = 'none'; document.getElementById('modal-auth-titre').textContent = 'Rejoindre Faérie'; state.pendingEventId = null; switchAuthTab('connexion'); openModal('modal-auth'); }
-function openOrgaLogin() { document.getElementById('orga-pwd').value = ''; hideMsg('err-orga'); openModal('modal-orga-auth'); }
-async function doLoginOrga() { if (document.getElementById('orga-pwd').value !== ORGA_PASSWORD) { showMsg('err-orga', 'Mot de passe incorrect.'); return; } closeModal('modal-orga-auth'); document.getElementById('public-screen').style.display = 'none'; document.getElementById('orga-screen').style.display = 'block'; showOrgaTab('events', document.getElementById('otab-events')); await loadOrgaEvents(); await loadOrgaMessagerie(); }
-function logoutOrga() { document.getElementById('orga-screen').style.display = 'none'; document.getElementById('public-screen').style.display = ''; }
+// ==========================================
+// SECOURS : FONCTIONS DE L'ESPACE ORGA
+// ==========================================
+function openOrgaLogin() { 
+  document.getElementById('orga-pwd').value = ''; 
+  hideMsg('err-orga'); 
+  openModal('modal-orga-auth'); 
+}
+
+async function doLoginOrga() { 
+  if (document.getElementById('orga-pwd').value !== ORGA_PASSWORD) { 
+    showMsg('err-orga', 'Mot de passe incorrect.'); 
+    return; 
+  } 
+  closeModal('modal-orga-auth'); 
+  document.getElementById('public-screen').style.display = 'none'; 
+  document.getElementById('orga-screen').style.display = 'block'; 
+  
+  const tabEvents = document.getElementById('otab-events');
+  if(tabEvents) showOrgaTab('events', tabEvents); 
+  
+  await loadOrgaEvents(); 
+  await loadOrgaMessagerie(); 
+}
+
+function logoutOrga() { 
+  document.getElementById('orga-screen').style.display = 'none'; 
+  document.getElementById('public-screen').style.display = ''; 
+}
+
 function showOrgaTab(tab, btn) { 
   document.querySelectorAll('#orga-screen .joueur-tab-btn').forEach(b => b.classList.remove('active')); 
-  btn.classList.add('active'); 
+  if(btn) btn.classList.add('active'); 
   
   document.getElementById('orga-tab-events').style.display = tab === 'events' ? '' : 'none';
   document.getElementById('orga-tab-messages').style.display = tab === 'messages' ? '' : 'none'; 
   document.getElementById('orga-tab-missives').style.display = tab === 'missives' ? '' : 'none';
-  document.getElementById('orga-tab-profils').style.display = tab === 'profils' ? '' : 'none'; // Ajouté
+  
+  const profilsTab = document.getElementById('orga-tab-profils');
+  if(profilsTab) profilsTab.style.display = tab === 'profils' ? '' : 'none'; 
   
   if (tab === 'missives') loadOrgaMissives();
-  if (tab === 'profils') loadOrgaProfils(); // Ajouté
+  if (tab === 'profils' && typeof loadOrgaProfils === 'function') loadOrgaProfils(); 
 }
   
 // ════════════════════════════════════════════════════
