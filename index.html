@@ -940,6 +940,7 @@ input:-webkit-autofill:focus {
           <span class="notif-dot" id="notif-orga-dot" style="display:none"></span>
         </button>
         <button class="joueur-tab-btn" id="otab-missives" onclick="showOrgaTab('missives', this)">Missives</button>
+        <button class="joueur-tab-btn" id="otab-profils" onclick="showOrgaTab('profils', this)">Comptes Joueurs</button>
       </div>
       <div id="orga-tab-events">
         <div class="orga-toolbar">
@@ -1016,6 +1017,25 @@ input:-webkit-autofill:focus {
           </thead>
           <tbody id="orga-missives-body">
             <tr><td colspan="4" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="orga-tab-profils" style="display:none">
+        <div class="orga-toolbar">
+          <h2 style="font-family:'Cinzel',serif; font-size:1.1rem; color:var(--ink);">👥 Liste des Aventuriers</h2>
+          <input type="text" id="profils-search" placeholder="Rechercher un nom ou email..." style="max-width:250px; margin-left:auto" oninput="filterProfils(this.value)">
+        </div>
+        <table class="orga-table">
+          <thead>
+            <tr>
+              <th>Prénom</th>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="orga-profils-body">
+            <tr><td colspan="4" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement des parchemins...</td></tr>
           </tbody>
         </table>
       </div>
@@ -1901,11 +1921,14 @@ function logoutOrga() { document.getElementById('orga-screen').style.display = '
 function showOrgaTab(tab, btn) { 
   document.querySelectorAll('#orga-screen .joueur-tab-btn').forEach(b => b.classList.remove('active')); 
   btn.classList.add('active'); 
-  document.getElementById('orga-tab-events').style.display = tab === 'events' ? '' : 'none'; 
+  document.getElementById('orga-tab-events').style.display = tab === 'events' ? '' : 'none';
   document.getElementById('orga-tab-messages').style.display = tab === 'messages' ? '' : 'none'; 
   document.getElementById('orga-tab-missives').style.display = tab === 'missives' ? '' : 'none';
+  // Ligne ci-dessous pour le nouvel onglet
+  document.getElementById('orga-tab-profils').style.display = tab === 'profils' ? '' : 'none';
   
-  if (tab === 'missives') loadOrgaMissives(); // Charge la table quand on clique !
+  if (tab === 'missives') loadOrgaMissives();
+  if (tab === 'profils') loadOrgaProfils(); // Charger les joueurs au clic
 }
   
 // ════════════════════════════════════════════════════
@@ -2682,6 +2705,54 @@ function ouvrirMotDePasseOublie() {
       if (error) showMsg('err-login', error.message);
       else showMsg('ok-login', '✦ Un lien de réinitialisation a été envoyé !', 'success');
     });
+}
+
+async function loadOrgaProfils() {
+  const tbody = document.getElementById('orga-profils-body');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Chargement...</td></tr>';
+  try {
+    const { data, error } = await sb.from('profils').select('*').order('nom', { ascending: true });
+    if (error) throw error;
+    
+    state.allProfilsList = data || []; // Stockage pour la recherche
+    renderProfilsTable(state.allProfilsList);
+  } catch (e) {
+    console.error(e);
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--red-blood);">Erreur de lecture des profils.</td></tr>';
+  }
+}
+
+function renderProfilsTable(list) {
+  const tbody = document.getElementById('orga-profils-body');
+  tbody.innerHTML = list.map(p => `
+    <tr>
+      <td>${p.prenom || '—'}</td>
+      <td>${p.nom || '—'}</td>
+      <td><small>${p.email || '—'}</small></td>
+      <td>
+        <button class="btn btn-sm" onclick="ouvrirConvDepuisProfil('${p.id}')">💬 Message</button>
+      </td>
+    </tr>`).join('');
+}
+
+function filterProfils(q) {
+  const query = q.toLowerCase();
+  const filtered = state.allProfilsList.filter(p => 
+    (p.prenom || '').toLowerCase().includes(query) || 
+    (p.nom || '').toLowerCase().includes(query) || 
+    (p.email || '').toLowerCase().includes(query)
+  );
+  renderProfilsTable(filtered);
+}
+
+function ouvrirConvDepuisProfil(userId) {
+  const select = document.getElementById('orga-joueur-select');
+  if (select) {
+    select.value = userId;
+    loadOrgaConversation(userId);
+    showOrgaTab('messages', document.getElementById('otab-messages'));
+  }
 }
   
 </script>
