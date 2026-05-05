@@ -159,14 +159,14 @@ input:-webkit-autofill:focus {
   color: var(--ink-light);
   padding: 9px 16px;        /* On passe à 9px pour correspondre aux inputs  */
   font-family: 'Cinzel', serif;
-  font-size: 0.75rem;       /* On augmente un peu la taille (au lieu de 0.55rem ) */
+  font-size: 0.75rem;       /* On augmente un peu la taille (au lieu de 0.55rem [cite: 29]) */
   letter-spacing: 1.5px;
   cursor: pointer;
   border-radius: 4px;
   transition: all 0.3s ease;
   text-transform: uppercase;
   height: 40px;             /* Force une hauteur fixe identique pour tous les éléments */
-  box-sizing: border-box;   /* Garantit que la bordure ne dépasse pas la hauteur  */
+  box-sizing: border-box;   /* Garantit que la bordure ne dépasse pas la hauteur [cite: 5] */
 }
 
 .btn-ghost:hover { 
@@ -663,23 +663,12 @@ input:-webkit-autofill:focus {
   .home-layout { grid-template-columns: 1fr; } 
 }
 
-/* Style du bouton de places sur l'accueil */
-.slots-info-btn {
-  background: #f1f5f9;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 2px 8px;
-  font-family: 'Cinzel', serif;
-  font-size: 0.72rem;
-  color: var(--ink-light);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.slots-info-btn:hover {
-  background: #e2e8f0;
-  color: var(--ink);
-  border-color: #cbd5e1;
+  /* Style pour la petite bulle d'info au survol */
+.slots-info {
+  cursor: help;
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted var(--ink-light); /* Un petit souligné discret pour dire qu'il y a une info */
 }
   
   /* Fond bleu-gris light pour la zone des dates */
@@ -741,48 +730,54 @@ input:-webkit-autofill:focus {
   align-items: center;
 }
 
-/* ── BOUTONS DE DÉFILEMENT (VISIBLES) ── */
+  /* ── BOUTONS DE DÉFILEMENT ── */
 .scroll-nav {
   position: fixed;
-  bottom: 40px;
+  bottom: 80px; /* Placé au-dessus du "Toast" de notification */
   right: 24px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  z-index: 999; /* On les force à passer devant absolument TOUT */
+  gap: 10px;
+  z-index: 99;
 }
 
 .scroll-nav button {
-  background: #58abbc; /* Ton beau bleu thématique pour le fond */
-  color: white;
-  border: none;
-  border-radius: 50%; /* On en fait de beaux boutons bien ronds */
-  width: 48px;
-  height: 48px;
+  background: transparent; /* Remplacé : fond transparent au lieu de blanc */
+  border: none;            /* Remplacé : plus de bordure */
+  box-shadow: none;        /* Remplacé : plus d'ombre */
+  color: #1e293b;
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3); /* Une bonne ombre pour les détacher de la page */
+  font-size: 1.5rem;       /* J'ai un peu grossi l'émoji pour compenser la perte du cercle */
 }
 
 .scroll-nav button:hover {
-  background: #468e9d; /* Un bleu un peu plus foncé au survol */
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+  background: transparent; /* Reste transparent au survol */
+  transform: translateY(-3px) scale(1.15); /* Petit effet de rebond au survol */
+  box-shadow: none;
+}
+.scroll-nav button:hover {
+  background: #58abbc; /* Votre bleu thématique */
+  color: white;
+  border-color: #58abbc;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(88, 171, 188, 0.4);
 }
 
 @media (max-width: 600px) {
   .scroll-nav {
-    bottom: 20px;
+    bottom: 20px; /* Sur mobile, on peut les baisser un peu */
     right: 16px;
   }
   .scroll-nav button {
-    width: 40px;
-    height: 40px;
-    font-size: 1.2rem;
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
   }
 }
 </style>
@@ -891,11 +886,6 @@ input:-webkit-autofill:focus {
   <div class="messages-fil" id="messages-fil">
     <div class="empty-state">Chargement…</div>
   </div>
-
-        <div class="msg-input-zone">
-    <textarea id="msg-nouveau" placeholder="Écrivez votre message à l'orga…"></textarea>
-    <button class="btn btn-sm" onclick="envoyerMessage()">Envoyer</button>
-  </div>
   
   <div class="toolbar-messagerie" style="display: flex; flex-wrap: wrap; gap: 5px; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid var(--border); margin-bottom: 5px;">
    <button class="btn-ghost" type="button" onclick="insertFormatMessagerie('**', 'msg-nouveau')">B</button>
@@ -929,6 +919,11 @@ input:-webkit-autofill:focus {
 <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😤')">😤</button>
 <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🫡')">🫡</button>
   </div>
+
+  <div class="msg-input-zone">
+    <textarea id="msg-nouveau" placeholder="Écrivez votre message à l'orga…"></textarea>
+    <button class="btn btn-sm" onclick="envoyerMessage()">Envoyer</button>
+  </div>
   <div class="msg-error" id="err-msg"></div>
 </div>
     </div>
@@ -951,7 +946,6 @@ input:-webkit-autofill:focus {
           <span class="notif-dot" id="notif-orga-dot" style="display:none"></span>
         </button>
         <button class="joueur-tab-btn" id="otab-missives" onclick="showOrgaTab('missives', this)">Missives</button>
-        <button class="joueur-tab-btn" id="otab-profils" onclick="showOrgaTab('profils', this)">Comptes Joueurs</button>
       </div>
       <div id="orga-tab-events">
         <div class="orga-toolbar">
@@ -979,10 +973,6 @@ input:-webkit-autofill:focus {
           <div class="empty-state">Sélectionnez un joueur pour voir la conversation.</div>
         </div>
         <div class="msg-input-zone" id="orga-reply-zone" style="display:none; flex-direction: column; gap: 8px;">
-          <div style="display: flex; gap: 10px; width: 100%; align-items: flex-end;">
-    <textarea id="orga-msg-nouveau" placeholder="Réponse à ce joueur..." style="min-height: 60px; flex: 1;"></textarea>
-    <button class="btn btn-sm" onclick="envoyerMessageOrga()" style="height: 100%;">Répondre</button>
-  </div>
   <div class="toolbar-messagerie" style="display: flex; flex-wrap: wrap; gap: 5px; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid var(--border); width: 100%;">
     <button class="btn-ghost" type="button" onclick="insertFormatMessagerie('**', 'msg-nouveau')">B</button>
 <button class="btn-ghost" type="button" onclick="insertFormatMessagerie('*', 'msg-nouveau')">I</button>
@@ -1016,45 +1006,31 @@ input:-webkit-autofill:focus {
 <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🫡')">🫡</button>
   </div>
   
-  
-<div id="orga-tab-missives" style="display:none">
+  <div style="display: flex; gap: 10px; width: 100%; align-items: flex-end;">
+    <textarea id="orga-msg-nouveau" placeholder="Réponse à ce joueur..." style="min-height: 60px; flex: 1;"></textarea>
+    <button class="btn btn-sm" onclick="envoyerMessageOrga()" style="height: 100%;">Répondre</button>
+  </div>
+</div>
+        <div class="msg-error" id="err-orga-msg"></div>
+      </div> <div id="orga-tab-missives" style="display:none">
         <div class="orga-toolbar">
-          <button class="btn btn-sm" style="background:#58abbc" onclick="ouvrirModaleMissive()">📜 Nouvelle Missive</button>
+          <button class="btn btn-sm btn-orga" style="background:#58abbc" onclick="ouvrirModaleMissive()">📜 Nouvelle Missive</button>
         </div>
         <table class="orga-table">
           <thead>
             <tr><th>Date</th><th>Titre</th><th>Auteur</th><th>Actions</th></tr>
           </thead>
           <tbody id="orga-missives-body">
-            <tr><td colspan="4" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement des parchemins…</td></tr>
+            <tr><td colspan="4" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement…</td></tr>
           </tbody>
         </table>
       </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-      <div id="orga-tab-profils" style="display:none">
-        <div class="orga-toolbar">
-          <h2 style="font-family:'Cinzel',serif; font-size:1.1rem; color:var(--ink);">👥 Liste des Aventuriers</h2>
-          <input type="text" id="profils-search" placeholder="Rechercher un nom ou email..." style="max-width:250px; margin-left:auto" oninput="filterProfils(this.value)">
-        </div>
-        <table class="orga-table">
-          <thead>
-            <tr>
-              <th>Prénom</th>
-              <th>Nom</th>
-              <th>Email</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="orga-profils-body">
-            <tr><td colspan="4" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement des parchemins...</td></tr>
-          </tbody>
-        </table>
-      </div>
-      </div> 
-    </div> 
-  </div> 
-    
-    <div class="modal-overlay" id="modal-auth">
+<div class="modal-overlay" id="modal-auth">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('modal-auth')">✕</button>
     <div class="modal-title" id="modal-auth-titre">Rejoindre Faérie</div>
@@ -1430,9 +1406,7 @@ function renderPublicEvents(list) {
       <div class="event-card-footer">
         <div class="jauge-wrap">
           <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
-          <button type="button" class="slots-info-btn" onclick="voirParticipantsPublic('${ev.id}', '${ev.titre.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">
-  ${placesDispo} / ${placesTot}
-</button>
+          <span class="jauge-text slots-info" title="${bulle}">${placesDispo} / ${placesTot}</span>
           ${complet && !inscrit && !enAttente && !interesse ? '<span class="badge-attente">COMPLET</span>' : ''}
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${btnHtml}</div>
@@ -1663,9 +1637,7 @@ async function loadMesInscriptions() {
         <div class="event-card-footer">
           <div class="jauge-wrap">
             <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
-            <button type="button" class="slots-info-btn" onclick="voirParticipantsPublic('${ev.id}', '${ev.titre.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">
-  ${placesDispo} / ${placesTot}
-</button>
+            <span class="jauge-text slots-info" title="${bulle}">${placesDispo} / ${placesTot}</span>
             ${complet && !inscrit && !enAttente ? '<span class="badge-attente">COMPLET</span>' : ''}
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
@@ -1704,12 +1676,12 @@ async function confirmerDepuisAttente(eventId, titre) {
   function formatMessageText(rawText) {
   if (!rawText) return '';
   return rawText
-    .replace(/</g, "&lt;").replace(/>/g, "&gt;") // Sécurité contre l'injection de code 
-    .replace(/\n/g, '<br>')                      // Transformation des sauts de ligne 
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Gras 
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')             // Italique
-    .replace(/__(.*?)__/g, '<u>$1</u>')               // Souligné 
-    .replace(/~~(.*?)~~/g, '<del>$1</del>');          // Barré 
+    .replace(/</g, "&lt;").replace(/>/g, "&gt;") // Sécurité contre l'injection de code [cite: 357]
+    .replace(/\n/g, '<br>')                      // Transformation des sauts de ligne [cite: 357]
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Gras [cite: 358]
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')             // Italique [cite: 358]
+    .replace(/__(.*?)__/g, '<u>$1</u>')               // Souligné [cite: 358]
+    .replace(/~~(.*?)~~/g, '<del>$1</del>');          // Barré [cite: 358]
 }
 
 // ════════════════════════════════════════════════════
@@ -1723,32 +1695,17 @@ async function loadMessages() {
     if (error) throw error;
     if (!data.length) { fil.innerHTML = '<div class="empty-state">Aucun message pour l\'instant.</div>'; return; }
     fil.innerHTML = data.map(m => {
-    const isMe = state.user && state.user.id === m.user_id;
-    const bubbleClass = isMe ? 'msg-bubble joueur' : 'msg-bubble orga';
-    const alignStyle = isMe ? 'text-align: right;' : 'text-align: left;';
-    const dateMsg = new Date(m.created_at);
-    const dateStr = dateMsg.toLocaleDateString('fr-FR') + ' à ' + dateMsg.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
-
-    return `
-      <div style="${alignStyle} margin-bottom: 12px;">
-        <div class="msg-bubble-meta" style="font-weight: 600; color: #58abbc;">
-          ${m.prenom} <span style="font-weight: normal; color: var(--ink-light); font-size: 0.6rem;">- ${dateStr}</span>
-        </div>
-        <div class="${bubbleClass}" style="display: inline-block; text-align: left; margin-top: 2px;">
-          ${m.message.replace(/</g, "<").replace(/>/g, ">").replace(/\n/g, '<br>')
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/__(.*?)__/g, '<u>$1</u>')
-            .replace(/~~(.*?)~~/g, '<del>$1</del>')}
-        </div>
-      </div>`;
-  }).join('');
-  
-  } catch(e) { 
-    console.error(e); 
-  }
+      const date = new Date(m.created_at).toLocaleString('fr-FR');
+      const side = m.auteur === 'orga' ? 'orga' : 'joueur';
+      const label = m.auteur === 'orga' ? '⚔ Organisateur' : '✦ Vous';
+      return `<div class="msg-bubble ${side}"><div class="msg-bubble-meta">${label} — ${date}</div>${formatMessageText(m.contenu)}</div>`;
+    }).join('');
+    fil.scrollTop = fil.scrollHeight;
+    await sb.from('messages').update({ lu_joueur: true }).eq('user_id', state.user.id).eq('lu_joueur', false);
+    document.getElementById('notif-msg-dot').style.display = 'none';
+  } catch(e) { console.error(e); }
 }
-  
+
 async function checkNouveauxMessages() {
   if (!state.user) return;
   const { data } = await sb.from('messages').select('id').eq('user_id', state.user.id).eq('lu_joueur', false).eq('auteur', 'orga');
@@ -1944,49 +1901,17 @@ function updateHeaderUserZone() {
   } else { zone.innerHTML = `<button class="btn btn-sm" onclick="openAuthModal()">Se connecter</button>`; }
 }
 function openAuthModal() { document.getElementById('auth-context').style.display = 'none'; document.getElementById('modal-auth-titre').textContent = 'Rejoindre Faérie'; state.pendingEventId = null; switchAuthTab('connexion'); openModal('modal-auth'); }
-// ==========================================
-// SECOURS : FONCTIONS DE L'ESPACE ORGA
-// ==========================================
-function openOrgaLogin() { 
-  document.getElementById('orga-pwd').value = ''; 
-  hideMsg('err-orga'); 
-  openModal('modal-orga-auth'); 
-}
-
-async function doLoginOrga() { 
-  if (document.getElementById('orga-pwd').value !== ORGA_PASSWORD) { 
-    showMsg('err-orga', 'Mot de passe incorrect.'); 
-    return; 
-  } 
-  closeModal('modal-orga-auth'); 
-  document.getElementById('public-screen').style.display = 'none'; 
-  document.getElementById('orga-screen').style.display = 'block'; 
-  
-  const tabEvents = document.getElementById('otab-events');
-  if(tabEvents) showOrgaTab('events', tabEvents); 
-  
-  await loadOrgaEvents(); 
-  await loadOrgaMessagerie(); 
-}
-
-function logoutOrga() { 
-  document.getElementById('orga-screen').style.display = 'none'; 
-  document.getElementById('public-screen').style.display = ''; 
-}
-
+function openOrgaLogin() { document.getElementById('orga-pwd').value = ''; hideMsg('err-orga'); openModal('modal-orga-auth'); }
+async function doLoginOrga() { if (document.getElementById('orga-pwd').value !== ORGA_PASSWORD) { showMsg('err-orga', 'Mot de passe incorrect.'); return; } closeModal('modal-orga-auth'); document.getElementById('public-screen').style.display = 'none'; document.getElementById('orga-screen').style.display = 'block'; showOrgaTab('events', document.getElementById('otab-events')); await loadOrgaEvents(); await loadOrgaMessagerie(); }
+function logoutOrga() { document.getElementById('orga-screen').style.display = 'none'; document.getElementById('public-screen').style.display = ''; }
 function showOrgaTab(tab, btn) { 
   document.querySelectorAll('#orga-screen .joueur-tab-btn').forEach(b => b.classList.remove('active')); 
-  if(btn) btn.classList.add('active'); 
-  
-  document.getElementById('orga-tab-events').style.display = tab === 'events' ? '' : 'none';
+  btn.classList.add('active'); 
+  document.getElementById('orga-tab-events').style.display = tab === 'events' ? '' : 'none'; 
   document.getElementById('orga-tab-messages').style.display = tab === 'messages' ? '' : 'none'; 
   document.getElementById('orga-tab-missives').style.display = tab === 'missives' ? '' : 'none';
   
-  const profilsTab = document.getElementById('orga-tab-profils');
-  if(profilsTab) profilsTab.style.display = tab === 'profils' ? '' : 'none'; 
-  
-  if (tab === 'missives') loadOrgaMissives();
-  if (tab === 'profils' && typeof loadOrgaProfils === 'function') loadOrgaProfils(); 
+  if (tab === 'missives') loadOrgaMissives(); // Charge la table quand on clique !
 }
   
 // ════════════════════════════════════════════════════
@@ -1994,59 +1919,20 @@ function showOrgaTab(tab, btn) {
 // ════════════════════════════════════════════════════
 async function loadOrgaEvents() {
   const tbody = document.getElementById('orga-events-body');
-  if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement…</td></tr>';
-  
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Chargement…</td></tr>';
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
-  try {
-    // On récupère les événements ET les inscriptions pour compter en temps réel
-    const [eventsRes, inscrRes] = await Promise.all([
-      sb.from('evenements').select('*').gte('date_debut', today.toISOString()).order('date_debut', { ascending: true, nullsFirst: false }),
-      sb.from('inscriptions').select('event_id')
-    ]);
-
-    if (eventsRes.error) throw eventsRes.error;
-
-    const allInscriptions = inscrRes.data || [];
-    
-    // On calcule les places comme sur la page publique
-    state.orgaEvents = (eventsRes.data || []).map(ev => {
-      const occupes = allInscriptions.filter(i => i.event_id === ev.id).length;
-      ev.places_reelles_dispo = ev.places_totales - occupes;
-      return ev;
-    });
-
-    renderOrgaTable(state.orgaEvents);
-  } catch (e) {
-    console.error("Erreur Orga Events:", e);
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--red-blood);">Erreur de chargement des données.</td></tr>`;
-  }
+  const { data, error } = await sb.from('evenements').select('*').gte('date_debut', today.toISOString()).order('date_debut', { ascending: true, nullsFirst: false });
+  if (error) { tbody.innerHTML = `<tr><td colspan="6">Erreur</td></tr>`; return; }
+  state.orgaEvents = data || []; renderOrgaTable(state.orgaEvents);
 }
-  
+
 function renderOrgaTable(list) {
   const tbody = document.getElementById('orga-events-body');
-  if (!list.length) { 
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Aucun événement à venir.</td></tr>'; 
-    return; 
-  }
-  tbody.innerHTML = list.map(ev => `
-    <tr>
-      <td><strong>${ev.titre}</strong></td>
-      <td>${ev.date_debut ? new Date(ev.date_debut).toLocaleString('fr-FR') : '—'}</td>
-      <td>${ev.lieu || '—'}</td>
-      <td>${ev.type || '—'}</td>
-      <td>${ev.places_reelles_dispo}/${ev.places_totales}</td>
-      <td>
-        <button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">👁 Inscrits</button> 
-        <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏ Modif</button> 
-        <button class="btn btn-sm btn-danger" style="padding: 6px 10px; font-size: 0.7rem;" onclick="supprimerEvent('${ev.id}')">🗑 Supprimer</button>
-      </td>
-    </tr>`).join('');
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Aucun événement.</td></tr>'; return; }
+  tbody.innerHTML = list.map(ev => `<tr><td><strong>${ev.titre}</strong></td><td>${ev.date_debut ? new Date(ev.date_debut).toLocaleString('fr-FR') : '—'}</td><td>${ev.lieu || '—'}</td><td>${ev.type || '—'}</td><td>${ev.places_disponibles}/${ev.places_totales}</td><td><button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">👁 Inscrits</button> <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏ Modif</button> <button class="btn btn-sm btn-danger" style="padding: 6px 10px; font-size: 0.7rem;" onclick="supprimerEvent('${ev.id}')">🗑 Supprimer</button></td></tr>`).join('');
 }
 
-  
 async function retirerParticipant(eventId, userId, table, titre) {
   if (!confirm('Voulez-vous vraiment retirer ce joueur ?')) return;
   try {
@@ -2095,89 +1981,54 @@ async function supprimerEvent(eventId) {
   }
 }
   
-async function voirParticipantsPublic(eventId, titre) {
-  try {
-    const titleEl = document.getElementById('view-event-titre');
-    const contentEl = document.getElementById('liste-participants-content');
-    
-    if (!titleEl || !contentEl) return;
-
-    titleEl.textContent = titre; 
-    contentEl.innerHTML = '<div class="empty-state">Chargement des aventuriers...</div>';
-    
-    openModal('modal-liste-participants');
-
-    const [inscrRes, profilsRes] = await Promise.all([
-      sb.from('inscriptions').select('user_id').eq('event_id', eventId),
-      sb.from('profils').select('id, prenom, nom')
-    ]);
-
-    if (inscrRes.error) throw inscrRes.error;
-
-    const inscr = inscrRes.data || [];
-    const profils = profilsRes.data || [];
-    const annuaire = {};
-    
-    profils.forEach(p => {
-        annuaire[p.id] = (p.prenom || p.nom) ? `${p.prenom} ${p.nom}`.trim() : "Aventurier anonyme";
-    });
-    
-    let html = '<h3 style="margin-bottom:12px; font-family:\'Cinzel\', serif; font-size:1rem; border-bottom:1px solid #eee; padding-bottom:8px;">⚔ Aventuriers inscrits</h3>';
-    html += '<ul style="list-style:none; padding:0; margin:0;">';
-    
-    if (inscr.length > 0) {
-      html += inscr.map(i => {
-        const nom = annuaire[i.user_id] || `Aventurier`;
-        return `<li style="padding:10px; background:#f8fafc; border-radius:4px; border:1px solid #e2e8f0; margin-bottom:8px; font-family:'Crimson Text', serif;">👤 ${nom}</li>`;
-      }).join('');
-    } else {
-      html += '<li style="font-style:italic; color:var(--ink-light); padding:20px; text-align:center;">Aucun inscrit pour le moment.</li>';
-    }
-    
-    contentEl.innerHTML = html + '</ul>';
-  } catch (e) {
-    console.error("Erreur liste publique :", e);
-    document.getElementById('liste-participants-content').innerHTML = "<div class='msg-error' style='display:block'>Impossible de lire les parchemins.</div>";
-  }
-}
-
-  async function voirParticipants(eventId, titre) {
-  const titleEl = document.getElementById('view-event-titre');
-  const contentEl = document.getElementById('liste-participants-content');
-  
-  if (!titleEl || !contentEl) return;
-
-  titleEl.textContent = titre;
-  contentEl.innerHTML = '<div class="empty-state">Chargement...</div>';
+async function voirParticipants(eventId, titre) {
+  document.getElementById('view-event-titre').textContent = titre; 
+  const content = document.getElementById('liste-participants-content'); 
+  content.innerHTML = 'Chargement...'; 
   openModal('modal-liste-participants');
-
   try {
     const { data: inscr } = await sb.from('inscriptions').select('user_id').eq('event_id', eventId);
-    const { data: profils } = await sb.from('profils').select('id, prenom, nom');
-    const annuaire = {};
-    if (profils) profils.forEach(p => annuaire[p.id] = `${p.prenom} ${p.nom}`);
+    const { data: attente } = await sb.from('liste_attente').select('user_id').eq('event_id', eventId);
+    const { data: interData } = await sb.from('interesses').select('user_id').eq('event_id', eventId);
 
-    let html = '<ul style="list-style:none; padding:0;">';
-    if (inscr && inscr.length > 0) {
-      html += inscr.map(i => {
-        const nom = annuaire[i.user_id] || 'Aventurier';
-        const safeTitre = titre.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-        return `<li style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; margin-bottom:8px;">
-          <span>👤 ${nom}</span>
-          <button class="btn btn-sm btn-danger" onclick="retirerParticipant('${eventId}','${i.user_id}','inscriptions','${safeTitre}')">✕</button>
-        </li>`;
-      }).join('');
-      html += '</ul>';
-    } else {
-      html = '<div class="empty-state">Aucun inscrit pour le moment.</div>';
-    }
-    contentEl.innerHTML = html;
-  } catch (e) { 
-    console.error("Erreur Orga Liste:", e);
-    contentEl.innerHTML = "Erreur de chargement."; 
-  }
-} 
-  
+    const { data: profils } = await sb.from('profils').select('id, prenom, nom');
+    const annuaire = {}; 
+    if (profils) profils.forEach(p => annuaire[p.id] = `${p.prenom} ${p.nom}`);
+    
+    let html = '<h3 style="margin-bottom:10px;">⚔ Inscrits officiels</h3><ul style="list-style:none; padding:0; margin-bottom:20px;">';
+    html += (inscr && inscr.length > 0) ?
+    inscr.map(i => {
+      const nom = annuaire[i.user_id] || `Joueur Inconnu (${i.user_id.substring(0,5)})`;
+      return `<li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:6px; background:#f8fafc; border-radius:4px; border:1px solid #e2e8f0;">
+                <span>👤 ${nom}</span>
+                <button class="btn-ghost" style="padding:2px 8px; color:var(--red-blood); border-color:var(--red-blood);" onclick="retirerParticipant('${eventId}', '${i.user_id}', 'inscriptions', '${titre.replace(/'/g,"\\'")}')">✕</button>
+              </li>`;
+    }).join('') : '<li style="padding:6px;">Personne</li>';
+    
+    html += '</ul><h3 style="margin-bottom:10px;">⏳ Liste d\'attente</h3><ul style="list-style:none; padding:0; margin-bottom:20px;">';
+    html += (attente && attente.length > 0) ?
+    attente.map(a => {
+      const nom = annuaire[a.user_id] || `Joueur Inconnu (${a.user_id.substring(0,5)})`;
+      return `<li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:6px; background:#f8fafc; border-radius:4px; border:1px solid #e2e8f0;">
+                <span>👤 ${nom}</span>
+                <button class="btn-ghost" style="padding:2px 8px; color:var(--red-blood); border-color:var(--red-blood);" onclick="retirerParticipant('${eventId}', '${a.user_id}', 'liste_attente', '${titre.replace(/'/g,"\\'")}')">✕</button>
+              </li>`;
+    }).join('') : '<li style="padding:6px;">Vide</li>';
+
+    html += '</ul><h3 style="margin-bottom:10px;">👀 Intéressé·e·s</h3><ul style="list-style:none; padding:0;">';
+    html += (interData && interData.length > 0) ?
+    interData.map(i => {
+      const nom = annuaire[i.user_id] || `Joueur Inconnu (${i.user_id.substring(0,5)})`;
+      return `<li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:6px; background:#f8fafc; border-radius:4px; border:1px solid #e2e8f0;">
+                <span>👀 ${nom}</span>
+                <button class="btn-ghost" style="padding:2px 8px; color:var(--red-blood); border-color:var(--red-blood);" onclick="retirerParticipant('${eventId}', '${i.user_id}', 'interesses', '${titre.replace(/'/g,"\\'")}')">✕</button>
+              </li>`;
+    }).join('') : '<li style="padding:6px;">Personne</li>';
+
+    content.innerHTML = html + '</ul>';
+  } catch (e) { content.innerHTML = "Erreur : " + e.message; }
+}
+
 function filterOrgaEvents(q) { renderOrgaTable(state.orgaEvents.filter(ev => (ev.titre + (ev.lieu||'') + (ev.type||'')).toLowerCase().includes(q.toLowerCase()))); }
 function openModalCreateEvent() {
   document.getElementById('modal-event-title').textContent = '+ Nouvel événement';
@@ -2302,22 +2153,30 @@ async function openChatPublic() {
 
 async function loadChatPublic() {
   const fil = document.getElementById('chat-public-fil');
-  const { data, error } = await sb.from('chat_public').select('*').order('created_at', { ascending: true }).limit(50);
+  
+  // On récupère les 50 derniers messages de la table
+  const { data, error } = await sb.from('chat_public')
+    .select('*')
+    .order('created_at', { ascending: true })
+    .limit(50);
   
   if (error) { 
-    fil.innerHTML = '<div class="msg-error" style="display:block">Erreur de connexion à la Taverne.</div>'; 
-    return;
+    fil.innerHTML = '<div class="msg-error" style="display:block">Erreur de connexion aux archives de la Taverne.</div>'; 
+    return; 
   }
   
   if (!data || data.length === 0) { 
-    fil.innerHTML = '<div class="empty-state" style="margin-top: 100px;">La Taverne est silencieuse...</div>';
+    fil.innerHTML = '<div class="empty-state" style="margin-top: 100px;">La Taverne est bien silencieuse... Soyez le premier à parler !</div>'; 
     return; 
   }
 
   fil.innerHTML = data.map(m => {
+    // Vérifier si c'est "mon" message pour l'aligner à droite
     const isMe = state.user && state.user.id === m.user_id;
-    const bubbleClass = isMe ? 'msg-bubble joueur' : 'msg-bubble orga';
+    const bubbleClass = isMe ? 'msg-bubble joueur' : 'msg-bubble orga'; // On recycle tes styles CSS existants
     const alignStyle = isMe ? 'text-align: right;' : 'text-align: left;';
+    
+    // Formatage de la date (Ex: "Aujourd'hui à 14:30" ou "12/04/2026 à 14:30")
     const dateMsg = new Date(m.created_at);
     const dateStr = dateMsg.toLocaleDateString('fr-FR') + ' à ' + dateMsg.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
 
@@ -2327,17 +2186,24 @@ async function loadChatPublic() {
           ${m.prenom} <span style="font-weight: normal; color: var(--ink-light); font-size: 0.6rem;">- ${dateStr}</span>
         </div>
         <div class="${bubbleClass}" style="display: inline-block; text-align: left; margin-top: 2px;">
-          ${m.message.replace(/</g, "<").replace(/>/g, ">").replace(/\n/g, '<br>')
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/__(.*?)__/g, '<u>$1</u>')
-            .replace(/~~(.*?)~~/g, '<del>$1</del>')}
+          ${m.message
+  .replace(/</g, "&lt;").replace(/>/g, "&gt;") // Sécurité pour empêcher les piratages
+  .replace(/\n/g, '<br>')                      // Active les sauts de ligne
+  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Transforme **texte** en gras
+  .replace(/\*(.*?)\*/g, '<em>$1</em>')             // Transforme *texte* en italique
+  .replace(/__(.*?)__/g, '<u>$1</u>')               // Transforme __texte__ en souligné
+  .replace(/~~(.*?)~~/g, '<del>$1</del>')           // Transforme ~~texte~~ en barré
+            
+}
         </div>
-      </div>`;
+      </div>
+    `;
   }).join('');
   
+  // Scroller automatiquement tout en bas pour voir le dernier message
   fil.scrollTop = fil.scrollHeight;
 }
+
 async function verifierNouveauxMessagesTaverne() {
   // On récupère la date de la dernière visite enregistrée sur cet ordinateur/téléphone
   const derniereVisite = localStorage.getItem('faerie_chat_derniere_visite');
@@ -2751,62 +2617,6 @@ function ouvrirMotDePasseOublie() {
       if (error) showMsg('err-login', error.message);
       else showMsg('ok-login', '✦ Un lien de réinitialisation a été envoyé !', 'success');
     });
-}
-
-  async function loadOrgaProfils() {
-  const tbody = document.getElementById('orga-profils-body');
-  if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Chargement...</td></tr>';
-  
-  try {
-    const { data, error } = await sb.from('profils').select('*').order('nom', { ascending: true });
-    if (error) throw error;
-    
-    state.allProfilsList = data || []; // On stocke pour le filtrage
-    renderProfilsTable(state.allProfilsList);
-  } catch (e) {
-    console.error(e);
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--red-blood);">Erreur de lecture des profils.</td></tr>';
-  }
-}
-
-function renderProfilsTable(list) {
-  const tbody = document.getElementById('orga-profils-body');
-  if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Aucun aventurier trouvé.</td></tr>';
-    return;
-  }
-  
-  tbody.innerHTML = list.map(p => `
-    <tr>
-      <td>${p.prenom || '—'}</td>
-      <td>${p.nom || '—'}</td>
-      <td><small>${p.email || '—'}</small></td>
-      <td>
-        <button class="btn btn-sm" onclick="ouvrirConvDepuisProfil('${p.id}')">💬 Message</button>
-      </td>
-    </tr>`).join('');
-}
-
-// Fonction pour filtrer la liste
-function filterProfils(q) {
-  const query = q.toLowerCase();
-  const filtered = state.allProfilsList.filter(p => 
-    (p.prenom || '').toLowerCase().includes(query) || 
-    (p.nom || '').toLowerCase().includes(query) || 
-    (p.email || '').toLowerCase().includes(query)
-  );
-  renderProfilsTable(filtered);
-}
-
-// Petite fonction pratique pour basculer directement sur la messagerie
-function ouvrirConvDepuisProfil(userId) {
-  const select = document.getElementById('orga-joueur-select');
-  if (select) {
-    select.value = userId;
-    loadOrgaConversation(userId);
-    showOrgaTab('messages', document.getElementById('otab-messages'));
-  }
 }
   
 </script>
