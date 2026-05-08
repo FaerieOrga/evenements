@@ -1289,7 +1289,7 @@ input:-webkit-autofill:focus {
 
   <div class="scroll-nav">
   <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Remonter tout en haut">⬆️</button>
-  <button onclick="(document.scrollingElement || document.documentElement).scrollTo({top: 99999, behavior:'smooth'})" title="Descendre">⬇️</button>
+  <button onclick="document.querySelector('.site-footer').scrollIntoView({behavior: 'smooth'})" title="Descendre tout en bas">⬇️</button>
 
 </div>
 
