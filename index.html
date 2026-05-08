@@ -1485,7 +1485,7 @@ function renderPublicEvents(list) {
       <div class="event-card-footer">
         <div class="jauge-wrap">
           <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
-          <button type="button" class="slots-info-btn" onclick="voirParticipantsPublic('${ev.id}', '${ev.titre.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">${placesDispo} / ${placesTot}</button>
+          <button type="button" class="slots-info-btn" onclick="voirParticipantsPublic('${ev.id}', '${ev.titre.replace(/'/g,"\\'").replace(/"/g,'')}')">${placesDispo} / ${placesTot}</button>
           ${complet && !inscrit && !enAttente && !interesse ? '<span class="badge-attente">COMPLET</span>' : ''}
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${btnHtml}</div>
@@ -1732,7 +1732,7 @@ async function loadMesInscriptions() {
         <div class="event-card-footer">
           <div class="jauge-wrap">
             <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
-            <<button type="button" class="slots-info-btn" onclick="voirParticipantsPublic('${ev.id}', '${ev.titre.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">${placesDispo} / ${placesTot}</button>
+            <button type="button" class="slots-info-btn" onclick="voirParticipantsPublic('${ev.id}', '${ev.titre.replace(/'/g,"\\'").replace(/"/g,'')}')">${placesDispo} / ${placesTot}</button>
             ${complet && !inscrit && !enAttente ? '<span class="badge-attente">COMPLET</span>' : ''}
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
@@ -2057,7 +2057,7 @@ function renderOrgaTable(list) {
   
   tbody.innerHTML = list.map(ev => {
     // On protège le titre pour les boutons
-    const safeTitre = ev.titre.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+    const safeTitre = ev.titre.replace(/'/g, "\\'").replace(/"/g, '');
     
     // On utilise le calcul en direct qu'on vient de faire
     const placesDispo = ev.places_reelles_dispo !== undefined ? ev.places_reelles_dispo : (ev.places_disponibles || 0);
