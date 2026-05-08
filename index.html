@@ -228,6 +228,10 @@ input:-webkit-autofill:focus {
   flex-shrink: 0;
 }
 
+  #joueur-screen .parchment {
+  margin: 0 0 20px 0;
+}
+
 @media (max-width: 600px) {
   #joueur-logout-bar {
     flex-direction: column;
@@ -646,6 +650,9 @@ input:-webkit-autofill:focus {
   font-size: 0.7rem;
   padding: 10px 12px;
   white-space: nowrap;
+}
+  #joueur-screen .parchment {
+  margin: 0;
 }
 }
   .badge-interesse {
@@ -1275,7 +1282,7 @@ input:-webkit-autofill:focus {
 
   <div class="scroll-nav">
   <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Remonter tout en haut">⬆️</button>
-  <button onclick="window.scrollTo({top: document.documentElement.scrollHeight, behavior: 'smooth'})" title="Descendre tout en bas">⬇️</button>
+  <button onclick="window.scrollTo({top: 999999, behavior: 'smooth'})" title="Descendre tout en bas">⬇️</button>
 </div>
 
   
