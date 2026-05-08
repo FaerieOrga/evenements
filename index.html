@@ -1285,6 +1285,19 @@ input:-webkit-autofill:focus {
     </div>
   </div>
 </div>
+
+<div class="modal-overlay" id="modal-event-detail">
+  <div class="modal-box modal-box-wide">
+    <button class="modal-close" onclick="closeModal('modal-event-detail')">✕</button>
+    <div id="modal-event-detail-content">
+      </div>
+    <div style="text-align: center; margin-top: 20px;">
+      <button class="btn" onclick="closeModal('modal-event-detail'); window.scrollTo({top: document.getElementById('main-home-layout').offsetTop, behavior: 'smooth'});">
+        Voir sur l'accueil pour s'inscrire
+      </button>
+    </div>
+  </div>
+</div>
   
 <div class="toast" id="toast"></div>
 
@@ -2538,12 +2551,45 @@ function renderCalendrier() {
     const evsJour = evsDuMois.filter(ev => new Date(ev.date_debut).getDate() === d);
     html += `<div class="cal-day${isToday ? ' today' : ''}">
       <div class="cal-day-num">${d}</div>
-      ${evsJour.map(ev => `<div class="cal-event-pill" title="${ev.titre}">${ev.titre}</div>`).join('')}
+      ${evsJour.map(ev => `<div class="cal-event-pill" title="${ev.titre.replace(/"/g, '&quot;')}" onclick="ouvrirDetailEvenement('${ev.id}')" style="cursor:pointer">${ev.titre}</div>`).join('')}
     </div>`;
   }
-
+  
   html += '</div>';
   document.getElementById('cal-grid').innerHTML = html;
+}
+
+  function ouvrirDetailEvenement(eventId) {
+  // On cherche l'événement dans la liste complète que nous avons stockée
+  const ev = state.allEvents.find(e => e.id === eventId);
+  if (!ev) return;
+
+  const content = document.getElementById('modal-event-detail-content');
+  const debut = ev.date_debut ? formatDatetime(ev.date_debut) : '—'; [cite: 198, 199]
+  const fin = ev.date_fin ? formatDatetime(ev.date_fin) : null;
+
+  // On injecte le HTML type "fiche" comme sur l'accueil
+  content.innerHTML = `
+    <div class="event-card" style="border:none; box-shadow:none;">
+      <div class="event-card-header">
+        <div class="event-card-titre" style="font-size:1.4rem;">${ev.titre}</div>
+        <div class="event-card-type">${ev.type || '—'}</div>
+      </div>
+      <div class="event-card-body" style="grid-template-columns: 1fr;">
+        <div class="event-info-item"><span class="event-info-label">Début</span><span class="event-info-val">${debut}</span></div>
+        ${fin ? `<div class="event-info-item"><span class="event-info-label">Fin</span><span class="event-info-val">${fin}</span></div>` : ''}
+        <div class="event-info-item">
+          <span class="event-info-label">Lieu</span>
+          <span class="event-info-val">📍 ${ev.lieu || '—'}</span>
+          ${ev.lien_maps ? `<a href="${ev.lien_maps}" target="_blank" style="display:inline-block; margin-top:4px; font-family:'Cinzel', serif; font-size:0.7rem; color:var(--ink-light); text-decoration:none; border:1px solid var(--border); padding:2px 8px; border-radius:3px; background:#f8fafc;">🗺️ Ouvrir la carte</a>` : ''}
+        </div>
+        <div class="event-info-item"><span class="event-info-label">Organisateurs</span><span class="event-info-val">${ev.organisateurs || '—'}</span></div>
+      </div>
+      ${ev.description ? `<div class="event-description" style="border-bottom:none; margin-top:15px; background:#f8fafc; border-radius:6px; padding:15px;">${ev.description}</div>` : ''}
+    </div>
+  `;
+  
+  openModal('modal-event-detail');
 }
 
 // ════════════════════════════════════════════════════
