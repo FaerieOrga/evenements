@@ -752,8 +752,9 @@ input:-webkit-autofill:focus {
 
   /* ── BOUTONS DE DÉFILEMENT ── */
 .scroll-nav {
-  position: absolute;
-  right: 16px;
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -2776,13 +2777,6 @@ function ouvrirConvDepuisProfil(userId) {
     showOrgaTab('messages', document.getElementById('otab-messages'));
   }
 }
-
-  window.addEventListener('scroll', function() {
-  const nav = document.querySelector('.scroll-nav');
-  if (nav) {
-    nav.style.top = (window.pageYOffset + window.innerHeight - 130) + 'px';
-  }
-});
   
 </script>
 </body>
