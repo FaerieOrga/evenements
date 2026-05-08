@@ -1376,11 +1376,17 @@ async function loadPublicEvents() {
     state.allProfils = profils || [];
     state.allInscriptionsData = allInscriptions || [];
 
-    // 2. On trie en JavaScript : on ne garde que ce qui est futur (ou aujourd'hui)
-    const maintenant = new Date();
-    state.events = (allEventsFromDB || []).filter(ev => {
+    // --- NOUVEAU : On stocke TOUS les événements (même passés) pour le calendrier
+    state.allEvents = allEventsFromDB || [];
+
+    // 2. On trie en JavaScript pour l'accueil : on garde aujourd'hui et le futur
+    const aujourdhui = new Date();
+    aujourdhui.setHours(0, 0, 0, 0); // On remet l'horloge d'aujourd'hui à minuit pile
+
+    state.events = state.allEvents.filter(ev => {
       const dateEv = new Date(ev.date_debut);
-      return dateEv >= maintenant; // On ne garde que le futur
+      dateEv.setHours(0, 0, 0, 0); // On ignore l'heure de l'événement pour ne garder que le jour
+      return dateEv >= aujourdhui; // Il restera visible jusqu'à ce soir minuit !
     }).map(ev => {
       const occupes = (allInscriptions || []).filter(i => i.event_id === ev.id).length;
       ev.places_reelles_dispo = ev.places_totales - occupes;
@@ -1647,7 +1653,23 @@ async function loadMesInscriptions() {
       annuaire[p.id] = (p.prenom && p.nom) ? `${p.prenom} ${p.nom}` : (p.prenom || 'Aventurier');
     });
 
-    grid.innerHTML = (evs || []).map(ev => {
+    // --- NOUVEAU : On filtre les événements de l'espace joueur (on cache le passé)
+    const aujourdhui = new Date();
+    aujourdhui.setHours(0, 0, 0, 0);
+
+    const evsFiltres = (evs || []).filter(ev => {
+      const dateEv = new Date(ev.date_debut);
+      dateEv.setHours(0, 0, 0, 0);
+      return dateEv >= aujourdhui;
+    });
+
+    if (!evsFiltres.length) {
+      grid.innerHTML = '<div class="empty-state">Vous n\'avez aucune inscription ou événement à venir.</div>';
+      return;
+    }
+
+    // On utilise "evsFiltres" au lieu de "evs" pour générer les cartes
+    grid.innerHTML = evsFiltres.map(ev => {
       const occupes = (allInscriptions || []).filter(i => i.event_id === ev.id).length;
       const placesDispo = ev.places_totales - occupes;
       const placesTot   = ev.places_totales || 0;
@@ -2496,7 +2518,7 @@ function renderCalendrier() {
   const dernierJour = new Date(annee, mois + 1, 0).getDate();
 
   // Événements du mois
-  const evsDuMois = state.events.filter(ev => {
+  const evsDuMois = state.allEvents.filter(ev => {
     if (!ev.date_debut) return false;
     const d = new Date(ev.date_debut);
     return d.getMonth() === mois && d.getFullYear() === annee;
