@@ -636,6 +636,17 @@ input:-webkit-autofill:focus {
     text-align: center; 
     width: 100%;
   }
+  .joueur-tabs {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  flex-wrap: nowrap;
+  padding-bottom: 4px;
+}
+.joueur-tab-btn {
+  font-size: 0.7rem;
+  padding: 10px 12px;
+  white-space: nowrap;
+}
 }
   .badge-interesse {
   background: #f0f9ff;
@@ -927,7 +938,7 @@ input:-webkit-autofill:focus {
     </div>
   
   <div id="orga-screen" style="display:none">
-    <div style="max-width: 1300px; margin: 0 auto;">
+    <div style="max-width: 1300px; margin: 0 auto; padding: 0 16px;">
     <div class="logout-bar">
       <span>⚔ Organisateur — Événements</span>
       <div style="display:flex;gap:8px">
@@ -1264,7 +1275,7 @@ input:-webkit-autofill:focus {
 
   <div class="scroll-nav">
   <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Remonter tout en haut">⬆️</button>
-  <button onclick="document.getElementById('app').scrollIntoView({ behavior: 'smooth', block: 'end' })" title="Descendre tout en bas">⬇️</button>
+  <button onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})" title="Descendre tout en bas">⬇️</button>
 </div>
 
   
