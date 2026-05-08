@@ -767,14 +767,15 @@ input:-webkit-autofill:focus {
   border: none;
   border-radius: 50%;
   width: 48px;
-  height: 48px;
+  height: 48px; /* [cite: 129] */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3); /* [cite: 130] */
+  flex-shrink: 0; /* AJOUT CRUCIAL : empêche la déformation (squish) au scroll */
 }
 
 .scroll-nav button:hover {
@@ -785,13 +786,15 @@ input:-webkit-autofill:focus {
 
 @media (max-width: 600px) {
   .scroll-nav {
-    bottom: 20px; /* Sur mobile, on peut les baisser un peu */
-    right: 16px;
+    /* On les remonte considérablement et on gère les encoches tactiles des téléphones récents */
+    bottom: max(60px, env(safe-area-inset-bottom, 60px)); 
+    right: 16px; /* [cite: 133] */
   }
   .scroll-nav button {
-    width: 36px;
-    height: 36px;
-    font-size: 0.9rem;
+    /* On les agrandit un tout petit peu (de 36px à 40px) pour qu'ils soient plus faciles à taper au pouce */
+    width: 40px; 
+    height: 40px;
+    font-size: 1.1rem;
   }
 }
 </style>
