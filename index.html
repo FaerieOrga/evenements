@@ -2564,8 +2564,11 @@ function renderCalendrier() {
   const ev = state.allEvents.find(e => e.id === eventId);
   if (!ev) return;
 
+  // ⚡ LA MAGIE EST ICI : On ferme le calendrier pour laisser la place !
+  closeModal('modal-calendrier');
+
   const content = document.getElementById('modal-event-detail-content');
-  const debut = ev.date_debut ? formatDatetime(ev.date_debut) : '—'; [cite: 198, 199]
+  const debut = ev.date_debut ? formatDatetime(ev.date_debut) : '—'; 
   const fin = ev.date_fin ? formatDatetime(ev.date_fin) : null;
 
   // On injecte le HTML type "fiche" comme sur l'accueil
