@@ -1289,7 +1289,16 @@ input:-webkit-autofill:focus {
 
   <div class="scroll-nav">
   <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Remonter tout en haut">⬆️</button>
-  <button onclick="document.querySelector('.site-footer').scrollIntoView({behavior: 'smooth', block: 'end'})" title="Descendre tout en bas">⬇️</button>
+  <button onclick=
+  const footer = document.querySelector('.site-footer');
+  const orga = document.getElementById('orga-screen');
+  if (orga && orga.style.display !== 'none') {
+    orga.scrollIntoView({behavior:'smooth', block:'end'});
+  } else {
+    footer.scrollIntoView({behavior:'smooth', block:'end'});
+  }
+" title="Descendre tout en bas">⬇️</button>
+
 </div>
 
   
