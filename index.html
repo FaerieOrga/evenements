@@ -461,6 +461,13 @@ input:-webkit-autofill:focus {
 .orga-table tr:hover td { background: #f8fafc; }
 .orga-toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
 
+.orga-action-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
 /* ── MODALES ── */
 .modal-overlay {
   display: none;
@@ -634,6 +641,11 @@ input:-webkit-autofill:focus {
     min-width: 0 !important;
     white-space: normal !important;
   }
+   .orga-action-btns {
+    flex-direction: column; /* Transforme la ligne en colonne verticale */
+    align-items: stretch; /* Étire les boutons pour qu'ils fassent tous la même largeur */
+  }
+  
   .orga-table td:last-child .btn { 
     padding: 6px 4px; 
     font-size: 0.6rem;
@@ -2022,7 +2034,7 @@ function renderOrgaTable(list) {
       <td>${ev.type || '—'}</td>
       <td>${placesDispo}/${ev.places_totales || 0}</td>
       <td>
-        <div style="display: flex; gap: 6px; flex-wrap: nowrap; align-items: center;">
+        <div class="orga-action-btns">
           <button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${safeTitre}')">👁 Inscrits</button> 
           <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏ Modif</button> 
           <button class="btn btn-sm btn-danger" onclick="supprimerEvent('${ev.id}')">🗑 Supprimer</button>
