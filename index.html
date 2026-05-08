@@ -2045,15 +2045,35 @@ function renderOrgaTable(list) {
 }
 
 async function retirerParticipant(eventId, userId, table, titre) {
-  if (!confirm('Voulez-vous vraiment retirer ce joueur ?')) return;
+  // On remplace le confirm() natif (bloqué par Google Sites) par notre propre modale
+  const ok = await new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:8px;padding:30px 34px;max-width:400px;width:100%;text-align:center;box-shadow:0 15px 50px rgba(0,0,0,0.4)">
+        <div style="font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;margin-bottom:12px;color:#1e293b">Retirer ce joueur ?</div>
+        <p style="font-family:'Crimson Text',serif;color:#64748b;margin-bottom:24px">Voulez-vous vraiment retirer ce participant de la liste ?</p>
+        <div style="display:flex;gap:12px;justify-content:center">
+          <button id="btn-oui-retirer" style="padding:10px 24px;background:#b91c1c;color:#fff;border:none;border-radius:4px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:1px;cursor:pointer">Retirer</button>
+          <button id="btn-non-retirer" style="padding:10px 24px;background:transparent;border:1px solid #e2e8f0;color:#64748b;border-radius:4px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:1px;cursor:pointer">Annuler</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#btn-oui-retirer').onclick = () => { document.body.removeChild(overlay); resolve(true); };
+    overlay.querySelector('#btn-non-retirer').onclick = () => { document.body.removeChild(overlay); resolve(false); };
+  });
+
+  if (!ok) return;
+
   try {
     const { error } = await sb.from(table).delete().eq('event_id', eventId).eq('user_id', userId);
     if (error) throw error;
+    
     showToast('✦ Joueur retiré');
-    voirParticipants(eventId, titre);
-    loadOrgaEvents();
+    voirParticipants(eventId, titre); // Recharge la modale des participants en temps réel
+    loadOrgaEvents(); // Met à jour le nombre de places dans le tableau derrière
   } catch (e) {
-    alert("Erreur : " + e.message);
+    showToast("Erreur : " + e.message);
   }
 }
 
