@@ -2022,7 +2022,7 @@ function renderOrgaTable(list) {
       <td>${ev.type || '—'}</td>
       <td>${placesDispo}/${ev.places_totales || 0}</td>
       <td>
-        <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+        <div style="display: flex; gap: 6px; flex-wrap: nowrap; align-items: center;">
           <button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${safeTitre}')">👁 Inscrits</button> 
           <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏ Modif</button> 
           <button class="btn btn-sm btn-danger" onclick="supprimerEvent('${ev.id}')">🗑 Supprimer</button>
