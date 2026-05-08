@@ -1382,7 +1382,7 @@ async function loadPublicEvents() {
   try {
     // 1. On récupère TOUS les événements sans filtre SQL (plus de bug de date)
     const { data: allEventsFromDB } = await sb.from('evenements').select('*').order('date_debut', { ascending: true });
-    
+    state.allEvents = allEventsFromDB || [];
     const { data: allInscriptions } = await sb.from('inscriptions').select('event_id, user_id');
     const { data: profils } = await sb.from('profils').select('id, prenom, nom');
     
