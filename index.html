@@ -1350,7 +1350,7 @@ const state = {
   user: null, events: [], orgaEvents: [], mesInscriptions: [], mesInscriptionsData: [],
   maListeAttente: [],
   pendingEventId: null, pendingEventTitre: null, pendingEventDispo: null, currentOrgaUserId: null,
-  mesInteresses: []
+  mesInteresses: [],
   mesNonDispos: []
 };
   
@@ -1639,6 +1639,7 @@ async function seDesinscrire(eventId) {
   sb.from('interesses').delete().eq('event_id', eventId).eq('user_id', state.user.id),
   sb.from('non_dispos').delete().eq('event_id', eventId).eq('user_id', state.user.id)
 ]);
+}
 
 // ════════════════════════════════════════════════════
 //  ESPACE JOUEUR
