@@ -369,6 +369,16 @@ input:-webkit-autofill:focus {
   padding: 3px 10px;
   border-radius: 4px;
 }
+  .badge-pasdispo {
+  background: #f5f5f5;
+  border: 1px solid #d1d5db;
+  color: #6b7280;
+  font-family: 'Cinzel', serif;
+  font-size: 0.68rem;
+  letter-spacing: 1px;
+  padding: 3px 10px;
+  border-radius: 4px;
+}
 
 /* ── ESPACE JOUEUR — ONGLETS ── */
 .joueur-tabs {
@@ -1341,6 +1351,7 @@ const state = {
   maListeAttente: [],
   pendingEventId: null, pendingEventTitre: null, pendingEventDispo: null, currentOrgaUserId: null,
   mesInteresses: []
+  mesNonDispos: []
 };
   
 // ════════════════════════════════════════════════════
@@ -1414,6 +1425,8 @@ async function loadPublicEvents() {
       state.maListeAttente = (attente || []).map(i => i.event_id);
       const { data: interesse } = await sb.from('interesses').select('event_id').eq('user_id', state.user.id);
       state.mesInteresses = (interesse || []).map(i => i.event_id);
+      const { data: nondispo } = await sb.from('non_dispos').select('event_id').eq('user_id', state.user.id);
+      state.mesNonDispos = (nondispo || []).map(i => i.event_id);
     }
     renderPublicEvents(state.events);
   } catch(e) { 
@@ -1444,6 +1457,7 @@ function renderPublicEvents(list) {
     const inscrit     = state.mesInscriptions.includes(ev.id);
     const enAttente   = state.maListeAttente && state.maListeAttente.includes(ev.id);
     const interesse   = state.mesInteresses && state.mesInteresses.includes(ev.id);
+    const nonDispo = state.mesNonDispos && state.mesNonDispos.includes(ev.id);
     const debut       = ev.date_debut ? formatDatetime(ev.date_debut) : (ev.date ? new Date(ev.date).toLocaleDateString('fr-FR') : '—');
     const fin         = ev.date_fin ? formatDatetime(ev.date_fin) : null;
     const inscritsIci = (state.allInscriptionsData || []).filter(i => i.event_id === ev.id);
@@ -1462,13 +1476,16 @@ function renderPublicEvents(list) {
       btnHtml = `<span class="badge-attente">⏳ Liste d'attente</span>`;
     } else if (interesse) {
       btnHtml = `<span class="badge-interesse">👀Intéressé·e</span>`;
+    } else if (nonDispo) {
+      btnHtml = `<span class="badge-pasdispo">❌ Pas disponible</span>`;
     } else if (complet) {
       btnHtml = `<button class="btn btn-sm btn-danger" onclick="handleInscriptionClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${placesDispo})">Liste d'attente</button>`;
-    } else {
-      btnHtml = `
-        <button class="btn btn-sm" onclick="handleInscriptionClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${placesDispo})">S'inscrire</button>
-        <button class="btn-ghost" onclick="handleInteresseClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">👀 Intéressé·e</button>`;
-    }
+   } else {
+  btnHtml = `
+    <button class="btn btn-sm" onclick="handleInscriptionClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${placesDispo})">S'inscrire</button>
+    <button class="btn-ghost" onclick="handleInteresseClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">👀 Intéressé·e</button>
+    <button class="btn-ghost" onclick="handleNonDispoClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">❌ Pas dispo</button>`;
+}
     return `
     <div class="event-card">
       <div class="event-card-header"><div class="event-card-titre">${ev.titre}</div><div class="event-card-type">${ev.type || '—'}</div></div>
@@ -1619,9 +1636,9 @@ async function seDesinscrire(eventId) {
   await Promise.all([
   sb.from('inscriptions').delete().eq('event_id', eventId).eq('user_id', state.user.id),
   sb.from('liste_attente').delete().eq('event_id', eventId).eq('user_id', state.user.id),
-  sb.from('interesses').delete().eq('event_id', eventId).eq('user_id', state.user.id)
-  ]);
-}
+  sb.from('interesses').delete().eq('event_id', eventId).eq('user_id', state.user.id),
+  sb.from('non_dispos').delete().eq('event_id', eventId).eq('user_id', state.user.id)
+]);
 
 // ════════════════════════════════════════════════════
 //  ESPACE JOUEUR
@@ -2638,6 +2655,25 @@ function renderCalendrier() {
   `;
   
   openModal('modal-event-detail');
+}
+
+  async function handleNonDispoClick(eventId, titre) {
+  if (!state.user) {
+    document.getElementById('auth-context').style.display = '';
+    document.getElementById('auth-context').textContent = `Pour indiquer votre indisponibilité pour « ${titre} », connectez-vous.`;
+    document.getElementById('modal-auth-titre').textContent = 'Connexion requise';
+    switchAuthTab('connexion'); openModal('modal-auth');
+    state.pendingEventId = eventId; state.pendingEventTitre = titre;
+    return;
+  }
+  try {
+    await sb.from('non_dispos').insert({ event_id: eventId, user_id: state.user.id });
+    showToast('❌ Indisponibilité enregistrée');
+    await loadPublicEvents();
+  } catch(e) {
+    if (e.message.includes('23505')) showToast('Déjà enregistré !');
+    else console.error(e);
+  }
 }
 
 // ════════════════════════════════════════════════════
