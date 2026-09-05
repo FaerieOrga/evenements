@@ -1162,7 +1162,12 @@ input:-webkit-autofill:focus {
   <div class="modal-box" style="max-width:400px">
     <button class="modal-close" onclick="closeModal('modal-orga-auth')">✕</button>
     <div class="modal-title">⚔ Accès Organisateur</div>
-    <div class="form-group"><label>Mot de passe organisateur</label><input type="password" id="orga-pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter') doLoginOrga()"></div>
+    <div class="form-group"><label>Mot de passe organisateur</label>
+  <div style="position:relative">
+    <input type="password" id="orga-pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter') doLoginOrga()" style="padding-right:40px">
+    <button type="button" onclick="togglePwd('orga-pwd',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--ink-light)">👁</button>
+  </div>
+</div>
     <button class="btn btn-orga btn-full" onclick="doLoginOrga()">Accéder</button>
     <div class="msg-error" id="err-orga"></div>
   </div>
