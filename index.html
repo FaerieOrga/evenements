@@ -2720,7 +2720,10 @@ function openModal(id) { document.getElementById(id).classList.add('open'); } fu
 function showMsg(id, txt, type='error') { const el = document.getElementById(id); if(el){ el.textContent=txt; el.style.display='block'; el.className = type==='success'?'msg-success':'msg-error'; } }
 function hideMsg(id) { const el = document.getElementById(id); if(el) el.style.display='none'; }
 let toastTimer; function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),3200); }
-document.querySelectorAll('.modal-overlay').forEach(el => el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); }));
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  if (el.id === 'modal-event' || el.id === 'modal-missive') return; // Pas de fermeture au clic extérieur
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
 
   window.addEventListener('load', async () => {
   setTimeout(() => { const s = document.getElementById('search-input'); if(s) s.value=''; const o = document.getElementById('orga-search'); if(o) o.value=''; }, 500);
