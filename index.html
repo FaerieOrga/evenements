@@ -1343,7 +1343,7 @@ const ORGA_PASSWORD = 'Faerie2024!';
 
 // L'adresse de ton facteur Google !
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyvEKDVoslH3d5BnZhLaY7RO_JtTDDEfnRbZLzezZ8PNmWUi5yXEfPsZOhnBgHNaqij/exec';
-
+const EMAIL_NOTIF_TAVERNE = 'contact@xn--farie-csa.fr'; // ← adresse mail pour les notifs Taverne
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const state = {
@@ -2506,9 +2506,18 @@ async function envoyerMessageChatPublic() {
     // On vide la case et on recharge les messages
     input.value = '';
     await loadChatPublic();
+
+    // ALERTE EMAIL POUR TOI SEUL — sauf si c'est toi qui postes
+    if (state.user.email !== EMAIL_NOTIF_TAVERNE) {
+      sendEmailViaGAS(
+        EMAIL_NOTIF_TAVERNE,
+        `Nouveau message à la Taverne de ${prenom}`,
+        `<p><b>${prenom}</b> a posté un nouveau message dans La Taverne :</p><blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #58abbc;">${message.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</blockquote>`
+      );
+    }
   }
 }
-
+  
 // --- FONCTIONS BARRE D'OUTILS TAVERNE ---
 
 function insertFormat(tag) {
