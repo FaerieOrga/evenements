@@ -1782,7 +1782,7 @@ async function loadMesInscriptions() {
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
             ${badge}${actionBtn}
-            ${!interesse ? `<button class="btn-ghost btn-sm" onclick="passerEnInteresse('${ev.id}')">👀 Passer en intéressé·e</button>` : ''}
+            ${(inscrit && !enAttente && !interesse) ? `<button class="btn-ghost btn-sm" onclick="passerEnInteresse('${ev.id}')">👀 Passer en intéressé·e</button>` : ''}
             <button class="btn-ghost btn-sm" onclick="seDesinscrire('${ev.id}')">Se désinscrire</button>
           </div>
         </div>
