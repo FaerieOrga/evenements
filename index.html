@@ -1165,7 +1165,8 @@ input:-webkit-autofill:focus {
   <div class="modal-box" style="max-width:400px">
     <button class="modal-close" onclick="closeModal('modal-orga-auth')">✕</button>
     <div class="modal-title">⚔ Accès Organisateur</div>
-    <div class="form-group"><label>Mot de passe organisateur</label>
+    <div class="form-group"><label>Adresse e-mail</label><input type="email" id="orga-email" placeholder="votre@email.com"></div>
+<div class="form-group"><label>Mot de passe</label>
   <div style="position:relative">
     <input type="password" id="orga-pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter') doLoginOrga()" style="padding-right:40px">
     <button type="button" onclick="togglePwd('orga-pwd',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--ink-light)">👁</button>
@@ -1365,7 +1366,6 @@ input:-webkit-autofill:focus {
 // ════════════════════════════════════════════════════
 const SUPABASE_URL  = 'https://zutgjwnmolzwkbkdzfko.supabase.co';
 const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1dGdqd25tb2x6d2tia2R6ZmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NDczMTksImV4cCI6MjA5MTUyMzMxOX0.qQ0pCnU9JoPaHmaB-p9vvo5-8rN6LPjNIwf81SaYJbs';
-const ORGA_PASSWORD = 'Faerie2024!';
 
 // L'adresse de ton facteur Google !
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyvEKDVoslH3d5BnZhLaY7RO_JtTDDEfnRbZLzezZ8PNmWUi5yXEfPsZOhnBgHNaqij/exec';
@@ -2041,8 +2041,47 @@ function updateHeaderUserZone() {
   } else { zone.innerHTML = `<button class="btn btn-sm" onclick="openAuthModal()">Se connecter</button>`; }
 }
 function openAuthModal() { document.getElementById('auth-context').style.display = 'none'; document.getElementById('modal-auth-titre').textContent = 'Rejoindre Faérie'; state.pendingEventId = null; switchAuthTab('connexion'); openModal('modal-auth'); }
-function openOrgaLogin() { document.getElementById('orga-pwd').value = ''; hideMsg('err-orga'); openModal('modal-orga-auth'); }
-async function doLoginOrga() { if (document.getElementById('orga-pwd').value !== ORGA_PASSWORD) { showMsg('err-orga', 'Mot de passe incorrect.'); return; } closeModal('modal-orga-auth'); document.getElementById('public-screen').style.display = 'none'; document.getElementById('orga-screen').style.display = 'block'; showOrgaTab('events', document.getElementById('otab-events')); await loadOrgaEvents(); await loadOrgaMessagerie(); }
+async function openOrgaLogin() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session && session.user.app_metadata && session.user.app_metadata.is_admin === true) {
+    await entrerEspaceOrga();
+    return;
+  }
+  document.getElementById('orga-email').value = '';
+  document.getElementById('orga-pwd').value = '';
+  hideMsg('err-orga');
+  openModal('modal-orga-auth');
+}
+
+async function doLoginOrga() {
+  const email = document.getElementById('orga-email').value.trim();
+  const mdp = document.getElementById('orga-pwd').value;
+  hideMsg('err-orga');
+  if (!email || !mdp) { showMsg('err-orga', 'Adresse e-mail et mot de passe requis.'); return; }
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: mdp });
+  if (error) { showMsg('err-orga', 'Adresse e-mail ou mot de passe incorrect.'); return; }
+
+  if (data.user.app_metadata?.is_admin !== true) {
+    await sb.auth.signOut();
+    showMsg('err-orga', "Ce compte n'a pas les droits organisateur.");
+    return;
+  }
+
+  state.user = data.user;
+  updateHeaderUserZone();
+  closeModal('modal-orga-auth');
+  await entrerEspaceOrga();
+}
+
+async function entrerEspaceOrga() {
+  document.getElementById('public-screen').style.display = 'none';
+  document.getElementById('joueur-screen').style.display = 'none';
+  document.getElementById('orga-screen').style.display = 'block';
+  showOrgaTab('events', document.getElementById('otab-events'));
+  await loadOrgaEvents();
+  await loadOrgaMessagerie();
+}
 function logoutOrga() { document.getElementById('orga-screen').style.display = 'none'; document.getElementById('public-screen').style.display = ''; }
 function showOrgaTab(tab, btn) { 
   document.querySelectorAll('#orga-screen .joueur-tab-btn').forEach(b => b.classList.remove('active')); 
