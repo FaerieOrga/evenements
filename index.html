@@ -1016,7 +1016,7 @@ input:-webkit-autofill:focus {
         </div>
         <table class="orga-table">
           <thead>
-            <tr><th>Titre</th><th>Début</th><th>Lieu</th><th>Type</th><th>Places</th><th>Actions</th></tr>
+            <tr><th>Titre</th><th>Début</th><th>Lieu</th><th>Type</th><th>Places libres</th><th>Actions</th></tr>
           </thead>
           <tbody id="orga-events-body">
             <tr><td colspan="6" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement…</td></tr>
@@ -1529,7 +1529,7 @@ function renderPublicEvents(list) {
       <div class="event-card-footer">
         <div class="jauge-wrap">
           <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
-          <button type="button" class="slots-info-btn" onclick="voirParticipantsPublic('${ev.id}', '${ev.titre.replace(/'/g,"\\'").replace(/"/g,'')}')">${placesDispo} / ${placesTot}</button>
+          <button type="button" class="slots-info-btn" onclick="voirParticipantsPublic('${ev.id}', '${ev.titre.replace(/'/g,"\\'").replace(/"/g,'')}')">${Math.max(0, placesDispo)} place${placesDispo > 1 ? 's' : ''} libre${placesDispo > 1 ? 's' : ''} sur ${placesTot}</button>
           ${complet && !inscrit && !enAttente && !interesse ? '<span class="badge-attente">COMPLET</span>' : ''}
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${btnHtml}</div>
@@ -1777,7 +1777,7 @@ async function loadMesInscriptions() {
         <div class="event-card-footer">
           <div class="jauge-wrap">
             <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
-            <button type="button" class="slots-info-btn" onclick="voirParticipantsPublic('${ev.id}', '${ev.titre.replace(/'/g,"\\'").replace(/"/g,'')}')">${placesDispo} / ${placesTot}</button>
+            <button type="button" class="slots-info-btn" onclick="voirParticipantsPublic('${ev.id}', '${ev.titre.replace(/'/g,"\\'").replace(/"/g,'')}')">${Math.max(0, placesDispo)} place${placesDispo > 1 ? 's' : ''} libre${placesDispo > 1 ? 's' : ''} sur ${placesTot}</button>
             ${complet && !inscrit && !enAttente ? '<span class="badge-attente">COMPLET</span>' : ''}
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
