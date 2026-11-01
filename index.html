@@ -909,7 +909,7 @@ input:-webkit-autofill:focus {
       </div>
       </div>
     <div class="site-footer">
-      <button class="footer-orga-link" onclick="openOrgaLogin()">⚔ Accès organisateur</button>
+      
     </div>
     </div>
   </div>
@@ -2036,7 +2036,11 @@ async function logoutJoueur() { await sb.auth.signOut(); state.user = null; stat
 function updateHeaderUserZone() {
   const zone = document.getElementById('header-user-zone');
   if (state.user) {
-    zone.innerHTML = `<button class="btn-ghost" onclick="ouvrirEspaceJoueur()" style="position:relative">✦ ${state.user.user_metadata?.prenom || 'Moi'}<span id="header-notif-dot" style="display:none;position:absolute;top:2px;right:2px;width:8px;height:8px;background:var(--red-blood);border-radius:50%"></span></button><button class="btn-ghost" onclick="logoutJoueur()">Déconnexion</button>`;
+    const estAdmin = state.user.app_metadata?.is_admin === true;
+    const boutonOrga = estAdmin
+      ? `<button class="btn-ghost" style="border-color:#58abbc;color:#58abbc" onclick="entrerEspaceOrga()">⚔ Organisation</button>`
+      : '';
+    zone.innerHTML = `${boutonOrga}<button class="btn-ghost" onclick="ouvrirEspaceJoueur()" style="position:relative">✦ ${state.user.user_metadata?.prenom || 'Moi'}<span id="header-notif-dot" style="display:none;position:absolute;top:2px;right:2px;width:8px;height:8px;background:var(--red-blood);border-radius:50%"></span></button><button class="btn-ghost" onclick="logoutJoueur()">Déconnexion</button>`;
     checkNouveauxMessages().then(() => { const dot = document.getElementById('notif-msg-dot'); const hdot = document.getElementById('header-notif-dot'); if (hdot && dot) hdot.style.display = dot.style.display; });
   } else { zone.innerHTML = `<button class="btn btn-sm" onclick="openAuthModal()">Se connecter</button>`; }
 }
