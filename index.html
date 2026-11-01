@@ -834,6 +834,37 @@ input:-webkit-autofill:focus {
   html {
   background-color: #e8f4f7;
 }
+
+  @media (max-width: 900px) {
+  #home-mobile-tabs {
+    gap: 4px;
+    margin-bottom: 16px;
+    border-bottom: 3px solid #58abbc;
+  }
+  #home-mobile-tabs button {
+    flex: 1;
+    padding: 14px 8px;
+    font-size: 0.85rem;
+    border: 1px solid #cbd5e1;
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+    background: #e2e8f0;
+    color: #64748b;
+    box-shadow: none;
+    font-weight: normal;
+  }
+  #home-mobile-tabs button.active {
+    background: #58abbc;
+    color: #ffffff;
+    border-color: #58abbc;
+    font-weight: bold;
+    box-shadow: none;
+  }
+  #home-mobile-tabs button:not(.active)::after {
+    content: ' 👆';
+  }
+}
+  
 </style>
 </head>
 <body>
