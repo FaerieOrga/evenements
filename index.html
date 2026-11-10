@@ -1450,7 +1450,7 @@ async function loadPublicEvents() {
     const { data: allEventsFromDB } = await sb.from('evenements').select('*').order('date_debut', { ascending: true });
     state.allEvents = allEventsFromDB || [];
     const { data: allInscriptions } = await sb.from('inscriptions').select('event_id, user_id');
-    const { data: profils } = await sb.from('profils').select('id, prenom, nom');
+    const { data: profils } = await sb.from('profils_publics').select('id, prenom, nom');
     
     state.allProfils = profils || [];
     state.allInscriptionsData = allInscriptions || [];
@@ -1732,7 +1732,7 @@ async function loadMesInscriptions() {
 
     const { data: evs } = await sb.from('evenements').select('*').in('id', allIds).order('date_debut', { ascending: true });
     const { data: allInscriptions } = await sb.from('inscriptions').select('event_id, user_id');
-    const { data: profils } = await sb.from('profils').select('id, prenom, nom');
+    const { data: profils } = await sb.from('profils_publics').select('id, prenom, nom');
 
     const annuaire = {};
     (profils || []).forEach(p => {
@@ -2316,7 +2316,7 @@ async function voirParticipantsPublic(eventId, titre) {
 
   try {
     const { data: inscr } = await sb.from('inscriptions').select('user_id').eq('event_id', eventId);
-    const { data: profils } = await sb.from('profils').select('id, prenom, nom');
+    const { data: profils } = await sb.from('profils_publics').select('id, prenom, nom');
     const annuaire = {};
     if (profils) profils.forEach(p => annuaire[p.id] = `${p.prenom} ${p.nom}`);
 
@@ -2343,7 +2343,7 @@ async function voirParticipants(eventId, titre) {
     const { data: attente } = await sb.from('liste_attente').select('user_id').eq('event_id', eventId);
     const { data: interData } = await sb.from('interesses').select('user_id').eq('event_id', eventId);
 
-    const { data: profils } = await sb.from('profils').select('id, prenom, nom');
+    const { data: profils } = await sb.from('profils_publics').select('id, prenom, nom');
     const annuaire = {}; 
     if (profils) profils.forEach(p => annuaire[p.id] = `${p.prenom} ${p.nom}`);
     
