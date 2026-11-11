@@ -1,11 +1,96 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-MN49RWMP"></script>
-<script>
+ <script>
+// ── Mesure d'audience (Google Analytics) : chargée seulement après accord ──
+(function () {
+  var CLE = 'faerie_cookies_analytics';
   window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  window.gtag = function () { dataLayer.push(arguments); };
+
+  function lireChoix() {
+    try {
+      var brut = localStorage.getItem(CLE);
+      if (!brut) return null;
+      var p = brut.split('|');
+      if (Date.now() - Number(p[1]) > 180 * 24 * 3600 * 1000) return null; // on redemande tous les 6 mois
+      return p[0];
+    } catch (e) { return null; }
+  }
+  function ecrireChoix(v) {
+    try { localStorage.setItem(CLE, v + '|' + Date.now()); } catch (e) {}
+  }
+
+  function chargerAnalytics() {
+    if (window.__analyticsCharge) return;
+    window.__analyticsCharge = true;
+    gtag('js', new Date());
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-MN49RWMP';
+    document.head.appendChild(s);
+  }
+
+  function supprimerCookiesGoogle() {
+    document.cookie.split(';').forEach(function (c) {
+      var nom = c.split('=')[0].trim();
+      if (nom === '_ga' || nom === '_gid' || nom.indexOf('_ga_') === 0) {
+        var vieux = '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+        document.cookie = nom + vieux;
+        document.cookie = nom + vieux + '; domain=' + location.hostname;
+      }
+    });
+  }
+
+  function choisir(valeur) {
+    var dejaCharge = window.__analyticsCharge;
+    ecrireChoix(valeur);
+    var b = document.getElementById('bandeau-cookies');
+    if (b) b.remove();
+    if (valeur === 'oui') {
+      chargerAnalytics();
+    } else {
+      supprimerCookiesGoogle();
+      if (dejaCharge) location.reload(); // coupe la mesure en cours
+    }
+  }
+
+  function afficherBandeau() {
+    if (document.getElementById('bandeau-cookies')) return;
+    var style = 'padding:10px 22px;background:#fff;color:#1e293b;border:1px solid #58abbc;border-radius:4px;' +
+                'font-family:Cinzel,serif;font-size:0.8rem;letter-spacing:1px;cursor:pointer;font-weight:600';
+    var b = document.createElement('div');
+    b.id = 'bandeau-cookies';
+    b.setAttribute('role', 'dialog');
+    b.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;z-index:400;max-width:560px;margin:0 auto;' +
+      'background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px 18px;' +
+      "box-shadow:0 10px 40px rgba(0,0,0,0.3);font-family:'Crimson Text',Georgia,serif;color:#1e293b;" +
+      'font-size:0.95rem;line-height:1.5';
+    b.innerHTML =
+      '<div style="margin-bottom:12px">Pour savoir si cette page est utile, nous mesurons sa fréquentation avec ' +
+      'Google Analytics (cookies). Acceptez-vous ? Vous pouvez changer d\'avis à tout moment via « Gérer les cookies », en bas de page.</div>' +
+      '<div style="display:flex;gap:10px;flex-wrap:wrap">' +
+      '<button id="cookies-oui" style="' + style + '">Accepter</button>' +
+      '<button id="cookies-non" style="' + style + '">Refuser</button></div>';
+    document.body.appendChild(b);
+    document.getElementById('cookies-oui').onclick = function () { choisir('oui'); };
+    document.getElementById('cookies-non').onclick = function () { choisir('non'); };
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var pied = document.querySelector('.site-footer');
+    if (pied) {
+      var lien = document.createElement('button');
+      lien.className = 'footer-orga-link';
+      lien.textContent = '🍪 Gérer les cookies';
+      lien.onclick = afficherBandeau;
+      pied.appendChild(lien);
+    }
+    var choix = lireChoix();
+    if (choix === 'oui') chargerAnalytics();
+    else if (choix !== 'non') afficherBandeau();
+  });
+})();
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
