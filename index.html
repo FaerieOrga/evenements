@@ -1127,16 +1127,17 @@ input:-webkit-autofill:focus {
         </div>
         <table class="orga-table">
           <thead>
-            <tr>
-             <th style="cursor:pointer" onclick="trierProfils('prenom')">Prénom ↕</th>
-             <th style="cursor:pointer" onclick="trierProfils('nom')">Nom ↕</th>
-             <th style="cursor:pointer" onclick="trierProfils('email')">Email ↕</th>
-             <th style="cursor:pointer" onclick="trierProfils('date_inscription')">Inscrit le ↕</th>
-             <th style="cursor:pointer" onclick="trierProfils('derniere_connexion')">Dernière connexion ↕</th>
-             <th style="cursor:pointer" onclick="trierProfils('nb_inscriptions')">Inscriptions à venir ↕</th>
-             <th>Actions</th>
-           </tr>
-          </thead>
+  <tr>
+    <th style="cursor:pointer" onclick="trierProfils('prenom')">Prénom ↕</th>
+    <th style="cursor:pointer" onclick="trierProfils('nom')">Nom ↕</th>
+    <th style="cursor:pointer" onclick="trierProfils('email')">Email ↕</th>
+    <th style="cursor:pointer" onclick="trierProfils('date_inscription')">Inscrit le ↕</th>
+    <th style="cursor:pointer" onclick="trierProfils('derniere_connexion')">Dernier mot de passe ↕</th>
+    <th style="cursor:pointer" onclick="trierProfils('derniere_activite')">Dernière activité ↕</th>
+    <th style="cursor:pointer" onclick="trierProfils('nb_inscriptions')">Inscriptions à venir ↕</th>
+    <th>Actions</th>
+  </tr>
+</thead>
           <tbody id="orga-profils-body">
             <tr><td colspan="4" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement des parchemins...</td></tr>
           </tbody>
@@ -2122,6 +2123,7 @@ async function logoutJoueur() { await sb.auth.signOut(); state.user = null; stat
 function updateHeaderUserZone() {
   const zone = document.getElementById('header-user-zone');
   if (state.user) {
+        sb.rpc('noter_activite').then(() => {});
     const estAdmin = state.user.app_metadata?.is_admin === true;
     const boutonOrga = estAdmin
       ? `<button class="btn-ghost" style="border-color:#58abbc;color:#58abbc" onclick="entrerEspaceOrga()">⚔ Organisation</button>`
@@ -3110,7 +3112,7 @@ function echapperHtml(t) {
 async function loadOrgaProfils() {
   const tbody = document.getElementById('orga-profils-body');
   if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Chargement...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Chargement...</td></tr>';
   try {
     const { data, error } = await sb.rpc('liste_membres_admin');
     if (error) throw error;
@@ -3118,7 +3120,7 @@ async function loadOrgaProfils() {
     appliquerFiltreTriProfils();
   } catch (e) {
     console.error(e);
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--red-blood);">Erreur de lecture des profils.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--red-blood);">Erreur de lecture des profils.</td></tr>';
   }
 }
 
@@ -3134,7 +3136,7 @@ function appliquerFiltreTriProfils() {
   const liste = (state.allProfilsList || [])
     .filter(p => (p.prenom || '').toLowerCase().includes(q) || (p.nom || '').toLowerCase().includes(q) || (p.email || '').toLowerCase().includes(q))
     .sort((a, b) => {
-      if (cle === 'date_inscription' || cle === 'derniere_connexion') {
+      if (cle === 'date_inscription' || cle === 'derniere_connexion' || cle === 'derniere_activite') {
         const va = a[cle] ? new Date(a[cle]).getTime() : 0;
         const vb = b[cle] ? new Date(b[cle]).getTime() : 0;
         return (va - vb) * sens;
@@ -3148,7 +3150,7 @@ function appliquerFiltreTriProfils() {
 function renderProfilsTable(list) {
   const tbody = document.getElementById('orga-profils-body');
   const fmt = iso => iso ? new Date(iso).toLocaleDateString('fr-FR') : '—';
-  if (!list.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Aucun résultat.</td></tr>'; return; }
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Aucun résultat.</td></tr>'; return; }
   tbody.innerHTML = list.map(p => `
     <tr>
       <td>${echapperHtml(p.prenom) || '—'}</td>
@@ -3156,6 +3158,7 @@ function renderProfilsTable(list) {
       <td><small>${echapperHtml(p.email) || '—'}</small></td>
       <td>${fmt(p.date_inscription)}</td>
       <td>${p.derniere_connexion ? fmt(p.derniere_connexion) : 'Jamais'}</td>
+      <td>${p.derniere_activite ? fmt(p.derniere_activite) : '—'}</td>
       <td>${p.nb_inscriptions ?? 0}</td>
       <td><button class="btn btn-sm" onclick="ouvrirConvDepuisProfil('${p.id}')">💬 Message</button></td>
     </tr>`).join('');
