@@ -1,341 +1,2165 @@
 <!DOCTYPE html>
+
 <html lang="fr">
+
 <head>
+
 <script>
+
 // ── Mesure d'audience (Google Analytics) : chargée seulement après accord ──
+
 (function () {
+
   var CLE = 'faerie_cookies_analytics';
+
   window.dataLayer = window.dataLayer || [];
+
   window.gtag = function () { dataLayer.push(arguments); };
 
+
+
   function lireChoix() {
+
     try {
+
       var brut = localStorage.getItem(CLE);
+
       if (!brut) return null;
+
       var p = brut.split('|');
+
       if (Date.now() - Number(p[1]) > 180 * 24 * 3600 * 1000) return null;
+
       return p[0];
+
     } catch (e) { return null; }
+
   }
+
   function ecrireChoix(v) {
+
     try { localStorage.setItem(CLE, v + '|' + Date.now()); } catch (e) {}
+
   }
+
+
 
   function chargerAnalytics() {
+
     if (window.__analyticsCharge) return;
+
     window.__analyticsCharge = true;
+
     gtag('js', new Date());
+
     var s = document.createElement('script');
+
     s.async = true;
+
     s.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-MN49RWMP';
+
     document.head.appendChild(s);
+
   }
+
+
 
   function supprimerCookiesGoogle() {
+
     document.cookie.split(';').forEach(function (c) {
+
       var nom = c.split('=')[0].trim();
+
       if (nom === '_ga' || nom === '_gid' || nom.indexOf('_ga_') === 0) {
+
         var vieux = '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+
         document.cookie = nom + vieux;
+
         document.cookie = nom + vieux + '; domain=' + location.hostname;
+
       }
+
     });
+
   }
+
+
 
   function choisir(valeur) {
+
     var dejaCharge = window.__analyticsCharge;
+
     ecrireChoix(valeur);
+
     var b = document.getElementById('bandeau-cookies');
+
     if (b) b.remove();
+
     if (valeur === 'oui') {
+
       chargerAnalytics();
+
     } else {
+
       supprimerCookiesGoogle();
+
       if (dejaCharge) location.reload();
+
     }
+
   }
+
+
 
   function afficherBandeau() {
+
     if (document.getElementById('bandeau-cookies')) return;
+
     var style = 'padding:10px 22px;background:#fff;color:#1e293b;border:1px solid #58abbc;border-radius:4px;' +
+
                 'font-family:Cinzel,serif;font-size:0.8rem;letter-spacing:1px;cursor:pointer;font-weight:600';
+
     var b = document.createElement('div');
+
     b.id = 'bandeau-cookies';
+
     b.setAttribute('role', 'dialog');
+
     b.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;z-index:400;max-width:560px;margin:0 auto;' +
+
       'background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px 18px;' +
+
       "box-shadow:0 10px 40px rgba(0,0,0,0.3);font-family:'Crimson Text',Georgia,serif;color:#1e293b;" +
+
       'font-size:0.95rem;line-height:1.5';
+
     b.innerHTML =
+
       '<div style="margin-bottom:12px">Pour savoir si cette page est utile, nous mesurons sa fréquentation avec ' +
+
       'Google Analytics (cookies). Acceptez-vous ? Vous pouvez changer d\'avis à tout moment via « Gérer les cookies », en bas de page.</div>' +
+
       '<div style="display:flex;gap:10px;flex-wrap:wrap">' +
+
       '<button id="cookies-oui" style="' + style + '">Accepter</button>' +
+
       '<button id="cookies-non" style="' + style + '">Refuser</button></div>';
+
     document.body.appendChild(b);
+
     document.getElementById('cookies-oui').onclick = function () { choisir('oui'); };
+
     document.getElementById('cookies-non').onclick = function () { choisir('non'); };
+
   }
 
+
+
   document.addEventListener('DOMContentLoaded', function () {
+
     var pied = document.querySelector('.site-footer');
+
     if (pied) {
-      // 1. Bouton Cookies
+
       var lien = document.createElement('button');
+
       lien.className = 'footer-orga-link';
+
       lien.textContent = '🍪 Gérer les cookies';
+
       lien.onclick = afficherBandeau;
+
       pied.appendChild(lien);
 
-      // 2. Séparateur 1
-      var sep1 = document.createElement('span');
-      sep1.className = 'footer-orga-link';
-      sep1.style.margin = '0 6px';
-      sep1.textContent = '·';
-      pied.appendChild(sep1);
 
-      // 3. Lien Politique de confidentialité
+
+      var sep = document.createElement('span');
+
+      sep.className = 'footer-orga-link';
+
+      sep.style.margin = '0 6px';
+
+      sep.textContent = '·';
+
+      pied.appendChild(sep);
+
+
+
       var lienConf = document.createElement('a');
+
       lienConf.className = 'footer-orga-link';
-      lienConf.href = 'https://www.xn--farie-csa.fr/politique-de-confidentialit%C3%A9';
-      lienConf.textContent = 'Confidentialité';
+
+      lienConf.href = 'https://www.xn--farie-csa.fr/politique-de-confidentialit%C3%A9'; // ← adaptez si besoin
+
+      lienConf.textContent = 'Confidentialités';
+
       lienConf.style.textDecoration = 'none';
+
       pied.appendChild(lienConf);
 
-      // 4. Séparateur 2
-      var sep2 = document.createElement('span');
-      sep2.className = 'footer-orga-link';
-      sep2.style.margin = '0 6px';
-      sep2.textContent = '·';
-      pied.appendChild(sep2);
-
-      // 5. Lien Mentions Légales
-      var lienMentions = document.createElement('a');
-      lienMentions.className = 'footer-orga-link';
-      lienMentions.href = 'https://www.xn--farie-csa.fr/mentions-legales'; // ← Modifiez l'URL si besoin
-      lienMentions.textContent = 'Mentions légales';
-      lienMentions.style.textDecoration = 'none';
-      pied.appendChild(lienMentions);
     }
 
     var choix = lireChoix();
+
     if (choix === 'oui') chargerAnalytics();
+
     else if (choix !== 'non') afficherBandeau();
+
   });
+
 })();
+
 </script>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Événements</title>
+
   <link rel="icon" href="https://raw.githubusercontent.com/FaerieOrga/images-forum/main/logo32%20copie.jpg" />
+
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
+
 :root {
+
   --parchment:    #ffffff;
+
   --parchment-dk: #f8fafc;
+
   --ink:          #1e293b;
+
   --ink-light:    #64748b;
+
   --red-blood:    #b91c1c;
+
   --gold:         #8c7b50;
+
   --gold-light:   #cbd5e1;
+
   --border:       #e2e8f0;
+
   --shadow:       rgba(15, 23, 42, 0.08);
+
   --bg-img:       url('https://drive.google.com/uc?export=view&id=142vQlX6NsPL118l3x-VHn9iNx94Vydng');
+
 }
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
+
   min-height: 100vh;
-  background: linear-gradient(to bottom,  
-    #58abbc 0%,    
-    #66b5c6 50%,   
-    #e8f4f7 100%   
+
+  /* On part du bleu de ta barre de menu pour aller vers le bleu clair du fond de ton forum */
+
+  background: linear-gradient(to bottom, 
+
+    #58abbc 0%,    /* Bleu de la barre de menu */
+
+    #66b5c6 50%,   /* Bleu des boutons "Nouvelle discussion" */
+
+    #e8f4f7 100%   /* Bleu très clair du fond de page du forum */
+
   ) fixed;
+
   font-family: 'Crimson Text', Georgia, serif;
+
   color: var(--ink);
+
   font-size: 16px;
+
   line-height: 1.6;
-  overflow-y: visible; /* Évite la double barre de scroll */
+
 }
+
 body::before {
+
   content: '';
+
   position: fixed; inset: 0;
+
   background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.15) 100%);
+
   pointer-events: none;
+
   z-index: 0;
+
 }
+
 #app {
+
   position: relative;
+
   z-index: 1;
+
   max-width: 1300px;
+
   width: 100%;
+
   margin: 0 auto;
+
   padding: 20px 16px 60px;
+
 }
+
 .parchment {
+
   background: var(--parchment);
+
   border: 1px solid rgba(255,255,255,0.8);
+
   border-radius: 8px;
+
   padding: 36px 40px;
+
   box-shadow: 0 10px 40px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.03);
+
   position: relative;
+
   overflow: hidden;
-  height: auto;
+
 }
+
 .parchment::before, .parchment::after {
+
   content: '✦';
+
   position: absolute;
+
   font-size: 24px;
+
   color: #cbd5e1;
+
   opacity: 0.5;
+
   line-height: 1;
+
 }
+
 .parchment::before { top: 12px; left: 16px; }
+
 .parchment::after  { bottom: 12px; right: 16px; }
 
+
+
 /* ── EN-TÊTE ── */
+
 .site-header { text-align: center; padding: 32px 0 24px; }
+
 .site-title {
+
   font-family: 'Cinzel', serif;
+
   font-size: 2.6rem;
+
   font-weight: 700;
+
   color: #ffffff;
+
   text-shadow: 0 2px 12px rgba(0,0,0,0.6), 0 0 20px rgba(255,255,255,0.2);
+
   letter-spacing: 3px;
+
   margin-bottom: 6px;
+
 }
+
 .site-subtitle {
+
   font-family: 'IM Fell English', serif;
+
   font-style: italic;
+
   color: #bae6fd;
+
   font-size: 1.15rem;
+
   text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+
 }
+
+
 
 /* ── FORMS ── */
+
 .form-group { margin-bottom: 16px; text-align: left; }
+
 label {
+
   display: block;
+
   font-family: 'Cinzel', serif;
+
   font-size: 0.78rem;
+
   letter-spacing: 1.5px;
+
   color: var(--ink-light);
+
   margin-bottom: 5px;
+
   text-transform: uppercase;
+
 }
+
 input[type="text"], input[type="email"], input[type="password"],
+
 input[type="date"], input[type="datetime-local"], input[type="number"], select, textarea {
+
   width: 100%;
+
   background: #f8fafc;
+
   border: 1px solid var(--border);
+
   border-radius: 4px;
+
   padding: 9px 12px;
+
   font-family: 'Crimson Text', serif;
+
   font-size: 1rem;
+
   color: var(--ink);
+
   outline: none;
+
   transition: border-color 0.2s, box-shadow 0.2s;
+
 }
+
 input:focus, select:focus, textarea:focus {
+
   border-color: #64748b;
+
   box-shadow: 0 0 0 2px rgba(100,116,139,0.15);
+
 }
+
 textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
 
-/* ── BOUTONS ── */
-.btn {
-  display: inline-block;
-  padding: 8px 16px;    
-  background: #58abbc;
-  color: #ffffff;
-  border: none;
-  border-radius: 4px;
-  font-family: 'Cinzel', serif;
-  font-size: 0.65rem;  
-  letter-spacing: 1.5px; 
-  cursor: pointer;
-  text-transform: uppercase;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 6px rgba(88, 171, 188, 0.2);
-}
-.btn:hover {
-  background: #468e9d; 
-  box-shadow: 0 4px 12px rgba(88, 171, 188, 0.4);
-  transform: translateY(-1px);
-}
-.btn-ghost {
-  display: inline-flex;     
-  align-items: center;      
-  background: transparent;
-  border: 1px solid #cbd5e1;
-  color: var(--ink-light);
-  padding: 9px 16px;        
-  font-family: 'Cinzel', serif;
-  font-size: 0.75rem;        
-  letter-spacing: 1.5px;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  height: 40px;             
-  box-sizing: border-box;   
-}
-.btn-ghost:hover { 
-  background: #f1f5f9; 
-  color: var(--ink); 
-  border-color: #94a3b8;
+#chat-public-input-zone textarea {
+
+  font-size: 0.88rem;
+
+} 
+
+
+
+/* Empêche le fond bleu/jaune de la saisie automatique */
+
+input:-webkit-autofill,
+
+input:-webkit-autofill:hover, 
+
+input:-webkit-autofill:focus {
+
+  -webkit-text-fill-color: var(--ink);
+
+  -webkit-box-shadow: 0 0 0px 1000px #f8fafc inset;
+
+  transition: background-color 5000s ease-in-out 0s;
+
 }
 
-/* ── LAYOUT ACCUEIL ── */
-.home-layout {
+
+
+/* ── BOUTONS ── */
+
+.btn {
+
+  display: inline-block;
+
+  padding: 8px 16px;    
+
+  background: #58abbc;
+
+  color: #ffffff;
+
+  border: none;
+
+  border-radius: 4px;
+
+  font-family: 'Cinzel', serif;
+
+  font-size: 0.65rem;   /* Réduit de 0.85rem à 0.75rem */
+
+  letter-spacing: 1.5px; /* Un peu moins d'espacement pour gagner en largeur */
+
+  cursor: pointer;
+
+  text-transform: uppercase;
+
+  transition: all 0.3s ease;
+
+  box-shadow: 0 2px 6px rgba(88, 171, 188, 0.2);
+
+}
+
+
+
+.btn:hover {
+
+  background: #468e9d; /* Un bleu un peu plus sombre au survol */
+
+  box-shadow: 0 4px 12px rgba(88, 171, 188, 0.4);
+
+  transform: translateY(-1px);
+
+}
+
+.btn-ghost {
+
+  display: inline-flex;     /* Permet d'aligner l'icône et le texte facilement */
+
+  align-items: center;      /* Centre verticalement le contenu */
+
+  background: transparent;
+
+  border: 1px solid #cbd5e1;
+
+  color: var(--ink-light);
+
+  padding: 9px 16px;        /* On passe à 9px pour correspondre aux inputs  */
+
+  font-family: 'Cinzel', serif;
+
+  font-size: 0.75rem;       /* On augmente un peu la taille (au lieu de 0.55rem [cite: 29]) */
+
+  letter-spacing: 1.5px;
+
+  cursor: pointer;
+
+  border-radius: 4px;
+
+  transition: all 0.3s ease;
+
+  text-transform: uppercase;
+
+  height: 40px;             /* Force une hauteur fixe identique pour tous les éléments */
+
+  box-sizing: border-box;   /* Garantit que la bordure ne dépasse pas la hauteur [cite: 5] */
+
+}
+
+
+
+.btn-ghost:hover { 
+
+  background: #f1f5f9; 
+
+  color: var(--ink); 
+
+  border-color: #94a3b8;
+
+}
+
+
+
+/* ── MESSAGES ── */
+
+.msg-error {
+
+  background: #fef2f2;
+
+  border: 1px solid #fecaca;
+
+  color: var(--red-blood);
+
+  padding: 8px 14px;
+
+  border-radius: 4px;
+
+  font-size: 0.9rem;
+
+  margin-top: 10px;
+
+  display: none;
+
+}
+
+.msg-success {
+
+  background: #f0fdf4;
+
+  border: 1px solid #bbf7d0;
+
+  color: #166534;
+
+  padding: 8px 14px;
+
+  border-radius: 4px;
+
+  font-size: 0.9rem;
+
+  margin-top: 10px;
+
+  display: none;
+
+}
+
+
+
+/* ── LOGOUT BAR ── */
+
+.logout-bar {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 20px;
+
+  padding: 10px 16px;
+
+  background: rgba(255,255,255,0.95);
+
+  border-radius: 6px;
+
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+
+  color: var(--ink);
+
+  gap: 10px;
+
+  flex-wrap: nowrap;
+
+}
+
+.logout-bar span { 
+
+  font-family: 'Cinzel', serif; 
+
+  font-size: 0.78rem; 
+
+  letter-spacing: 1px; 
+
+  font-weight: 600;
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
+  flex-shrink: 1;
+
+}
+
+.logout-bar > div {
+
+  display: flex;
+
+  gap: 8px;
+
+  flex-shrink: 0;
+
+}
+
+
+
+  #joueur-screen .parchment {
+
+  margin: 0 0 20px 0;
+
+}
+
+
+
+@media (max-width: 600px) {
+
+  #joueur-logout-bar {
+
+    flex-direction: column;
+
+    align-items: center;
+
+    text-align: center;
+
+  }
+
+}
+
+
+
+/* ── ONGLETS ── */
+
+.tab-switch {
+
+  display: flex;
+
+  margin-bottom: 24px;
+
+  border: 1px solid var(--border);
+
+  border-radius: 4px;
+
+  overflow: hidden;
+
+}
+
+.tab-switch button {
+
+  flex: 1;
+
+  padding: 10px;
+
+  background: #f8fafc;
+
+  border: none;
+
+  border-right: 1px solid var(--border);
+
+  font-family: 'Cinzel', serif;
+
+  font-size: 0.85rem;
+
+  letter-spacing: 1px;
+
+  color: var(--ink-light);
+
+  cursor: pointer;
+
+  transition: background 0.2s, color 0.2s;
+
+}
+
+.tab-switch button:last-child { border-right: none; }
+
+.tab-switch button.active { background: var(--ink); color: #fff; font-weight: 600; }
+
+
+
+/* ── FILTRE ── */
+
+.filter-bar {
+
+  display: flex;
+
+  gap: 10px;
+
+  align-items: center;
+
+  margin-bottom: 22px;
+
+  flex-wrap: wrap;
+
+}
+
+.filter-bar input, .filter-bar select { flex: 1; min-width: 140px; max-width: 260px; }
+
+
+
+/* ── CARTES ÉVÉNEMENTS ── */
+
+.events-grid { display: flex; flex-direction: column; gap: 18px; }
+
+.event-card {
+
+  border: 1px solid var(--border);
+
+  background: #ffffff;
+
+  border-radius: 6px;
+
+  transition: box-shadow 0.2s, transform 0.15s;
+
+}
+
+.event-card:hover { box-shadow: 0 8px 24px var(--shadow); transform: translateY(-2px); }
+
+.event-card-header {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: flex-start;
+
+  padding: 16px 20px 12px;
+
+  border-bottom: 1px solid #f1f5f9;
+
+  gap: 12px;
+
+  flex-wrap: wrap;
+
+}
+
+.event-card-titre {
+
+  font-family: 'Cinzel', serif;
+
+  font-size: 1.15rem;
+
+  font-weight: 700;
+
+  color: var(--ink);
+
+  flex: 1;
+
+}
+
+.event-card-type {
+
+  display: inline-block;
+
+  padding: 4px 12px;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 4px;
+
+  font-family: 'Cinzel', serif;
+
+  font-size: 0.68rem;
+
+  letter-spacing: 1px;
+
+  background: #f8fafc;
+
+  color: var(--ink-light);
+
+  white-space: nowrap;
+
+}
+
+.event-card-body {
+
   display: grid;
-  grid-template-columns: 1fr 1fr; 
-  gap: 24px;
-  align-items: start;
+
+  grid-template-columns: 1fr 1fr 1fr;
+
+  gap: 10px;
+
+  padding: 14px 20px;
+
+}
+
+.event-info-item { display: flex; flex-direction: column; gap: 2px; }
+
+.event-info-label {
+
+  font-family: 'Cinzel', serif;
+
+  font-size: 0.65rem;
+
+  letter-spacing: 1.5px;
+
+  text-transform: uppercase;
+
+  color: var(--ink-light);
+
+}
+
+.event-info-val { font-family: 'Crimson Text', serif; font-size: 0.97rem; color: var(--ink); word-break: break-word; }
+
+.event-description {
+
+  font-family: 'Georgia', serif;
+
+  font-size: 0.85rem;
+
+  color: var(--ink);
+
+  line-height: 1.75;
+
+  padding: 0 20px 14px;
+
+  border-bottom: 1px solid #f1f5f9;
+
+  white-space: pre-wrap; /* Maintien des sauts de ligne */
+
+}
+
+.event-card-footer {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  padding: 12px 20px 16px;
+
+  gap: 10px;
+
+  flex-wrap: wrap;
+
+}
+
+.jauge-wrap { display: flex; align-items: center; gap: 8px; }
+
+.jauge-bar { width: 120px; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+
+.jauge-fill { height: 100%; background: #94a3b8; border-radius: 3px; transition: width 0.4s; }
+
+.jauge-fill.complet { background: var(--red-blood); }
+
+.jauge-text { font-family: 'Cinzel', serif; font-size: 0.72rem; color: var(--ink-light); white-space: nowrap; }
+
+.badge-attente {
+
+  background: #fef2f2;
+
+  border: 1px solid #fecaca;
+
+  color: var(--red-blood);
+
+  font-family: 'Cinzel', serif;
+
+  font-size: 0.68rem;
+
+  letter-spacing: 1px;
+
+  padding: 3px 10px;
+
+  border-radius: 4px;
+
+}
+
+.badge-inscrit {
+
+  background: #f0fdf4;
+
+  border: 1px solid #bbf7d0;
+
+  color: #166534;
+
+  font-family: 'Cinzel', serif;
+
+  font-size: 0.68rem;
+
+  letter-spacing: 1px;
+
+  padding: 3px 10px;
+
+  border-radius: 4px;
+
+}
+
+  .badge-pasdispo {
+
+  background: #f5f5f5;
+
+  border: 1px solid #d1d5db;
+
+  color: #6b7280;
+
+  font-family: 'Cinzel', serif;
+
+  font-size: 0.68rem;
+
+  letter-spacing: 1px;
+
+  padding: 3px 10px;
+
+  border-radius: 4px;
+
+}
+
+
+
+/* ── ESPACE JOUEUR — ONGLETS ── */
+
+.joueur-tabs {
+
+  display: flex;
+
+  gap: 0;
+
+  border-bottom: 2px solid var(--border);
+
+  margin-bottom: 28px;
+
+}
+
+.joueur-tab-btn {
+
+  padding: 10px 22px;
+
+  background: none;
+
+  border: none;
+
+  border-bottom: 3px solid transparent;
+
+  margin-bottom: -2px;
+
+  font-family: 'Cinzel', serif;
+
+  font-size: 0.82rem;
+
+  letter-spacing: 1.5px;
+
+  color: var(--ink-light);
+
+  cursor: pointer;
+
+  text-transform: uppercase;
+
+  transition: color 0.2s, border-color 0.2s;
+
+  position: relative;
+
+}
+
+.joueur-tab-btn:hover { color: var(--ink); }
+
+.joueur-tab-btn.active { color: var(--ink); border-bottom-color: var(--ink); font-weight: 700; }
+
+.notif-dot {
+
+  position: absolute;
+
+  top: 4px;
+
+  right: 4px;
+
+  width: 8px; height: 8px;
+
+  background: var(--red-blood);
+
+  border-radius: 50%;
+
+}
+
+
+
+/* ── MESSAGERIE ── */
+
+.messages-fil {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 12px;
+
+  max-height: 400px;
+
+  overflow-y: auto;
+
+  padding: 4px 0 16px;
+
+  margin-bottom: 16px;
+
+}
+
+.msg-bubble {
+
+  max-width: 80%;
+
+  padding: 12px 16px;
+
+  border-radius: 6px;
+
+  font-family: 'Crimson Text', serif;
+
+  font-size: 1rem;
+
+  line-height: 1.6;
+
+  white-space: pre-wrap;
+
+}
+
+.msg-bubble.joueur {
+
+  align-self: flex-end;
+
+  background: #f8fafc;
+
+  border: 1px solid var(--border);
+
+}
+
+.msg-bubble.orga {
+
+  align-self: flex-start;
+
+  background: #eff6ff;
+
+  border: 1px solid #bfdbfe;
+
+}
+
+.msg-bubble-meta {
+
+  font-family: 'Cinzel', serif;
+
+  font-size: 0.65rem;
+
+  letter-spacing: 1px;
+
+  color: var(--ink-light);
+
+  margin-bottom: 6px;
+
+}
+
+.msg-input-zone {
+
+  display: flex;
+
+  gap: 10px;
+
+  align-items: flex-end;
+
+}
+
+.msg-input-zone textarea { min-height: 60px; flex: 1; }
+
+
+
+/* ── TABLE ORGA ── */
+
+.orga-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+
+.orga-table th {
+
+  font-family: 'Cinzel', serif;
+
+  font-size: 0.72rem;
+
+  letter-spacing: 1.5px;
+
+  text-transform: uppercase;
+
+  color: var(--ink-light);
+
+  border-bottom: 2px solid var(--border);
+
+  padding: 10px 10px;
+
+  text-align: left;
+
+}
+
+.orga-table td { padding: 10px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+
+.orga-table tr:hover td { background: #f8fafc; }
+
+.orga-toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+
+
+
+.orga-action-btns {
+
+  display: flex;
+
+  gap: 6px;
+
+  flex-wrap: nowrap;
+
+  align-items: center;
+
+}
+
+
+
+/* ── MODALES ── */
+
+.modal-overlay {
+
+  display: none;
+
+  position: fixed; inset: 0;
+
+  background: rgba(15, 23, 42, 0.85);
+
+  z-index: 100;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 16px;
+
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal-box {
+
+  background: var(--parchment);
+
+  border: none;
+
+  border-radius: 8px;
+
+  box-shadow: 0 15px 50px rgba(0,0,0,0.4);
+
+  padding: 30px 34px;
+
+  max-width: 520px;
+
   width: 100%;
+
+  max-height: 90vh;
+
+  overflow-y: auto;
+
+  position: relative;
+
 }
-.home-layout > data { min-width: 0; }
-@media (max-width: 900px) {
-  .home-layout { grid-template-columns: 1fr; } 
+
+.modal-box-wide { max-width: 660px; }
+
+.modal-box-xl { max-width: 1100px; width: 95%; } /* Ajoute cette ligne ici */
+
+.modal-title {
+
+  font-family: 'Cinzel', serif;
+
+  font-size: 1.4rem;
+
+  font-weight: 700;
+
+  margin-bottom: 20px;
+
+  color: var(--ink);
+
+  text-align: center;
+
 }
+
+.modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 1.4rem; color: var(--ink-light); cursor: pointer; transition: color 0.2s; }
+
+.modal-close:hover { color: var(--red-blood); }
+
+
+
+/* ── TOAST ── */
+
+.toast {
+
+  position: fixed;
+
+  bottom: 24px; right: 24px;
+
+  background: var(--ink);
+
+  color: #ffffff;
+
+  border-radius: 4px;
+
+  padding: 12px 22px;
+
+  font-family: 'Cinzel', serif;
+
+  font-size: 0.8rem;
+
+  letter-spacing: 1px;
+
+  box-shadow: 0 10px 30px var(--shadow);
+
+  z-index: 200;
+
+  opacity: 0;
+
+  transform: translateY(10px);
+
+  transition: opacity 0.3s, transform 0.3s;
+
+  pointer-events: none;
+
+}
+
+.toast.show { opacity: 1; transform: translateY(0); }
+
+
+
+  
+
+
 
 /* ── PIED DE PAGE ── */
+
 .site-footer { text-align: center; margin-top: 36px; padding-bottom: 10px; }
+
 .footer-orga-link {
+
   font-family: 'Cinzel', serif;
+
   font-size: 0.7rem;
+
   letter-spacing: 1px;
-  color: rgba(255,255,255,0.7);
+
+  color: rgba(255,255,255,0.5);
+
   cursor: pointer;
+
   border: none;
+
   background: none;
+
   transition: color 0.2s;
+
 }
+
 .footer-orga-link:hover { color: #ffffff; }
 
-html { background-color: #e8f4f7; }
+
+
+/* ── ÉTAT VIDE ── */
+
+.empty-state {
+
+  font-family: 'IM Fell English', serif;
+
+  font-style: italic;
+
+  color: var(--ink-light);
+
+  padding: 30px 0;
+
+  text-align: center;
+
+  font-size: 1.1rem;
+
+}
+
+
+
+/* ── ORGA MESSAGERIE ── */
+
+.orga-msg-joueur-select {
+
+  display: flex;
+
+  gap: 10px;
+
+  align-items: center;
+
+  margin-bottom: 20px;
+
+  flex-wrap: wrap;
+
+}
+
+.notif-badge-count {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  background: var(--red-blood);
+
+  color: #fff;
+
+  border-radius: 50%;
+
+  width: 20px;
+
+  height: 20px;
+
+  font-family: 'Cinzel', serif;
+
+  font-size: 0.65rem;
+
+  font-weight: 700;
+
+  margin-left: 6px;
+
+}
+
+
+
+  .cal-grid {
+
+  display: grid;
+
+  grid-template-columns: repeat(7, 1fr);
+
+  gap: 4px;
+
+}
+
+.cal-header-day {
+
+  font-family: 'Cinzel', serif;
+
+  font-size: 0.7rem;
+
+  letter-spacing: 1px;
+
+  text-transform: uppercase;
+
+  color: var(--ink-light);
+
+  text-align: center;
+
+  padding: 6px 0;
+
+}
+
+.cal-day {
+
+  min-height: 70px;
+
+  border: 1px solid var(--border);
+
+  border-radius: 4px;
+
+  padding: 4px;
+
+  background: #f8fafc;
+
+  vertical-align: top;
+
+}
+
+.cal-day.today { border-color: #64748b; background: #f1f5f9; }
+
+.cal-day.vide { background: transparent; border: none; }
+
+.cal-day-num {
+
+  font-family: 'Cinzel', serif;
+
+  font-size: 0.72rem;
+
+  color: var(--ink-light);
+
+  margin-bottom: 4px;
+
+}
+
+.cal-event-pill {
+
+  background: #1e293b;
+
+  color: #fff;
+
+  border-radius: 3px;
+
+  padding: 2px 5px;
+
+  font-family: 'Crimson Text', serif;
+
+  font-size: 0.75rem;
+
+  margin-bottom: 2px;
+
+  cursor: default;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+}
+
+@media (max-width: 600px) {
+
+  .cal-day { min-height: 50px; }
+
+  .cal-event-pill { font-size: 0.65rem; }
+
+}
+
+
+
+@media (max-width: 600px) {
+
+  .parchment { padding: 22px 18px; }
+
+  .modal-box { padding: 22px 18px; }
+
+  .event-card-body { grid-template-columns: 1fr; }
+
+  .site-title { font-size: 1.7rem; }
+
+  .site-footer { padding-bottom: 140px; }
+
+  
+
+  .orga-table th:nth-child(3), .orga-table td:nth-child(3),
+
+  .orga-table th:nth-child(4), .orga-table td:nth-child(4) { display: none; }
+
+  
+
+  .orga-table { font-size: 0.75rem; } 
+
+  .orga-table th, .orga-table td { padding: 6px 4px; } 
+
+  
+
+  .orga-table td:last-child { 
+
+    display: flex;
+
+    flex-direction: column; 
+
+    gap: 6px; 
+
+    min-width: 0 !important;
+
+    white-space: normal !important;
+
+  }
+
+   .orga-action-btns {
+
+    flex-direction: column; /* Transforme la ligne en colonne verticale */
+
+    align-items: stretch; /* Étire les boutons pour qu'ils fassent tous la même largeur */
+
+  }
+
+  
+
+  .orga-table td:last-child .btn { 
+
+    padding: 6px 4px; 
+
+    font-size: 0.6rem;
+
+    letter-spacing: 0px; 
+
+    text-align: center; 
+
+    width: 100%;
+
+  }
+
+  .joueur-tabs {
+
+  overflow-x: auto;
+
+  -webkit-overflow-scrolling: touch;
+
+  flex-wrap: nowrap;
+
+  padding-bottom: 4px;
+
+}
+
+.joueur-tab-btn {
+
+  font-size: 0.7rem;
+
+  padding: 10px 12px;
+
+  white-space: nowrap;
+
+}
+
+  #joueur-screen .parchment {
+
+  margin: 0;
+
+}
+
+}
+
+  .badge-interesse {
+
+  background: #f0f9ff;
+
+  border: 1px solid #bae6fd;
+
+  color: #0369a1;
+
+  font-family: 'Cinzel', serif;
+
+  font-size: 0.68rem;
+
+  letter-spacing: 1px;
+
+  padding: 3px 10px;
+
+  border-radius: 4px;
+
+}
+
+/* ── LAYOUT ACCUEIL FORCE 50/50 ── */
+
+.home-layout {
+
+  display: grid;
+
+  grid-template-columns: 1fr 1fr; 
+
+  gap: 24px;
+
+  align-items: start;
+
+  width: 100%;
+
+}
+
+
+
+/* On réduit la largeur minimale des colonnes pour qu'elles puissent cohabiter */
+
+.home-layout > div {
+
+  min-width: 0; 
+
+}
+
+
+
+@media (max-width: 900px) {
+
+  .home-layout { grid-template-columns: 1fr; } 
+
+}
+
+
+
+  /* Style pour la petite bulle d'info au survol */
+
+.slots-info {
+
+  cursor: help;
+
+  position: relative;
+
+  display: inline-block;
+
+  border-bottom: 1px dotted var(--ink-light); /* Un petit souligné discret pour dire qu'il y a une info */
+
+}
+
+  
+
+  /* Fond bleu-gris light pour la zone des dates */
+
+  .dates-container {
+
+      background-color: #f0f4f7; /* Bleu-gris très léger */
+
+      border-radius: 8px;
+
+      padding: 15px;
+
+  }
+
+
+
+  /* Système d'onglets mobile */
+
+  .mobile-tabs {
+
+      display: none; /* Caché sur ordi */
+
+      gap: 10px;
+
+      margin-bottom: 20px;
+
+  }
+
+
+
+  @media (max-width: 900px) {
+
+      .mobile-tabs {
+
+          display: flex;
+
+      }
+
+      
+
+      /* Masquage intelligent selon l'onglet choisi */
+
+      .home-layout[data-active="dates"] .missives-col { display: none; }
+
+      .home-layout[data-active="missives"] .dates-col { display: none; }
+
+      
+
+      .mobile-tabs button {
+
+        flex: 1;
+
+        padding: 10px;
+
+        font-family: 'Cinzel', serif;
+
+        font-size: 0.75rem;
+
+        letter-spacing: 1px;
+
+        border: 1px solid #cbd5e1;
+
+        background: rgba(255, 255, 255, 0.8);
+
+        color: #64748b;
+
+        border-radius: 6px;
+
+        cursor: pointer;
+
+        transition: all 0.3s ease;
+
+        text-transform: uppercase;
+
+    }
+
+    
+
+    /* Le bouton quand il est sélectionné */
+
+    .mobile-tabs button.active {
+
+        background: #58abbc; /* Ton bleu thématique */
+
+        color: white;
+
+        border-color: #58abbc;
+
+        box-shadow: 0 4px 10px rgba(88, 171, 188, 0.3);
+
+        font-weight: bold;
+
+    }
+
+  }      
+
+
+
+  /* Agrandit les carrés et les icônes de la barre d'outils de la Taverne */
+
+#chat-public-input-zone .btn-ghost {
+
+  padding: 3px !important;
+
+  font-size: 0.75rem !important;
+
+  min-width: 28px;
+
+  height: 28px;
+
+  display: inline-flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+}
+
+.toolbar-messagerie .btn-ghost {
+
+  padding: 5px !important;
+
+  font-size: 0.8rem !important;
+
+  min-width: 34px;
+
+  height: 34px;
+
+  display: inline-flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+}
+
+
+
+  /* ── BOUTONS DE DÉFILEMENT ── */
+
+.scroll-nav {
+
+  position: fixed;
+
+  bottom: 120px;
+
+  right: 24px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+
+  z-index: 99;
+
+}
+
+
+
+.scroll-nav button {
+
+  background: #58abbc;
+
+  color: white;
+
+  border: none;
+
+  border-radius: 50%;
+
+  width: 48px;
+
+  height: 48px; /* [cite: 129] */
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition: all 0.3s ease;
+
+  font-size: 1.5rem;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3); /* [cite: 130] */
+
+  flex-shrink: 0; /* AJOUT CRUCIAL : empêche la déformation (squish) au scroll */
+
+}
+
+
+
+.scroll-nav button:hover {
+
+  background: #468e9d;
+
+  transform: translateY(-3px) scale(1.05);
+
+  box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+
+}
+
+
+
+@media (max-width: 600px) {
+
+  .scroll-nav {
+
+    /* On les remonte considérablement et on gère les encoches tactiles des téléphones récents */
+
+    bottom: max(110px, env(safe-area-inset-bottom, 110px));
+
+    right: 16px; /* [cite: 133] */
+
+  }
+
+  .scroll-nav button {
+
+    /* On les agrandit un tout petit peu (de 36px à 40px) pour qu'ils soient plus faciles à taper au pouce */
+
+    width: 40px; 
+
+    height: 40px;
+
+    font-size: 1.1rem;
+
+  }
+
+}
+
+
+
+  html {
+
+  background-color: #e8f4f7;
+
+}
+
+
+
+  @media (max-width: 900px) {
+
+  #home-mobile-tabs {
+
+    gap: 4px;
+
+    margin-bottom: 16px;
+
+    border-bottom: 3px solid #58abbc;
+
+  }
+
+  #home-mobile-tabs button {
+
+    flex: 1;
+
+    padding: 14px 8px;
+
+    font-size: 0.85rem;
+
+    border: 1px solid #cbd5e1;
+
+    border-bottom: none;
+
+    border-radius: 10px 10px 0 0;
+
+    background: #e2e8f0;
+
+    color: #64748b;
+
+    box-shadow: none;
+
+    font-weight: normal;
+
+  }
+
+  #home-mobile-tabs button.active {
+
+    background: #58abbc;
+
+    color: #ffffff;
+
+    border-color: #58abbc;
+
+    font-weight: bold;
+
+    box-shadow: none;
+
+  }
+
+}
+
+  
+
 </style>
+
 </head>
+
 <body>
+
 <div id="app">
 
+
+
   <div id="public-screen">
+
     <div class="site-header">
+
       <div class="site-title">⚔ Événements ⚔</div>
+
       <div class="site-subtitle">Les prochaines aventures vous attendent</div>
-    </div>
-    
-    <div class="parchment">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-        <div style="font-family:'Cinzel',serif;font-size:1.15rem;font-weight:700;letter-spacing:2px;color:var(--ink)">Événements à venir</div>
-        <div id="header-user-zone"></div>
-      </div>
+
     </div>
 
-    <!-- Le pied de page alimenté automatiquement par le script avec les cookies, la politique et les mentions -->
-    <div class="site-footer"></div>
-  </div>
+    
+
+    <div class="parchment">
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+
+        <div style="font-family:'Cinzel',serif;font-size:1.15rem;font-weight:700;letter-spacing:2px;color:var(--ink)">Événements à venir</div>
+
+        <div id="header-user-zone"></div>
+
+      </div>
+
+      <div class="filter-bar">
+
+        <input type="text" id="search-input" placeholder="Rechercher un événement..." oninput="filterEvents()" autocomplete="one-time-code" name="search-fantasy-unique-id" spellcheck="false">
+
+ 
+
+        <select id="filter-type" onchange="filterEvents()">
+
+          <option value="">Tous les types</option>
+
+ <option value="Animation">Animation</option>
+
+  <option value="Assemblée générale">Assemblée générale</option>
+
+  <option value="Atelier bricolage">Atelier bricolage</option>
+
+  <option value="Atelier couture">Atelier couture</option>
+
+  <option value="Atelier craft">Atelier craft</option>
+
+  <option value="Autre">Autre</option>
+
+  <option value="Grandeur nature">Grandeur nature</option>
+
+  <option value="Inventaire/Rangement">Inventaire/Rangement</option>
+
+  <option value="Jeepform">Jeepform</option>
+
+  <option value="Jeu de rôles sur table">Jeu de rôles sur table</option>
+
+  <option value="Jeu de société">Jeu de société</option>
+
+  <option value="Jeu immersif">Jeu immersif</option>
+
+  <option value="Jeux sportif">Jeux sportif</option>
+
+  <option value="Murder party">Murder party</option>
+
+  <option value="Pas encore défini">Pas encore défini</option>
+
+  <option value="Repas">Repas</option>
+
+  <option value="Réunion">Réunion</option>     
+
+        </select>
+
+        <button class="btn-ghost" onclick="openCalendrier()">📅 Calendrier</button>
+
+        <button class="btn-ghost" style="border-color: #58abbc; color: #58abbc; position: relative;" onclick="openChatPublic()">
+
+          💬 La Taverne
+
+          <span class="notif-dot" id="notif-chat-dot" style="display:none; top: -4px; right: -4px;"></span>
+
+        </button>
+
+      </div>
+
+      <div class="mobile-tabs" id="home-mobile-tabs">
+
+        <button class="active" onclick="switchHomeTab('missives')">📜 Missives</button>
+
+        <button onclick="switchHomeTab('dates')">📅 Dates</button>
+
+      </div>
+
+
+
+      <div class="home-layout" id="main-home-layout" data-active="missives">
+
+        
+
+        <div class="missives-col" style="background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 20px;">
+
+          <div style="border-bottom: 2px solid #58abbc; padding-bottom: 10px; margin-bottom: 15px;">
+
+            <h2 style="margin: 0; color: var(--ink); font-family: 'Cinzel', serif; font-size: 1.3rem;">📜 Missives Orga</h2>
+
+          </div>
+
+          <div id="annonces-container" style="display: flex; flex-direction: column; gap: 15px;">
+
+            <div style="text-align: center; color: var(--ink-light); font-style: italic; font-size: 0.9rem;">Lecture des parchemins...</div>
+
+          </div>
+
+          <div style="text-align:center; margin-top:15px;">
+
+  <button class="btn-ghost" id="btn-plus-missives" style="display:none" onclick="chargerPlusMissives()">📜 Voir plus de missives</button>
 
 </div>
-</body>
-</html>
+
+        </div>
+
+
+
+        <div class="dates-col dates-container">
+
+          <div style="border-bottom: 2px solid #58abbc; padding-bottom: 10px; margin-bottom: 15px;">
+
+            <h2 style="margin: 0; color: var(--ink); font-family: 'Cinzel', serif; font-size: 1.3rem;">📅 Les dates</h2>
+
+          </div>
+
+          <div class="events-grid" id="public-events-grid">
+
+            <div class="empty-state">Chargement des événements…</div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      </div>
+
+    <div class="site-footer">
+
+      
+
+    </div>
+
+    </div>
+
+  </div>
+
+
+
+  <div id="joueur-screen" style="display:none">
+
+  <div style="max-width:760px; margin:0 auto; padding: 0 16px;">
+
+   <div class="logout-bar" id="joueur-logout-bar">
+
+    <span id="joueur-screen-label">⚔ Mon Espace</span>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+
+      <button class="btn btn-sm" onclick="retourAccueil()">← Événements</button>
+
+      <button class="btn btn-sm btn-danger" onclick="logoutJoueur()">Déconnexion</button>
+
+      <button class="btn-ghost" style="color:var(--red-blood); border-color:var(--red-blood); padding:6px 16px; font-size:0.75rem;" onclick="supprimerCompteJoueur()">Supprimer mon compte</button>
+
+    </div>
+
+  </div>
+
+    <div class="parchment">
+
+      <div class="joueur-tabs">
+
+        <button class="joueur-tab-btn active" id="jtab-inscriptions" onclick="showJoueurTab('inscriptions', this)">Mes Inscriptions</button>
+
+        <button class="joueur-tab-btn" id="jtab-messages" onclick="showJoueurTab('messages', this)">
+
+          Messages
+
+          <span class="notif-dot" id="notif-msg-dot" style="display:none"></span>
+
+        </button>
+
+      </div>
+
+
+
+      <div id="joueur-tab-inscriptions">
+
+        <div class="events-grid" id="mes-inscriptions-grid">
+
+          <div class="empty-state">Chargement…</div>
+
+        </div>
+
+      </div>
+
+
+
+      <div id="joueur-tab-messages" style="display:none">
+
+  <div class="messages-fil" id="messages-fil">
+
+    <div class="empty-state">Chargement…</div>
+
+  </div>
+
+  <div class="msg-input-zone">
+
+    <textarea id="msg-nouveau" placeholder="Écrivez votre message à l'orga…"></textarea>
+
+    <button class="btn btn-sm" onclick="envoyerMessage()">Envoyer</button>
+
+  </div>
+
+<div class="toolbar-messagerie" style="display: flex; flex-wrap: wrap; gap: 5px; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid var(--border); margin-bottom: 5px; align-items: center;">
+
+   <button class="btn-ghost" type="button" onclick="insertFormatMessagerie( 
