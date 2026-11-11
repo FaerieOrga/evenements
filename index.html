@@ -80,30 +80,45 @@
   document.addEventListener('DOMContentLoaded', function () {
     var pied = document.querySelector('.site-footer');
     if (pied) {
-      var lien = document.createElement('button');
-      lien.className = 'footer-orga-link';
-      lien.textContent = '🍪 Gérer les cookies';
-      lien.onclick = afficherBandeau;
-      pied.appendChild(lien);
+      // Liste de tous tes liens et boutons du footer
+      var elementsFooter = [
+        { type: 'btn', texte: '🍪 Gérer les cookies', action: afficherBandeau },
+        { type: 'link', texte: 'Mentions légales', url: 'https://www.xn--farie-csa.fr/mentions-legales' },
+        { type: 'link', texte: 'Politique de confidentialité', url: 'https://www.xn--farie-csa.fr/politique-de-confidentialit%C3%A9' },
+        { type: 'link', texte: 'Règlement intérieur', url: 'https://drive.google.com/drive/u/3/folders/1iGpv6AXKf3uceEdWHBIi1Ag-pN7H-Zds', blank: true },
+        { type: 'link', texte: 'Charte', url: 'https://drive.google.com/drive/u/3/folders/1iGpv6AXKf3uceEdWHBIi1Ag-pN7H-Zds', blank: true },
+        { type: 'link', texte: 'Statuts', url: 'https://drive.google.com/drive/u/3/folders/1iGpv6AXKf3uceEdWHBIi1Ag-pN7H-Zds', blank: true }
+      ];
 
-      var sep = document.createElement('span');
-      sep.className = 'footer-orga-link';
-      sep.style.margin = '0 6px';
-      sep.textContent = '·';
-      pied.appendChild(sep);
+      elementsFooter.forEach(function(item, index) {
+        var el;
+        if (item.type === 'btn') {
+          el = document.createElement('button');
+          el.onclick = item.action;
+        } else {
+          el = document.createElement('a');
+          el.href = item.url;
+          el.style.textDecoration = 'none';
+          if (item.blank) {
+            el.target = '_blank';
+            el.rel = 'noopener';
+          }
+        }
+        el.className = 'footer-orga-link';
+        el.textContent = item.texte;
+        pied.appendChild(el);
 
-      var lienConf = document.createElement('a');
-      lienConf.className = 'footer-orga-link';
-      lienConf.href = 'https://www.xn--farie-csa.fr/politique-de-confidentialit%C3%A9'; // ← adaptez si besoin
-      lienConf.textContent = 'Confidentialités';
-      lienConf.style.textDecoration = 'none';
-      pied.appendChild(lienConf);
+        // Ajout du tiret séparateur (sauf après le dernier élément)
+        if (index < elementsFooter.length - 1) {
+          var sep = document.createElement('span');
+          sep.className = 'footer-orga-link';
+          sep.style.margin = '0 6px';
+          sep.textContent = '-';
+          pied.appendChild(sep);
+        }
+      });
     }
-    var choix = lireChoix();
-    if (choix === 'oui') chargerAnalytics();
-    else if (choix !== 'non') afficherBandeau();
   });
-})();
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
