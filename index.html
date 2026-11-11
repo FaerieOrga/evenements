@@ -1930,17 +1930,24 @@ async function envoyerMessage() {
   const contenu = document.getElementById('msg-nouveau').value.trim();
   if (!contenu) return;
   try {
+    // Y a-t-il déjà un message de ce joueur que l'orga n'a pas encore lu ?
+    const { count } = await sb.from('messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', state.user.id).eq('auteur', 'joueur').eq('lu_orga', false);
+    const orgaDejaPrevenue = (count || 0) > 0;
+
     await sb.from('messages').insert({ user_id: state.user.id, auteur: 'joueur', contenu, lu_orga: false, lu_joueur: true });
     document.getElementById('msg-nouveau').value = '';
     await loadMessages(); showToast('✦ Message envoyé !');
-    
-    // ALERTE EMAIL POUR L'ORGA
-    sendEmailViaGAS(
-      "contact+messagesevents@xn--farie-csa.fr", 
-      "Nouveau message de " + (state.user.user_metadata?.prenom || state.user.email), 
-      `<p>Un joueur a envoyé un nouveau message sur l'espace Faérie :</p><blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #64748b;">${contenu}</blockquote><p>Connectez-vous à l'espace Organisateur pour lui répondre.</p>`
-    );
 
+    if (!orgaDejaPrevenue) {
+      const contenuSur = contenu.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+      sendEmailViaGAS(
+        "contact+messagesevents@xn--farie-csa.fr",
+        "Nouveau message de " + (state.user.user_metadata?.prenom || state.user.email),
+        `<p>Un joueur a envoyé un nouveau message sur l'espace Faérie :</p><blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #64748b;">${contenuSur}</blockquote><p>Connectez-vous à l'espace Organisateur pour lui répondre.</p>`
+      );
+    }
   } catch(e) { console.error(e); }
 }
 
@@ -2018,25 +2025,29 @@ async function envoyerMessageOrga() {
   const contenu = document.getElementById('orga-msg-nouveau').value.trim();
   if (!contenu || !state.currentOrgaUserId) return;
   try {
-    // 1. On sauvegarde le message dans la base de données
+    // Le joueur a-t-il déjà une réponse de l'orga qu'il n'a pas encore lue ?
+    const { count } = await sb.from('messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', state.currentOrgaUserId).eq('auteur', 'orga').eq('lu_joueur', false);
+    const joueurDejaPrevenu = (count || 0) > 0;
+
     await sb.from('messages').insert({ user_id: state.currentOrgaUserId, auteur: 'orga', contenu, lu_orga: true, lu_joueur: false });
     document.getElementById('orga-msg-nouveau').value = '';
-    await loadOrgaConversation(state.currentOrgaUserId); 
+    await loadOrgaConversation(state.currentOrgaUserId);
     showToast('✦ Réponse envoyée !');
-    
-    // 2. On cherche l'adresse email du joueur dans la table des profils
-    const { data: profil } = await sb.from('profils').select('email, prenom').eq('id', state.currentOrgaUserId).single();
-    
-    // 3. Si on trouve bien son email, on demande au Facteur Google de livrer l'alerte !
-    if (profil && profil.email) {
-      const prenom = profil.prenom || 'Joueur';
-      sendEmailViaGAS(
-        profil.email, 
-        "Nouveau message de l'organisation - Faérie", 
-        `<h3>Bonjour ${prenom},</h3><p>L'équipe d'orga de Faérie t'a répondu sur ton espace des événements :</p><blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #64748b;">${contenu}</blockquote><p><a href="https://www.xn--farie-csa.fr/%C3%A9v%C3%A9nements" style="background:#64748b; color:#fff; padding:8px 16px; text-decoration:none; border-radius:4px;">Connecte-toi à ton espace</a> pour poursuivre la conversation.</p>`
-      );
+
+    if (!joueurDejaPrevenu) {
+      const { data: profil } = await sb.from('profils').select('email, prenom').eq('id', state.currentOrgaUserId).single();
+      if (profil && profil.email) {
+        const prenom = profil.prenom || 'Joueur';
+        const contenuSur = contenu.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+        sendEmailViaGAS(
+          profil.email,
+          "Nouveau message de l'organisation - Faérie",
+          `<h3>Bonjour ${prenom},</h3><p>L'équipe d'orga de Faérie t'a répondu sur ton espace des événements :</p><blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #64748b;">${contenuSur}</blockquote><p><a href="https://www.xn--farie-csa.fr/%C3%A9v%C3%A9nements" style="background:#64748b; color:#fff; padding:8px 16px; text-decoration:none; border-radius:4px;">Connecte-toi à ton espace</a> pour poursuivre la conversation.</p>`
+        );
+      }
     }
-    
   } catch(e) { console.error(e); }
 }
 
