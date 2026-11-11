@@ -77,7 +77,7 @@
     document.getElementById('cookies-non').onclick = function () { choisir('non'); };
   }
 
-  document.addEventListener('DOMContentLoaded', function () {
+ document.addEventListener('DOMContentLoaded', function () {
     var pied = document.querySelector('.site-footer');
     if (pied) {
       var lien = document.createElement('button');
@@ -85,12 +85,21 @@
       lien.textContent = '🍪 Gérer les cookies';
       lien.onclick = afficherBandeau;
       pied.appendChild(lien);
+
+      var separateur = document.createElement('span');
+      separateur.textContent = ' | ';
+      pied.appendChild(separateur);
+
+      var lienConfidentialite = document.createElement('a');
+      lienConfidentialite.href = '/confidentialites'; // adaptez l'URL de votre page
+      lienConfidentialite.className = 'footer-orga-link';
+      lienConfidentialite.textContent = 'Confidentialités';
+      pied.appendChild(lienConfidentialite);
     }
     var choix = lireChoix();
     if (choix === 'oui') chargerAnalytics();
     else if (choix !== 'non') afficherBandeau();
   });
-})();
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
