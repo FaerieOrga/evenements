@@ -1,2165 +1,3284 @@
 <!DOCTYPE html>
-
 <html lang="fr">
-
 <head>
-
 <script>
-
 // ── Mesure d'audience (Google Analytics) : chargée seulement après accord ──
-
 (function () {
-
   var CLE = 'faerie_cookies_analytics';
-
   window.dataLayer = window.dataLayer || [];
-
   window.gtag = function () { dataLayer.push(arguments); };
 
-
-
   function lireChoix() {
-
     try {
-
       var brut = localStorage.getItem(CLE);
-
       if (!brut) return null;
-
       var p = brut.split('|');
-
       if (Date.now() - Number(p[1]) > 180 * 24 * 3600 * 1000) return null;
-
       return p[0];
-
     } catch (e) { return null; }
-
   }
-
   function ecrireChoix(v) {
-
     try { localStorage.setItem(CLE, v + '|' + Date.now()); } catch (e) {}
-
   }
-
-
 
   function chargerAnalytics() {
-
     if (window.__analyticsCharge) return;
-
     window.__analyticsCharge = true;
-
     gtag('js', new Date());
-
     var s = document.createElement('script');
-
     s.async = true;
-
     s.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-MN49RWMP';
-
     document.head.appendChild(s);
-
   }
-
-
 
   function supprimerCookiesGoogle() {
-
     document.cookie.split(';').forEach(function (c) {
-
       var nom = c.split('=')[0].trim();
-
       if (nom === '_ga' || nom === '_gid' || nom.indexOf('_ga_') === 0) {
-
         var vieux = '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
-
         document.cookie = nom + vieux;
-
         document.cookie = nom + vieux + '; domain=' + location.hostname;
-
       }
-
     });
-
   }
-
-
 
   function choisir(valeur) {
-
     var dejaCharge = window.__analyticsCharge;
-
     ecrireChoix(valeur);
-
     var b = document.getElementById('bandeau-cookies');
-
     if (b) b.remove();
-
     if (valeur === 'oui') {
-
       chargerAnalytics();
-
     } else {
-
       supprimerCookiesGoogle();
-
       if (dejaCharge) location.reload();
-
     }
-
   }
-
-
 
   function afficherBandeau() {
-
     if (document.getElementById('bandeau-cookies')) return;
-
     var style = 'padding:10px 22px;background:#fff;color:#1e293b;border:1px solid #58abbc;border-radius:4px;' +
-
                 'font-family:Cinzel,serif;font-size:0.8rem;letter-spacing:1px;cursor:pointer;font-weight:600';
-
     var b = document.createElement('div');
-
     b.id = 'bandeau-cookies';
-
     b.setAttribute('role', 'dialog');
-
     b.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;z-index:400;max-width:560px;margin:0 auto;' +
-
       'background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px 18px;' +
-
       "box-shadow:0 10px 40px rgba(0,0,0,0.3);font-family:'Crimson Text',Georgia,serif;color:#1e293b;" +
-
       'font-size:0.95rem;line-height:1.5';
-
     b.innerHTML =
-
       '<div style="margin-bottom:12px">Pour savoir si cette page est utile, nous mesurons sa fréquentation avec ' +
-
       'Google Analytics (cookies). Acceptez-vous ? Vous pouvez changer d\'avis à tout moment via « Gérer les cookies », en bas de page.</div>' +
-
       '<div style="display:flex;gap:10px;flex-wrap:wrap">' +
-
       '<button id="cookies-oui" style="' + style + '">Accepter</button>' +
-
       '<button id="cookies-non" style="' + style + '">Refuser</button></div>';
-
     document.body.appendChild(b);
-
     document.getElementById('cookies-oui').onclick = function () { choisir('oui'); };
-
     document.getElementById('cookies-non').onclick = function () { choisir('non'); };
-
   }
-
-
 
   document.addEventListener('DOMContentLoaded', function () {
-
     var pied = document.querySelector('.site-footer');
-
     if (pied) {
-
       var lien = document.createElement('button');
-
       lien.className = 'footer-orga-link';
-
       lien.textContent = '🍪 Gérer les cookies';
-
       lien.onclick = afficherBandeau;
-
       pied.appendChild(lien);
 
-
-
       var sep = document.createElement('span');
-
       sep.className = 'footer-orga-link';
-
       sep.style.margin = '0 6px';
-
       sep.textContent = '·';
-
       pied.appendChild(sep);
 
-
-
       var lienConf = document.createElement('a');
-
       lienConf.className = 'footer-orga-link';
-
       lienConf.href = 'https://www.xn--farie-csa.fr/politique-de-confidentialit%C3%A9'; // ← adaptez si besoin
-
       lienConf.textContent = 'Confidentialités';
-
       lienConf.style.textDecoration = 'none';
-
       pied.appendChild(lienConf);
-
     }
-
     var choix = lireChoix();
-
     if (choix === 'oui') chargerAnalytics();
-
     else if (choix !== 'non') afficherBandeau();
-
   });
-
 })();
-
 </script>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Événements</title>
-
   <link rel="icon" href="https://raw.githubusercontent.com/FaerieOrga/images-forum/main/logo32%20copie.jpg" />
-
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
-
 :root {
-
   --parchment:    #ffffff;
-
   --parchment-dk: #f8fafc;
-
   --ink:          #1e293b;
-
   --ink-light:    #64748b;
-
   --red-blood:    #b91c1c;
-
   --gold:         #8c7b50;
-
   --gold-light:   #cbd5e1;
-
   --border:       #e2e8f0;
-
   --shadow:       rgba(15, 23, 42, 0.08);
-
   --bg-img:       url('https://drive.google.com/uc?export=view&id=142vQlX6NsPL118l3x-VHn9iNx94Vydng');
-
 }
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 body {
-
   min-height: 100vh;
-
   /* On part du bleu de ta barre de menu pour aller vers le bleu clair du fond de ton forum */
-
   background: linear-gradient(to bottom, 
-
     #58abbc 0%,    /* Bleu de la barre de menu */
-
     #66b5c6 50%,   /* Bleu des boutons "Nouvelle discussion" */
-
     #e8f4f7 100%   /* Bleu très clair du fond de page du forum */
-
   ) fixed;
-
   font-family: 'Crimson Text', Georgia, serif;
-
   color: var(--ink);
-
   font-size: 16px;
-
   line-height: 1.6;
-
 }
-
 body::before {
-
   content: '';
-
   position: fixed; inset: 0;
-
   background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.15) 100%);
-
   pointer-events: none;
-
   z-index: 0;
-
 }
-
 #app {
-
   position: relative;
-
   z-index: 1;
-
   max-width: 1300px;
-
   width: 100%;
-
   margin: 0 auto;
-
   padding: 20px 16px 60px;
-
 }
-
 .parchment {
-
   background: var(--parchment);
-
   border: 1px solid rgba(255,255,255,0.8);
-
   border-radius: 8px;
-
   padding: 36px 40px;
-
   box-shadow: 0 10px 40px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.03);
-
   position: relative;
-
   overflow: hidden;
-
 }
-
 .parchment::before, .parchment::after {
-
   content: '✦';
-
   position: absolute;
-
   font-size: 24px;
-
   color: #cbd5e1;
-
   opacity: 0.5;
-
   line-height: 1;
-
 }
-
 .parchment::before { top: 12px; left: 16px; }
-
 .parchment::after  { bottom: 12px; right: 16px; }
 
-
-
 /* ── EN-TÊTE ── */
-
 .site-header { text-align: center; padding: 32px 0 24px; }
-
 .site-title {
-
   font-family: 'Cinzel', serif;
-
   font-size: 2.6rem;
-
   font-weight: 700;
-
   color: #ffffff;
-
   text-shadow: 0 2px 12px rgba(0,0,0,0.6), 0 0 20px rgba(255,255,255,0.2);
-
   letter-spacing: 3px;
-
   margin-bottom: 6px;
-
 }
-
 .site-subtitle {
-
   font-family: 'IM Fell English', serif;
-
   font-style: italic;
-
   color: #bae6fd;
-
   font-size: 1.15rem;
-
   text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-
 }
-
-
 
 /* ── FORMS ── */
-
 .form-group { margin-bottom: 16px; text-align: left; }
-
 label {
-
   display: block;
-
   font-family: 'Cinzel', serif;
-
   font-size: 0.78rem;
-
   letter-spacing: 1.5px;
-
   color: var(--ink-light);
-
   margin-bottom: 5px;
-
   text-transform: uppercase;
-
 }
-
 input[type="text"], input[type="email"], input[type="password"],
-
 input[type="date"], input[type="datetime-local"], input[type="number"], select, textarea {
-
   width: 100%;
-
   background: #f8fafc;
-
   border: 1px solid var(--border);
-
   border-radius: 4px;
-
   padding: 9px 12px;
-
   font-family: 'Crimson Text', serif;
-
   font-size: 1rem;
-
   color: var(--ink);
-
   outline: none;
-
   transition: border-color 0.2s, box-shadow 0.2s;
-
 }
-
 input:focus, select:focus, textarea:focus {
-
   border-color: #64748b;
-
   box-shadow: 0 0 0 2px rgba(100,116,139,0.15);
-
 }
-
 textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
-
 #chat-public-input-zone textarea {
-
   font-size: 0.88rem;
-
 } 
 
-
-
 /* Empêche le fond bleu/jaune de la saisie automatique */
-
 input:-webkit-autofill,
-
 input:-webkit-autofill:hover, 
-
 input:-webkit-autofill:focus {
-
   -webkit-text-fill-color: var(--ink);
-
   -webkit-box-shadow: 0 0 0px 1000px #f8fafc inset;
-
   transition: background-color 5000s ease-in-out 0s;
-
 }
-
-
 
 /* ── BOUTONS ── */
-
 .btn {
-
   display: inline-block;
-
   padding: 8px 16px;    
-
   background: #58abbc;
-
   color: #ffffff;
-
   border: none;
-
   border-radius: 4px;
-
   font-family: 'Cinzel', serif;
-
   font-size: 0.65rem;   /* Réduit de 0.85rem à 0.75rem */
-
   letter-spacing: 1.5px; /* Un peu moins d'espacement pour gagner en largeur */
-
   cursor: pointer;
-
   text-transform: uppercase;
-
   transition: all 0.3s ease;
-
   box-shadow: 0 2px 6px rgba(88, 171, 188, 0.2);
-
 }
-
-
 
 .btn:hover {
-
   background: #468e9d; /* Un bleu un peu plus sombre au survol */
-
   box-shadow: 0 4px 12px rgba(88, 171, 188, 0.4);
-
   transform: translateY(-1px);
-
 }
-
 .btn-ghost {
-
   display: inline-flex;     /* Permet d'aligner l'icône et le texte facilement */
-
   align-items: center;      /* Centre verticalement le contenu */
-
   background: transparent;
-
   border: 1px solid #cbd5e1;
-
   color: var(--ink-light);
-
   padding: 9px 16px;        /* On passe à 9px pour correspondre aux inputs  */
-
   font-family: 'Cinzel', serif;
-
   font-size: 0.75rem;       /* On augmente un peu la taille (au lieu de 0.55rem [cite: 29]) */
-
   letter-spacing: 1.5px;
-
   cursor: pointer;
-
   border-radius: 4px;
-
   transition: all 0.3s ease;
-
   text-transform: uppercase;
-
   height: 40px;             /* Force une hauteur fixe identique pour tous les éléments */
-
   box-sizing: border-box;   /* Garantit que la bordure ne dépasse pas la hauteur [cite: 5] */
-
 }
-
-
 
 .btn-ghost:hover { 
-
   background: #f1f5f9; 
-
   color: var(--ink); 
-
   border-color: #94a3b8;
-
 }
-
-
 
 /* ── MESSAGES ── */
-
 .msg-error {
-
   background: #fef2f2;
-
   border: 1px solid #fecaca;
-
   color: var(--red-blood);
-
   padding: 8px 14px;
-
   border-radius: 4px;
-
   font-size: 0.9rem;
-
   margin-top: 10px;
-
   display: none;
-
 }
-
 .msg-success {
-
   background: #f0fdf4;
-
   border: 1px solid #bbf7d0;
-
   color: #166534;
-
   padding: 8px 14px;
-
   border-radius: 4px;
-
   font-size: 0.9rem;
-
   margin-top: 10px;
-
   display: none;
-
 }
-
-
 
 /* ── LOGOUT BAR ── */
-
 .logout-bar {
-
   display: flex;
-
   justify-content: space-between;
-
   align-items: center;
-
   margin-bottom: 20px;
-
   padding: 10px 16px;
-
   background: rgba(255,255,255,0.95);
-
   border-radius: 6px;
-
   box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-
   color: var(--ink);
-
   gap: 10px;
-
   flex-wrap: nowrap;
-
 }
-
 .logout-bar span { 
-
   font-family: 'Cinzel', serif; 
-
   font-size: 0.78rem; 
-
   letter-spacing: 1px; 
-
   font-weight: 600;
-
   min-width: 0;
-
   overflow: hidden;
-
   text-overflow: ellipsis;
-
   white-space: nowrap;
-
   flex-shrink: 1;
-
 }
-
 .logout-bar > div {
-
   display: flex;
-
   gap: 8px;
-
   flex-shrink: 0;
-
 }
-
-
 
   #joueur-screen .parchment {
-
   margin: 0 0 20px 0;
-
 }
-
-
 
 @media (max-width: 600px) {
-
   #joueur-logout-bar {
-
     flex-direction: column;
-
     align-items: center;
-
     text-align: center;
-
   }
-
 }
-
-
 
 /* ── ONGLETS ── */
-
 .tab-switch {
-
   display: flex;
-
   margin-bottom: 24px;
-
   border: 1px solid var(--border);
-
   border-radius: 4px;
-
   overflow: hidden;
-
 }
-
 .tab-switch button {
-
   flex: 1;
-
   padding: 10px;
-
   background: #f8fafc;
-
   border: none;
-
   border-right: 1px solid var(--border);
-
   font-family: 'Cinzel', serif;
-
   font-size: 0.85rem;
-
   letter-spacing: 1px;
-
   color: var(--ink-light);
-
   cursor: pointer;
-
   transition: background 0.2s, color 0.2s;
-
 }
-
 .tab-switch button:last-child { border-right: none; }
-
 .tab-switch button.active { background: var(--ink); color: #fff; font-weight: 600; }
 
-
-
 /* ── FILTRE ── */
-
 .filter-bar {
-
   display: flex;
-
   gap: 10px;
-
   align-items: center;
-
   margin-bottom: 22px;
-
   flex-wrap: wrap;
-
 }
-
 .filter-bar input, .filter-bar select { flex: 1; min-width: 140px; max-width: 260px; }
 
-
-
 /* ── CARTES ÉVÉNEMENTS ── */
-
 .events-grid { display: flex; flex-direction: column; gap: 18px; }
-
 .event-card {
-
   border: 1px solid var(--border);
-
   background: #ffffff;
-
   border-radius: 6px;
-
   transition: box-shadow 0.2s, transform 0.15s;
-
 }
-
 .event-card:hover { box-shadow: 0 8px 24px var(--shadow); transform: translateY(-2px); }
-
 .event-card-header {
-
   display: flex;
-
   justify-content: space-between;
-
   align-items: flex-start;
-
   padding: 16px 20px 12px;
-
   border-bottom: 1px solid #f1f5f9;
-
   gap: 12px;
-
   flex-wrap: wrap;
-
 }
-
 .event-card-titre {
-
   font-family: 'Cinzel', serif;
-
   font-size: 1.15rem;
-
   font-weight: 700;
-
   color: var(--ink);
-
   flex: 1;
-
 }
-
 .event-card-type {
-
   display: inline-block;
-
   padding: 4px 12px;
-
   border: 1px solid #e2e8f0;
-
   border-radius: 4px;
-
   font-family: 'Cinzel', serif;
-
   font-size: 0.68rem;
-
   letter-spacing: 1px;
-
   background: #f8fafc;
-
   color: var(--ink-light);
-
   white-space: nowrap;
-
 }
-
 .event-card-body {
-
   display: grid;
-
   grid-template-columns: 1fr 1fr 1fr;
-
   gap: 10px;
-
   padding: 14px 20px;
-
 }
-
 .event-info-item { display: flex; flex-direction: column; gap: 2px; }
-
 .event-info-label {
-
   font-family: 'Cinzel', serif;
-
   font-size: 0.65rem;
-
   letter-spacing: 1.5px;
-
   text-transform: uppercase;
-
   color: var(--ink-light);
-
 }
-
 .event-info-val { font-family: 'Crimson Text', serif; font-size: 0.97rem; color: var(--ink); word-break: break-word; }
-
 .event-description {
-
   font-family: 'Georgia', serif;
-
   font-size: 0.85rem;
-
   color: var(--ink);
-
   line-height: 1.75;
-
   padding: 0 20px 14px;
-
   border-bottom: 1px solid #f1f5f9;
-
   white-space: pre-wrap; /* Maintien des sauts de ligne */
-
 }
-
 .event-card-footer {
-
   display: flex;
-
   justify-content: space-between;
-
   align-items: center;
-
   padding: 12px 20px 16px;
-
   gap: 10px;
-
   flex-wrap: wrap;
-
 }
-
 .jauge-wrap { display: flex; align-items: center; gap: 8px; }
-
 .jauge-bar { width: 120px; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
-
 .jauge-fill { height: 100%; background: #94a3b8; border-radius: 3px; transition: width 0.4s; }
-
 .jauge-fill.complet { background: var(--red-blood); }
-
 .jauge-text { font-family: 'Cinzel', serif; font-size: 0.72rem; color: var(--ink-light); white-space: nowrap; }
-
 .badge-attente {
-
   background: #fef2f2;
-
   border: 1px solid #fecaca;
-
   color: var(--red-blood);
-
   font-family: 'Cinzel', serif;
-
   font-size: 0.68rem;
-
   letter-spacing: 1px;
-
   padding: 3px 10px;
-
   border-radius: 4px;
-
 }
-
 .badge-inscrit {
-
   background: #f0fdf4;
-
   border: 1px solid #bbf7d0;
-
   color: #166534;
-
   font-family: 'Cinzel', serif;
-
   font-size: 0.68rem;
-
   letter-spacing: 1px;
-
   padding: 3px 10px;
-
   border-radius: 4px;
-
 }
-
   .badge-pasdispo {
-
   background: #f5f5f5;
-
   border: 1px solid #d1d5db;
-
   color: #6b7280;
-
   font-family: 'Cinzel', serif;
-
   font-size: 0.68rem;
-
   letter-spacing: 1px;
-
   padding: 3px 10px;
-
   border-radius: 4px;
-
 }
-
-
 
 /* ── ESPACE JOUEUR — ONGLETS ── */
-
 .joueur-tabs {
-
   display: flex;
-
   gap: 0;
-
   border-bottom: 2px solid var(--border);
-
   margin-bottom: 28px;
-
 }
-
 .joueur-tab-btn {
-
   padding: 10px 22px;
-
   background: none;
-
   border: none;
-
   border-bottom: 3px solid transparent;
-
   margin-bottom: -2px;
-
   font-family: 'Cinzel', serif;
-
   font-size: 0.82rem;
-
   letter-spacing: 1.5px;
-
   color: var(--ink-light);
-
   cursor: pointer;
-
   text-transform: uppercase;
-
   transition: color 0.2s, border-color 0.2s;
-
   position: relative;
-
 }
-
 .joueur-tab-btn:hover { color: var(--ink); }
-
 .joueur-tab-btn.active { color: var(--ink); border-bottom-color: var(--ink); font-weight: 700; }
-
 .notif-dot {
-
   position: absolute;
-
   top: 4px;
-
   right: 4px;
-
   width: 8px; height: 8px;
-
   background: var(--red-blood);
-
   border-radius: 50%;
-
 }
-
-
 
 /* ── MESSAGERIE ── */
-
 .messages-fil {
-
   display: flex;
-
   flex-direction: column;
-
   gap: 12px;
-
   max-height: 400px;
-
   overflow-y: auto;
-
   padding: 4px 0 16px;
-
   margin-bottom: 16px;
-
 }
-
 .msg-bubble {
-
   max-width: 80%;
-
   padding: 12px 16px;
-
   border-radius: 6px;
-
   font-family: 'Crimson Text', serif;
-
   font-size: 1rem;
-
   line-height: 1.6;
-
   white-space: pre-wrap;
-
 }
-
 .msg-bubble.joueur {
-
   align-self: flex-end;
-
   background: #f8fafc;
-
   border: 1px solid var(--border);
-
 }
-
 .msg-bubble.orga {
-
   align-self: flex-start;
-
   background: #eff6ff;
-
   border: 1px solid #bfdbfe;
-
 }
-
 .msg-bubble-meta {
-
   font-family: 'Cinzel', serif;
-
   font-size: 0.65rem;
-
   letter-spacing: 1px;
-
   color: var(--ink-light);
-
   margin-bottom: 6px;
-
 }
-
 .msg-input-zone {
-
   display: flex;
-
   gap: 10px;
-
   align-items: flex-end;
-
 }
-
 .msg-input-zone textarea { min-height: 60px; flex: 1; }
 
-
-
 /* ── TABLE ORGA ── */
-
 .orga-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
-
 .orga-table th {
-
   font-family: 'Cinzel', serif;
-
   font-size: 0.72rem;
-
   letter-spacing: 1.5px;
-
   text-transform: uppercase;
-
   color: var(--ink-light);
-
   border-bottom: 2px solid var(--border);
-
   padding: 10px 10px;
-
   text-align: left;
-
 }
-
 .orga-table td { padding: 10px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-
 .orga-table tr:hover td { background: #f8fafc; }
-
 .orga-toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
 
-
-
 .orga-action-btns {
-
   display: flex;
-
   gap: 6px;
-
   flex-wrap: nowrap;
-
   align-items: center;
-
 }
-
-
 
 /* ── MODALES ── */
-
 .modal-overlay {
-
   display: none;
-
   position: fixed; inset: 0;
-
   background: rgba(15, 23, 42, 0.85);
-
   z-index: 100;
-
   align-items: center;
-
   justify-content: center;
-
   padding: 16px;
-
 }
-
 .modal-overlay.open { display: flex; }
-
 .modal-box {
-
   background: var(--parchment);
-
   border: none;
-
   border-radius: 8px;
-
   box-shadow: 0 15px 50px rgba(0,0,0,0.4);
-
   padding: 30px 34px;
-
   max-width: 520px;
-
   width: 100%;
-
   max-height: 90vh;
-
   overflow-y: auto;
-
   position: relative;
-
 }
-
 .modal-box-wide { max-width: 660px; }
-
 .modal-box-xl { max-width: 1100px; width: 95%; } /* Ajoute cette ligne ici */
-
 .modal-title {
-
   font-family: 'Cinzel', serif;
-
   font-size: 1.4rem;
-
   font-weight: 700;
-
   margin-bottom: 20px;
-
   color: var(--ink);
-
   text-align: center;
-
 }
-
 .modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 1.4rem; color: var(--ink-light); cursor: pointer; transition: color 0.2s; }
-
 .modal-close:hover { color: var(--red-blood); }
 
-
-
 /* ── TOAST ── */
-
 .toast {
-
   position: fixed;
-
   bottom: 24px; right: 24px;
-
   background: var(--ink);
-
   color: #ffffff;
-
   border-radius: 4px;
-
   padding: 12px 22px;
-
   font-family: 'Cinzel', serif;
-
   font-size: 0.8rem;
-
   letter-spacing: 1px;
-
   box-shadow: 0 10px 30px var(--shadow);
-
   z-index: 200;
-
   opacity: 0;
-
   transform: translateY(10px);
-
   transition: opacity 0.3s, transform 0.3s;
-
   pointer-events: none;
-
 }
-
 .toast.show { opacity: 1; transform: translateY(0); }
 
-
-
   
-
-
 
 /* ── PIED DE PAGE ── */
-
 .site-footer { text-align: center; margin-top: 36px; padding-bottom: 10px; }
-
 .footer-orga-link {
-
   font-family: 'Cinzel', serif;
-
   font-size: 0.7rem;
-
   letter-spacing: 1px;
-
   color: rgba(255,255,255,0.5);
-
   cursor: pointer;
-
   border: none;
-
   background: none;
-
   transition: color 0.2s;
-
 }
-
 .footer-orga-link:hover { color: #ffffff; }
 
-
-
 /* ── ÉTAT VIDE ── */
-
 .empty-state {
-
   font-family: 'IM Fell English', serif;
-
   font-style: italic;
-
   color: var(--ink-light);
-
   padding: 30px 0;
-
   text-align: center;
-
   font-size: 1.1rem;
-
 }
-
-
 
 /* ── ORGA MESSAGERIE ── */
-
 .orga-msg-joueur-select {
-
   display: flex;
-
   gap: 10px;
-
   align-items: center;
-
   margin-bottom: 20px;
-
   flex-wrap: wrap;
-
 }
-
 .notif-badge-count {
-
   display: inline-flex;
-
   align-items: center;
-
   justify-content: center;
-
   background: var(--red-blood);
-
   color: #fff;
-
   border-radius: 50%;
-
   width: 20px;
-
   height: 20px;
-
   font-family: 'Cinzel', serif;
-
   font-size: 0.65rem;
-
   font-weight: 700;
-
   margin-left: 6px;
-
 }
-
-
 
   .cal-grid {
-
   display: grid;
-
   grid-template-columns: repeat(7, 1fr);
-
   gap: 4px;
-
 }
-
 .cal-header-day {
-
   font-family: 'Cinzel', serif;
-
   font-size: 0.7rem;
-
   letter-spacing: 1px;
-
   text-transform: uppercase;
-
   color: var(--ink-light);
-
   text-align: center;
-
   padding: 6px 0;
-
 }
-
 .cal-day {
-
   min-height: 70px;
-
   border: 1px solid var(--border);
-
   border-radius: 4px;
-
   padding: 4px;
-
   background: #f8fafc;
-
   vertical-align: top;
-
 }
-
 .cal-day.today { border-color: #64748b; background: #f1f5f9; }
-
 .cal-day.vide { background: transparent; border: none; }
-
 .cal-day-num {
-
   font-family: 'Cinzel', serif;
-
   font-size: 0.72rem;
-
   color: var(--ink-light);
-
   margin-bottom: 4px;
-
 }
-
 .cal-event-pill {
-
   background: #1e293b;
-
   color: #fff;
-
   border-radius: 3px;
-
   padding: 2px 5px;
-
   font-family: 'Crimson Text', serif;
-
   font-size: 0.75rem;
-
   margin-bottom: 2px;
-
   cursor: default;
-
   white-space: nowrap;
-
   overflow: hidden;
-
   text-overflow: ellipsis;
-
 }
-
 @media (max-width: 600px) {
-
   .cal-day { min-height: 50px; }
-
   .cal-event-pill { font-size: 0.65rem; }
-
 }
-
-
 
 @media (max-width: 600px) {
-
   .parchment { padding: 22px 18px; }
-
   .modal-box { padding: 22px 18px; }
-
   .event-card-body { grid-template-columns: 1fr; }
-
   .site-title { font-size: 1.7rem; }
-
   .site-footer { padding-bottom: 140px; }
-
   
-
   .orga-table th:nth-child(3), .orga-table td:nth-child(3),
-
   .orga-table th:nth-child(4), .orga-table td:nth-child(4) { display: none; }
-
   
-
   .orga-table { font-size: 0.75rem; } 
-
   .orga-table th, .orga-table td { padding: 6px 4px; } 
-
   
-
   .orga-table td:last-child { 
-
     display: flex;
-
     flex-direction: column; 
-
     gap: 6px; 
-
     min-width: 0 !important;
-
     white-space: normal !important;
-
   }
-
    .orga-action-btns {
-
     flex-direction: column; /* Transforme la ligne en colonne verticale */
-
     align-items: stretch; /* Étire les boutons pour qu'ils fassent tous la même largeur */
-
   }
-
   
-
   .orga-table td:last-child .btn { 
-
     padding: 6px 4px; 
-
     font-size: 0.6rem;
-
     letter-spacing: 0px; 
-
     text-align: center; 
-
     width: 100%;
-
   }
-
   .joueur-tabs {
-
   overflow-x: auto;
-
   -webkit-overflow-scrolling: touch;
-
   flex-wrap: nowrap;
-
   padding-bottom: 4px;
-
 }
-
 .joueur-tab-btn {
-
   font-size: 0.7rem;
-
   padding: 10px 12px;
-
   white-space: nowrap;
-
 }
-
   #joueur-screen .parchment {
-
   margin: 0;
-
 }
-
 }
-
   .badge-interesse {
-
   background: #f0f9ff;
-
   border: 1px solid #bae6fd;
-
   color: #0369a1;
-
   font-family: 'Cinzel', serif;
-
   font-size: 0.68rem;
-
   letter-spacing: 1px;
-
   padding: 3px 10px;
-
   border-radius: 4px;
-
 }
-
 /* ── LAYOUT ACCUEIL FORCE 50/50 ── */
-
 .home-layout {
-
   display: grid;
-
   grid-template-columns: 1fr 1fr; 
-
   gap: 24px;
-
   align-items: start;
-
   width: 100%;
-
 }
-
-
 
 /* On réduit la largeur minimale des colonnes pour qu'elles puissent cohabiter */
-
 .home-layout > div {
-
   min-width: 0; 
-
 }
-
-
 
 @media (max-width: 900px) {
-
   .home-layout { grid-template-columns: 1fr; } 
-
 }
-
-
 
   /* Style pour la petite bulle d'info au survol */
-
 .slots-info {
-
   cursor: help;
-
   position: relative;
-
   display: inline-block;
-
   border-bottom: 1px dotted var(--ink-light); /* Un petit souligné discret pour dire qu'il y a une info */
-
 }
-
   
-
   /* Fond bleu-gris light pour la zone des dates */
-
   .dates-container {
-
       background-color: #f0f4f7; /* Bleu-gris très léger */
-
       border-radius: 8px;
-
       padding: 15px;
-
   }
-
-
 
   /* Système d'onglets mobile */
-
   .mobile-tabs {
-
       display: none; /* Caché sur ordi */
-
       gap: 10px;
-
       margin-bottom: 20px;
-
   }
 
-
-
   @media (max-width: 900px) {
-
       .mobile-tabs {
-
           display: flex;
-
       }
-
       
-
       /* Masquage intelligent selon l'onglet choisi */
-
       .home-layout[data-active="dates"] .missives-col { display: none; }
-
       .home-layout[data-active="missives"] .dates-col { display: none; }
-
       
-
       .mobile-tabs button {
-
         flex: 1;
-
         padding: 10px;
-
         font-family: 'Cinzel', serif;
-
         font-size: 0.75rem;
-
         letter-spacing: 1px;
-
         border: 1px solid #cbd5e1;
-
         background: rgba(255, 255, 255, 0.8);
-
         color: #64748b;
-
         border-radius: 6px;
-
         cursor: pointer;
-
         transition: all 0.3s ease;
-
         text-transform: uppercase;
-
     }
-
     
-
     /* Le bouton quand il est sélectionné */
-
     .mobile-tabs button.active {
-
         background: #58abbc; /* Ton bleu thématique */
-
         color: white;
-
         border-color: #58abbc;
-
         box-shadow: 0 4px 10px rgba(88, 171, 188, 0.3);
-
         font-weight: bold;
-
     }
-
   }      
 
-
-
   /* Agrandit les carrés et les icônes de la barre d'outils de la Taverne */
-
 #chat-public-input-zone .btn-ghost {
-
   padding: 3px !important;
-
   font-size: 0.75rem !important;
-
   min-width: 28px;
-
   height: 28px;
-
   display: inline-flex;
-
   justify-content: center;
-
   align-items: center;
-
 }
-
 .toolbar-messagerie .btn-ghost {
-
   padding: 5px !important;
-
   font-size: 0.8rem !important;
-
   min-width: 34px;
-
   height: 34px;
-
   display: inline-flex;
-
   justify-content: center;
-
   align-items: center;
-
 }
-
-
 
   /* ── BOUTONS DE DÉFILEMENT ── */
-
 .scroll-nav {
-
   position: fixed;
-
   bottom: 120px;
-
   right: 24px;
-
   display: flex;
-
   flex-direction: column;
-
   gap: 10px;
-
   z-index: 99;
-
 }
-
-
 
 .scroll-nav button {
-
   background: #58abbc;
-
   color: white;
-
   border: none;
-
   border-radius: 50%;
-
   width: 48px;
-
   height: 48px; /* [cite: 129] */
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
-
   cursor: pointer;
-
   transition: all 0.3s ease;
-
   font-size: 1.5rem;
-
   box-shadow: 0 4px 12px rgba(0,0,0,0.3); /* [cite: 130] */
-
   flex-shrink: 0; /* AJOUT CRUCIAL : empêche la déformation (squish) au scroll */
-
 }
-
-
 
 .scroll-nav button:hover {
-
   background: #468e9d;
-
   transform: translateY(-3px) scale(1.05);
-
   box-shadow: 0 6px 16px rgba(0,0,0,0.4);
-
 }
-
-
 
 @media (max-width: 600px) {
-
   .scroll-nav {
-
     /* On les remonte considérablement et on gère les encoches tactiles des téléphones récents */
-
     bottom: max(110px, env(safe-area-inset-bottom, 110px));
-
     right: 16px; /* [cite: 133] */
-
   }
-
   .scroll-nav button {
-
     /* On les agrandit un tout petit peu (de 36px à 40px) pour qu'ils soient plus faciles à taper au pouce */
-
     width: 40px; 
-
     height: 40px;
-
     font-size: 1.1rem;
-
   }
-
 }
-
-
 
   html {
-
   background-color: #e8f4f7;
-
 }
-
-
 
   @media (max-width: 900px) {
-
   #home-mobile-tabs {
-
     gap: 4px;
-
     margin-bottom: 16px;
-
     border-bottom: 3px solid #58abbc;
-
   }
-
   #home-mobile-tabs button {
-
     flex: 1;
-
     padding: 14px 8px;
-
     font-size: 0.85rem;
-
     border: 1px solid #cbd5e1;
-
     border-bottom: none;
-
     border-radius: 10px 10px 0 0;
-
     background: #e2e8f0;
-
     color: #64748b;
-
     box-shadow: none;
-
     font-weight: normal;
-
   }
-
   #home-mobile-tabs button.active {
-
     background: #58abbc;
-
     color: #ffffff;
-
     border-color: #58abbc;
-
     font-weight: bold;
-
     box-shadow: none;
-
   }
-
 }
-
   
-
 </style>
-
 </head>
-
 <body>
-
 <div id="app">
 
-
-
   <div id="public-screen">
-
     <div class="site-header">
-
       <div class="site-title">⚔ Événements ⚔</div>
-
       <div class="site-subtitle">Les prochaines aventures vous attendent</div>
-
     </div>
-
     
-
     <div class="parchment">
-
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-
         <div style="font-family:'Cinzel',serif;font-size:1.15rem;font-weight:700;letter-spacing:2px;color:var(--ink)">Événements à venir</div>
-
         <div id="header-user-zone"></div>
-
       </div>
-
       <div class="filter-bar">
-
         <input type="text" id="search-input" placeholder="Rechercher un événement..." oninput="filterEvents()" autocomplete="one-time-code" name="search-fantasy-unique-id" spellcheck="false">
-
  
-
         <select id="filter-type" onchange="filterEvents()">
-
           <option value="">Tous les types</option>
-
  <option value="Animation">Animation</option>
-
   <option value="Assemblée générale">Assemblée générale</option>
-
   <option value="Atelier bricolage">Atelier bricolage</option>
-
   <option value="Atelier couture">Atelier couture</option>
-
   <option value="Atelier craft">Atelier craft</option>
-
   <option value="Autre">Autre</option>
-
   <option value="Grandeur nature">Grandeur nature</option>
-
   <option value="Inventaire/Rangement">Inventaire/Rangement</option>
-
   <option value="Jeepform">Jeepform</option>
-
   <option value="Jeu de rôles sur table">Jeu de rôles sur table</option>
-
   <option value="Jeu de société">Jeu de société</option>
-
   <option value="Jeu immersif">Jeu immersif</option>
-
   <option value="Jeux sportif">Jeux sportif</option>
-
   <option value="Murder party">Murder party</option>
-
   <option value="Pas encore défini">Pas encore défini</option>
-
   <option value="Repas">Repas</option>
-
   <option value="Réunion">Réunion</option>     
-
         </select>
-
         <button class="btn-ghost" onclick="openCalendrier()">📅 Calendrier</button>
-
         <button class="btn-ghost" style="border-color: #58abbc; color: #58abbc; position: relative;" onclick="openChatPublic()">
-
           💬 La Taverne
-
           <span class="notif-dot" id="notif-chat-dot" style="display:none; top: -4px; right: -4px;"></span>
-
         </button>
-
       </div>
-
       <div class="mobile-tabs" id="home-mobile-tabs">
-
         <button class="active" onclick="switchHomeTab('missives')">📜 Missives</button>
-
         <button onclick="switchHomeTab('dates')">📅 Dates</button>
-
       </div>
-
-
 
       <div class="home-layout" id="main-home-layout" data-active="missives">
-
         
-
         <div class="missives-col" style="background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 20px;">
-
           <div style="border-bottom: 2px solid #58abbc; padding-bottom: 10px; margin-bottom: 15px;">
-
             <h2 style="margin: 0; color: var(--ink); font-family: 'Cinzel', serif; font-size: 1.3rem;">📜 Missives Orga</h2>
-
           </div>
-
           <div id="annonces-container" style="display: flex; flex-direction: column; gap: 15px;">
-
             <div style="text-align: center; color: var(--ink-light); font-style: italic; font-size: 0.9rem;">Lecture des parchemins...</div>
-
           </div>
-
           <div style="text-align:center; margin-top:15px;">
-
   <button class="btn-ghost" id="btn-plus-missives" style="display:none" onclick="chargerPlusMissives()">📜 Voir plus de missives</button>
-
 </div>
-
         </div>
-
-
 
         <div class="dates-col dates-container">
-
           <div style="border-bottom: 2px solid #58abbc; padding-bottom: 10px; margin-bottom: 15px;">
-
             <h2 style="margin: 0; color: var(--ink); font-family: 'Cinzel', serif; font-size: 1.3rem;">📅 Les dates</h2>
-
           </div>
-
           <div class="events-grid" id="public-events-grid">
-
             <div class="empty-state">Chargement des événements…</div>
-
           </div>
-
         </div>
-
       </div>
-
       </div>
-
     <div class="site-footer">
-
       
-
     </div>
-
     </div>
-
   </div>
-
-
 
   <div id="joueur-screen" style="display:none">
-
   <div style="max-width:760px; margin:0 auto; padding: 0 16px;">
-
    <div class="logout-bar" id="joueur-logout-bar">
-
     <span id="joueur-screen-label">⚔ Mon Espace</span>
-
     <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
-
       <button class="btn btn-sm" onclick="retourAccueil()">← Événements</button>
-
       <button class="btn btn-sm btn-danger" onclick="logoutJoueur()">Déconnexion</button>
-
       <button class="btn-ghost" style="color:var(--red-blood); border-color:var(--red-blood); padding:6px 16px; font-size:0.75rem;" onclick="supprimerCompteJoueur()">Supprimer mon compte</button>
-
     </div>
-
   </div>
-
     <div class="parchment">
-
       <div class="joueur-tabs">
-
         <button class="joueur-tab-btn active" id="jtab-inscriptions" onclick="showJoueurTab('inscriptions', this)">Mes Inscriptions</button>
-
         <button class="joueur-tab-btn" id="jtab-messages" onclick="showJoueurTab('messages', this)">
-
           Messages
-
           <span class="notif-dot" id="notif-msg-dot" style="display:none"></span>
-
         </button>
-
       </div>
-
-
 
       <div id="joueur-tab-inscriptions">
-
         <div class="events-grid" id="mes-inscriptions-grid">
-
           <div class="empty-state">Chargement…</div>
-
         </div>
-
       </div>
 
-
-
       <div id="joueur-tab-messages" style="display:none">
-
   <div class="messages-fil" id="messages-fil">
-
     <div class="empty-state">Chargement…</div>
-
   </div>
-
   <div class="msg-input-zone">
-
     <textarea id="msg-nouveau" placeholder="Écrivez votre message à l'orga…"></textarea>
-
     <button class="btn btn-sm" onclick="envoyerMessage()">Envoyer</button>
-
+  </div>
+<div class="toolbar-messagerie" style="display: flex; flex-wrap: wrap; gap: 5px; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid var(--border); margin-bottom: 5px; align-items: center;">
+   <button class="btn-ghost" type="button" onclick="insertFormatMessagerie('**', 'msg-nouveau')">B</button>
+<button class="btn-ghost" type="button" onclick="insertFormatMessagerie('*', 'msg-nouveau')">I</button>
+<button class="btn-ghost" type="button" onclick="insertFormatMessagerie('__', 'msg-nouveau')">U</button>
+<button class="btn-ghost" type="button" onclick="insertFormatMessagerie('~~', 'msg-nouveau')">S</button>
+<span style="color: #cbd5e1; margin: 0 4px;">|</span>
+    <button class="btn-ghost" style="padding: 2px 10px;" onclick="toggleEmojiPanel('emoji-panel-msgjoueur')">😀 Émojis</button>
+  </div>
+  <div id="emoji-panel-msgjoueur" style="display:none; flex-wrap: wrap; gap: 5px; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid var(--border); margin-bottom: 5px;">
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🧚', 'msg-nouveau')">🧚</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🍻', 'msg-nouveau')">🍻</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('⚔️', 'msg-nouveau')">⚔️</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🍺', 'msg-nouveau')">🍺</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🛡️', 'msg-nouveau')">🛡️</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🏹', 'msg-nouveau')">🏹</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🧙', 'msg-nouveau')">🧙</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🧙‍♀️', 'msg-nouveau')">🧙‍♀️</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🧟', 'msg-nouveau')">🧟</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('👻', 'msg-nouveau')">👻</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('💀', 'msg-nouveau')">💀</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('😈', 'msg-nouveau')">😈</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🧛', 'msg-nouveau')">🧛</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('😊', 'msg-nouveau')">😊</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('😢', 'msg-nouveau')">😢</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('😡', 'msg-nouveau')">😡</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🤔', 'msg-nouveau')">🤔</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('😱', 'msg-nouveau')">😱</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('😏', 'msg-nouveau')">😏</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🥺', 'msg-nouveau')">🥺</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('😴', 'msg-nouveau')">😴</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🤣', 'msg-nouveau')">🤣</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('😎', 'msg-nouveau')">😎</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('😤', 'msg-nouveau')">😤</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🫡', 'msg-nouveau')">🫡</button>
   </div>
 
-<div class="toolbar-messagerie" style="display: flex; flex-wrap: wrap; gap: 5px; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid var(--border); margin-bottom: 5px; align-items: center;">
+  
+  <div class="msg-error" id="err-msg"></div>
+</div>
+    </div>
+  </div>
+    </div>
+  
+  <div id="orga-screen" style="display:none">
+    <div style="max-width: 1300px; margin: 0 auto; padding: 0 16px;">
+    <div class="logout-bar">
+      <span>⚔ Organisateur — Événements</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" onclick="logoutOrga()">← Retour à l'accueil</button>
+      </div>
+    </div>
+    <div class="parchment">
+      <div class="parchment">
+      <div class="joueur-tabs">
+        <button class="joueur-tab-btn active" id="otab-events" onclick="showOrgaTab('events', this)">Événements</button>
+        <button class="joueur-tab-btn" id="otab-messages" onclick="showOrgaTab('messages', this)">
+          Messages joueurs
+          <span class="notif-dot" id="notif-orga-dot" style="display:none"></span>
+        </button>
+        <button class="joueur-tab-btn" id="otab-missives" onclick="showOrgaTab('missives', this)">Missives</button>
+        <button class="joueur-tab-btn" id="otab-profils" onclick="showOrgaTab('profils', this)">Comptes Joueurs</button>
+      </div>
+      <div id="orga-tab-events">
+        <div class="orga-toolbar">
+          <button class="btn btn-sm" onclick="openModalCreateEvent()">+ Nouvel événement</button>
+          <input type="text" id="orga-search" placeholder="Filtrer…" style="max-width:220px;margin-left:auto" oninput="filterOrgaEvents(this.value)" autocomplete="new-password" onfocus="this.value=''">
+        </div>
+        <table class="orga-table">
+          <thead>
+            <tr><th>Titre</th><th>Début</th><th>Lieu</th><th>Type</th><th>Places libres</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="orga-events-body">
+            <tr><td colspan="6" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement…</td></tr>
+          </tbody>
+        </table>
+      </div></div>
 
-   <button class="btn-ghost" type="button" onclick="insertFormatMessagerie( 
+<div id="orga-tab-messages" style="display:none">
+        <div class="orga-msg-joueur-select">
+          <label style="text-transform:none;font-size:0.9rem;margin-bottom:0">Conversation avec :</label>
+          <select id="orga-joueur-select" onchange="loadOrgaConversation(this.value)" style="max-width:280px">
+            <option value="">— Sélectionner un joueur —</option>
+          </select>
+        </div>
+        <div class="messages-fil" id="orga-messages-fil">
+          <div class="empty-state">Sélectionnez un joueur pour voir la conversation.</div>
+        </div>
+        <div class="msg-input-zone" id="orga-reply-zone" style="display:none; flex-direction: column; gap: 8px;">
+   <div style="display: flex; gap: 10px; width: 100%; align-items: flex-end;">
+    <textarea id="orga-msg-nouveau" placeholder="Réponse à ce joueur..." style="min-height: 60px; flex: 1;"></textarea>
+    <button class="btn btn-sm" onclick="envoyerMessageOrga()" style="height: 100%;">Répondre</button>
+  </div>
+          
+         <div class="toolbar-messagerie" style="display: flex; flex-wrap: wrap; gap: 5px; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid var(--border); width: 100%; align-items: center;">
+    <button class="btn-ghost" type="button" onclick="insertFormatMessagerie('**', 'orga-msg-nouveau')">B</button>
+<button class="btn-ghost" type="button" onclick="insertFormatMessagerie('*', 'orga-msg-nouveau')">I</button>
+<button class="btn-ghost" type="button" onclick="insertFormatMessagerie('__', 'orga-msg-nouveau')">U</button>
+<button class="btn-ghost" type="button" onclick="insertFormatMessagerie('~~', 'orga-msg-nouveau')">S</button>
+<span style="color: #cbd5e1; margin: 0 4px;">|</span>
+    <button class="btn-ghost" style="padding: 2px 10px;" onclick="toggleEmojiPanel('emoji-panel-orga')">😀 Émojis</button>
+  </div>
+  <div id="emoji-panel-orga" style="display:none; flex-wrap: wrap; gap: 5px; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid var(--border); width: 100%;">
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🧚', 'orga-msg-nouveau')">🧚</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🍻', 'orga-msg-nouveau')">🍻</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('⚔️', 'orga-msg-nouveau')">⚔️</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🍺', 'orga-msg-nouveau')">🍺</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🛡️', 'orga-msg-nouveau')">🛡️</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🏹', 'orga-msg-nouveau')">🏹</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🧙', 'orga-msg-nouveau')">🧙</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🧙‍♀️', 'orga-msg-nouveau')">🧙‍♀️</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🧟', 'orga-msg-nouveau')">🧟</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('👻', 'orga-msg-nouveau')">👻</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('💀', 'orga-msg-nouveau')">💀</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('😈', 'orga-msg-nouveau')">😈</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🧛', 'orga-msg-nouveau')">🧛</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('😊', 'orga-msg-nouveau')">😊</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('😢', 'orga-msg-nouveau')">😢</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('😡', 'orga-msg-nouveau')">😡</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🤔', 'orga-msg-nouveau')">🤔</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('😱', 'orga-msg-nouveau')">😱</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('😏', 'orga-msg-nouveau')">😏</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🥺', 'orga-msg-nouveau')">🥺</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('😴', 'orga-msg-nouveau')">😴</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🤣', 'orga-msg-nouveau')">🤣</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('😎', 'orga-msg-nouveau')">😎</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('😤', 'orga-msg-nouveau')">😤</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmojiMessagerie('🫡', 'orga-msg-nouveau')">🫡</button>
+  </div>
+  
+ 
+</div>
+        <div class="msg-error" id="err-orga-msg"></div>
+      </div> <div id="orga-tab-missives" style="display:none">
+        <div class="orga-toolbar">
+          <button class="btn btn-sm btn-orga" style="background:#58abbc" onclick="ouvrirModaleMissive()">📜 Nouvelle Missive</button>
+        </div>
+        <table class="orga-table">
+          <thead>
+            <tr><th>Date</th><th>Titre</th><th>Auteur</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="orga-missives-body">
+            <tr><td colspan="4" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="orga-tab-profils" style="display:none">
+        <div class="orga-toolbar">
+          <h2 style="font-family:'Cinzel',serif; font-size:1.1rem; color:var(--ink);">👥 Liste des Aventuriers</h2>
+          <input type="text" id="profils-search" placeholder="Rechercher un nom ou email..." style="max-width:250px; margin-left:auto" oninput="filterProfils(this.value)">
+        </div>
+        <table class="orga-table">
+          <thead>
+  <tr>
+    <th style="cursor:pointer" onclick="trierProfils('prenom')">Prénom ↕</th>
+    <th style="cursor:pointer" onclick="trierProfils('nom')">Nom ↕</th>
+    <th style="cursor:pointer" onclick="trierProfils('email')">Email ↕</th>
+    <th style="cursor:pointer" onclick="trierProfils('date_inscription')">Inscrit le ↕</th>
+    <th style="cursor:pointer" onclick="trierProfils('derniere_connexion')">Dernier mot de passe ↕</th>
+    <th style="cursor:pointer" onclick="trierProfils('derniere_activite')">Dernière activité ↕</th>
+    <th style="cursor:pointer" onclick="trierProfils('nb_inscriptions')">Inscriptions à venir ↕</th>
+    <th>Actions</th>
+  </tr>
+</thead>
+          <tbody id="orga-profils-body">
+            <tr><td colspan="4" style="text-align:center;padding:20px;font-style:italic;color:var(--ink-light);">Chargement des parchemins...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-auth">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-auth')">✕</button>
+    <div class="modal-title" id="modal-auth-titre">Rejoindre Faérie</div>
+    <div id="auth-context" style="display:none;font-family:'IM Fell English',serif;font-style:italic;text-align:center;color:var(--ink-light);font-size:1rem;margin-bottom:16px;padding:10px 14px;border:1px solid var(--border);border-radius:4px;background:#f8fafc"></div>
+    <div class="tab-switch">
+      <button class="active" id="tab-connexion" onclick="switchAuthTab('connexion')">Se connecter</button>
+      <button id="tab-inscription" onclick="switchAuthTab('inscription')">Créer un compte</button>
+    </div>
+    <div id="form-connexion">
+      <div class="form-group"><label>Adresse e-mail</label><input type="email" id="login-email" placeholder="votre@email.com" onkeydown="if(event.key==='Enter') doLogin()"></div>
+      <div class="form-group"><label>Mot de passe</label>
+  <div style="position:relative">
+    <input type="password" id="login-mdp" placeholder="••••••••" onkeydown="if(event.key==='Enter') doLogin()" style="padding-right:40px">
+    <button type="button" onclick="togglePwd('login-mdp',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--ink-light)">👁</button>
+  </div>
+</div>
+<button class="btn btn-full" onclick="doLogin()">Se connecter</button>
+<div style="text-align:right;margin-top:8px"><button type="button" onclick="ouvrirMotDePasseOublie()" style="background:none;border:none;font-family:'Cinzel',serif;font-size:0.75rem;color:var(--ink-light);cursor:pointer;letter-spacing:1px">Mot de passe oublié ?</button></div>
+<div class="msg-error" id="err-login"></div><div class="msg-success" id="ok-login"></div>
+    </div>
+    <div id="form-inscription" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label>Prénom</label><input type="text" id="reg-prenom" placeholder="Votre prénom"></div>
+        <div class="form-group"><label>Nom</label><input type="text" id="reg-nom" placeholder="Votre nom"></div>
+      </div>
+      <div class="form-group"><label>Adresse e-mail</label><input type="email" id="reg-email" placeholder="votre@email.com"></div>
+      <div class="form-group"><label>Mot de passe</label>
+  <div style="position:relative">
+    <input type="password" id="reg-mdp" placeholder="••••••••" style="padding-right:40px">
+    <button type="button" onclick="togglePwd('reg-mdp',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--ink-light)">👁</button>
+  </div>
+</div>
+<div class="form-group"><label>Confirmer le mot de passe</label>
+  <div style="position:relative">
+    <input type="password" id="reg-mdp-confirm" placeholder="••••••••" onkeydown="if(event.key==='Enter') doRegister()" style="padding-right:40px">
+    <button type="button" onclick="togglePwd('reg-mdp-confirm',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--ink-light)">👁</button>
+  </div>
+</div>
+<button class="btn btn-full" onclick="doRegister()">Créer mon compte</button>
+<div class="msg-error" id="err-reg"></div><div class="msg-success" id="ok-reg"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-orga-auth">
+  <div class="modal-box" style="max-width:400px">
+    <button class="modal-close" onclick="closeModal('modal-orga-auth')">✕</button>
+    <div class="modal-title">⚔ Accès Organisateur</div>
+    <div class="form-group"><label>Adresse e-mail</label><input type="email" id="orga-email" placeholder="votre@email.com"></div>
+<div class="form-group"><label>Mot de passe</label>
+  <div style="position:relative">
+    <input type="password" id="orga-pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter') doLoginOrga()" style="padding-right:40px">
+    <button type="button" onclick="togglePwd('orga-pwd',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--ink-light)">👁</button>
+  </div>
+</div>
+    <button class="btn btn-orga btn-full" onclick="doLoginOrga()">Accéder</button>
+    <div class="msg-error" id="err-orga"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-inscription">
+  <div class="modal-box" style="max-width:460px;text-align:center">
+    <button class="modal-close" onclick="closeModal('modal-inscription')">✕</button>
+    <div class="modal-title" id="modal-insc-titre">Inscription</div>
+    <div id="modal-insc-detail" style="font-family:'IM Fell English',serif;font-style:italic;font-size:1.05rem;margin-bottom:24px;color:var(--ink-light)"></div>
+    <div style="display:flex;gap:12px;justify-content:center" id="modal-insc-footer"></div>
+    <div class="msg-error" id="err-insc"></div><div class="msg-success" id="ok-insc"></div>
+  </div>
+</div>
+  
+<div class="modal-overlay" id="modal-liste-participants">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-liste-participants')">✕</button>
+    <div class="modal-title">Participants - <span id="view-event-titre"></span></div>
+    <div id="liste-participants-content" style="font-family:'Crimson Text', serif; min-height: 100px;"></div>
+  </div>
+</div>
+  
+<div class="modal-overlay" id="modal-event">
+  <div class="modal-box modal-box-wide">
+    <button class="modal-close" onclick="closeModal('modal-event')">✕</button>
+    <div class="modal-title" id="modal-event-title">+ Nouvel événement</div>
+    <input type="hidden" id="e-id">
+    <div class="form-group"><label>Titre</label><input type="text" id="e-titre" placeholder="Nom de l'événement"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="form-group"><label>Début</label><input type="datetime-local" id="e-date-debut"></div>
+      <div class="form-group"><label>Fin</label><input type="datetime-local" id="e-date-fin"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+      <div class="form-group"><label>Lieu</label><input type="text" id="e-lieu" placeholder="Nom du lieu"></div>
+      <div class="form-group"><label>Lien Google Maps</label><input type="text" id="e-lien-maps" placeholder="https://maps.app.goo.gl/..."></div>
+      <div class="form-group">
+        <label>Type</label>
+        <select id="e-type">
+  <option value="Animation">Animation</option>
+  <option value="Assemblée générale">Assemblée générale</option>
+  <option value="Atelier bricolage">Atelier bricolage</option>
+  <option value="Atelier couture">Atelier couture</option>
+  <option value="Atelier craft">Atelier craft</option>
+  <option value="Autre">Autre</option>
+  <option value="Grandeur nature">Grandeur nature</option>
+  <option value="Inventaire/Rangement">Inventaire/Rangement</option>
+  <option value="Jeepform">Jeepform</option>
+  <option value="Jeu de rôles sur table">Jeu de rôles sur table</option>
+  <option value="Jeu de société">Jeu de société</option>
+  <option value="Jeu immersif">Jeu immersif</option>
+  <option value="Jeux sportif">Jeux sportif</option>
+  <option value="Murder party">Murder party</option>
+  <option value="Pas encore défini">Pas encore défini</option>
+  <option value="Repas">Repas</option>
+  <option value="Réunion">Réunion</option>                  
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label>Organisateurs</label><input type="text" id="e-organisateurs" placeholder="Noms séparés par des virgules"></div>
+    <div class="form-group"><label>Description / Notes</label><textarea id="e-description" placeholder="Informations, programme, consignes…"></textarea></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="form-group"><label>Places totales</label><input type="number" id="e-places-totales" min="1" value="20"></div>
+      <div class="form-group" id="row-places-dispo" style="display:none"><label>Places disponibles</label><input type="number" id="e-places-dispo" min="0"></div>
+    </div>
+
+<div class="form-group" style="margin-top:8px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="e-mode-billetterie" onchange="toggleModeBilletterie(this.checked)" style="width:auto">
+        Mode Billetterie (remplace l'inscription par un lien externe)
+      </label>
+    </div>
+    <div id="row-billetterie" style="display:none">
+      <div class="form-group"><label>Lien Billetterie</label><input type="text" id="e-lien-billetterie" value="https://www.xn--farie-csa.fr/billetteries" placeholder="https://..."></div>
+    </div>
+    
+    <button class="btn btn-full" style="margin-top:6px" onclick="saveEvent()">Enregistrer</button>
+    <div class="msg-error" id="err-event"></div><div class="msg-success" id="ok-event"></div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-missive">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-missive')">✕</button>
+    <div class="modal-title">📜 Rédiger une Missive</div>
+    <input type="hidden" id="m-id">
+    <div class="form-group"><label>Titre de l'annonce</label><input type="text" id="m-titre" placeholder="Oyez, oyez !"></div>
+    <div class="form-group"><label>Auteur</label><input type="text" id="m-auteur" placeholder="L'équipe Orga"></div>
+    <div class="form-group"><label>Message</label><textarea id="m-contenu" placeholder="Votre annonce pour les joueurs..."></textarea></div>
+    <button class="btn btn-full" style="background:#58abbc; margin-top:10px" onclick="sauvegarderMissive()">Publier sur le site</button>
+    <div class="msg-error" id="err-missive"></div>
+  </div>
+</div>
+
+  <div class="modal-overlay" id="modal-chat-public">
+  <div class="modal-box modal-box-xl">
+    <button class="modal-close" onclick="closeModal('modal-chat-public')">✕</button>
+    <div class="modal-title" style="color: #58abbc;">💬 La Taverne</div>
+    
+    <div class="messages-fil" id="chat-public-fil" style="height: 700px; background: #f8fafc; padding: 15px; border: 1px inset var(--border); border-radius: 6px;">
+      <div class="empty-state">Chargement des discussions...</div>
+    </div>
+    
+    <div id="chat-public-input-zone" style="margin-top: 15px; display: flex; flex-direction: column; gap: 8px;">
+   <div style="display: flex; gap: 10px; align-items: flex-end;">
+    <textarea id="chat-public-nouveau" placeholder="Partagez quelque chose..." style="min-height: 120px; flex: 1;"></textarea>
+    <button class="btn btn-sm" style="background: #58abbc; height: 100%;" onclick="envoyerMessageChatPublic()">Envoyer</button>
+  </div>
+  <div style="display: flex; flex-wrap: wrap; gap: 5px; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid var(--border); align-items: center;">
+    <button class="btn-ghost" style="padding: 2px 8px; font-weight: bold; color: var(--ink);" onclick="insertFormat('**')">B</button>
+    <button class="btn-ghost" style="padding: 2px 8px; font-style: italic; color: var(--ink);" onclick="insertFormat('*')">I</button>
+    <button class="btn-ghost" style="padding: 2px 8px; text-decoration: underline; color: var(--ink);" onclick="insertFormat('__')">U</button>
+    <button class="btn-ghost" style="padding: 2px 8px; text-decoration: line-through; color: var(--ink);" onclick="insertFormat('~~')">S</button>
+    <span style="color: #cbd5e1; margin: 0 4px;">|</span>
+    <button class="btn-ghost" style="padding: 2px 10px;" onclick="toggleEmojiPanel()">😀 Émojis</button>
+</div>
+<div id="emoji-panel-taverne" style="display:none; flex-wrap: wrap; gap: 5px; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid var(--border); margin-top: 4px;">
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🧚')">🧚</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🍻')">🍻</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('⚔️')">⚔️</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🍺')">🍺</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🛡️')">🛡️</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🏹')">🏹</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🧙')">🧙</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🧙‍♀️')">🧙‍♀️</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🧟')">🧟</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('👻')">👻</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('💀')">💀</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😈')">😈</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🧛')">🧛</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😊')">😊</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😢')">😢</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😡')">😡</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🤔')">🤔</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😱')">😱</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😏')">😏</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🥺')">🥺</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😴')">😴</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🤣')">🤣</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😎')">😎</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('😤')">😤</button>
+    <button class="btn-ghost" style="padding: 2px 6px;" onclick="insertEmoji('🫡')">🫡</button>
+</div>
+
+ 
+</div>
+    
+    <div id="chat-public-login-msg" style="display:none; text-align:center; font-style:italic; color:var(--red-blood); margin-top:15px; padding: 10px; border: 1px dashed var(--red-blood);">
+      Vous devez être connecté à votre compte Faérie pour participer à la discussion.
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-event-detail">
+  <div class="modal-box modal-box-wide">
+    <button class="modal-close" onclick="closeModal('modal-event-detail')">✕</button>
+    <div id="modal-event-detail-content">
+      </div>
+    <div style="text-align: center; margin-top: 20px;">
+      <button class="btn" onclick="closeModal('modal-event-detail'); window.scrollTo({top: document.getElementById('main-home-layout').offsetTop, behavior: 'smooth'});">
+        Voir sur l'accueil pour s'inscrire
+      </button>
+    </div>
+  </div>
+</div>
+  
+<div class="toast" id="toast"></div>
+
+  <div class="modal-overlay" id="modal-calendrier">
+  <div class="modal-box modal-box-wide">
+    <button class="modal-close" onclick="closeModal('modal-calendrier')">✕</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <button class="btn-ghost" onclick="changeMonth(-1)">◀</button>
+      <div class="modal-title" id="cal-titre" style="margin:0"></div>
+      <button class="btn-ghost" onclick="changeMonth(1)">▶</button>
+    </div>
+    <div id="cal-grid"></div>
+  </div>
+</div>
+
+  <div id="ancre-bas"></div>
+
+<div class="scroll-nav">
+  <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Remonter tout en haut">⬆️</button>
+  
+  <button onclick="document.getElementById('ancre-bas').scrollIntoView({behavior: 'smooth', block: 'nearest'})" title="Descendre tout en bas">⬇️</button>
+</div>
+
+  
+<script>
+// ════════════════════════════════════════════════════
+//  CONFIG ET URL DU SCRIPT D'ENVOI D'EMAILS
+// ════════════════════════════════════════════════════
+const SUPABASE_URL  = 'https://zutgjwnmolzwkbkdzfko.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1dGdqd25tb2x6d2tia2R6ZmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NDczMTksImV4cCI6MjA5MTUyMzMxOX0.qQ0pCnU9JoPaHmaB-p9vvo5-8rN6LPjNIwf81SaYJbs';
+
+// L'adresse de ton facteur Google !
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyvEKDVoslH3d5BnZhLaY7RO_JtTDDEfnRbZLzezZ8PNmWUi5yXEfPsZOhnBgHNaqij/exec';
+const EMAIL_NOTIF_TAVERNE = 'contact@xn--farie-csa.fr'; // ← adresse mail pour les notifs Taverne
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const state = {
+  user: null, events: [], orgaEvents: [], mesInscriptions: [], mesInscriptionsData: [],
+  maListeAttente: [],
+  pendingEventId: null, pendingEventTitre: null, pendingEventDispo: null, currentOrgaUserId: null,
+  mesInteresses: [],
+  mesNonDispos: []
+};
+  
+// ════════════════════════════════════════════════════
+//  FONCTION D'ENVOI D'EMAILS
+// ════════════════════════════════════════════════════
+async function sendEmailViaGAS(email, sujet, message) {
+  try {
+    fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ email: email, sujet: sujet, message: message }),
+      headers: { "Content-Type": "text/plain;charset=utf-8" }
+    });
+  } catch (e) {
+    console.error("Erreur d'envoi d'email:", e);
+  }
+}
+
+// ════════════════════════════════════════════════════
+//  HELPERS DATE
+// ════════════════════════════════════════════════════
+function formatDatetime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'long', year: 'numeric' }) + ' à ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+function toLocalInput(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  // On décale manuellement pour compenser le fuseau horaire local du navigateur
+  const offset = d.getTimezoneOffset() * 60000;
+  const localTime = new Date(d.getTime() - offset);
+  return localTime.toISOString().slice(0, 16);
+}
+
+// ════════════════════════════════════════════════════
+//  CHARGEMENT PUBLIQUE ET FILTRAGE
+// ════════════════════════════════════════════════════
+async function loadPublicEvents() {
+  const grid = document.getElementById('public-events-grid');
+  try {
+    // 1. On récupère TOUS les événements sans filtre SQL (plus de bug de date)
+    const { data: allEventsFromDB } = await sb.from('evenements').select('*').order('date_debut', { ascending: true });
+    state.allEvents = allEventsFromDB || [];
+    const { data: allInscriptions } = await sb.from('inscriptions').select('event_id, user_id');
+    const { data: profils } = await sb.from('profils_publics').select('id, prenom, nom');
+    
+    state.allProfils = profils || [];
+    state.allInscriptionsData = allInscriptions || [];
+
+    // --- NOUVEAU : On stocke TOUS les événements (même passés) pour le calendrier
+    state.allEvents = allEventsFromDB || [];
+
+    // 2. On trie en JavaScript pour l'accueil : on garde aujourd'hui et le futur
+    const aujourdhui = new Date();
+    aujourdhui.setHours(0, 0, 0, 0); // On remet l'horloge d'aujourd'hui à minuit pile
+
+    state.events = state.allEvents.filter(ev => {
+      const dateEv = new Date(ev.date_debut);
+      dateEv.setHours(0, 0, 0, 0); // On ignore l'heure de l'événement pour ne garder que le jour
+      return dateEv >= aujourdhui; // Il restera visible jusqu'à ce soir minuit !
+    }).map(ev => {
+      const occupes = (allInscriptions || []).filter(i => i.event_id === ev.id).length;
+      ev.places_reelles_dispo = ev.places_totales - occupes;
+      return ev;
+    });
+
+    if (state.user) {
+      const { data: inscr } = await sb.from('inscriptions').select('event_id').eq('user_id', state.user.id);
+      state.mesInscriptions = (inscr || []).map(i => i.event_id);
+      const { data: attente } = await sb.from('liste_attente').select('event_id').eq('user_id', state.user.id);
+      state.maListeAttente = (attente || []).map(i => i.event_id);
+      const { data: interesse } = await sb.from('interesses').select('event_id').eq('user_id', state.user.id);
+      state.mesInteresses = (interesse || []).map(i => i.event_id);
+      const { data: nondispo } = await sb.from('non_dispos').select('event_id').eq('user_id', state.user.id);
+      state.mesNonDispos = (nondispo || []).map(i => i.event_id);
+    }
+    renderPublicEvents(state.events);
+  } catch(e) { 
+    console.error(e);
+    if (grid) grid.innerHTML = `<div class="empty-state">Erreur de chargement.</div>`;
+  }
+}
+
+function filterEvents() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const type = document.getElementById('filter-type').value;
+  renderPublicEvents(state.events.filter(ev =>
+    (!q || ev.titre.toLowerCase().includes(q) || (ev.lieu || '').toLowerCase().includes(q)) &&
+    (!type || ev.type === type)
+  ));
+}
+
+function renderPublicEvents(list) {
+  const grid = document.getElementById('public-events-grid');
+  if (!list.length) { grid.innerHTML = '<div class="empty-state">Aucun événement à venir.</div>'; return; }
+  const allInsc = state.allInscriptionsData || [];
+  const allProf = state.allProfils || [];
+  grid.innerHTML = list.map(ev => {
+    const placesTot   = ev.places_totales || 0;
+    const placesDispo = ev.places_reelles_dispo;
+    const pct         = placesTot > 0 ? Math.round((1 - placesDispo / placesTot) * 100) : 100;
+    const complet     = placesDispo <= 0;
+    const inscrit     = state.mesInscriptions.includes(ev.id);
+    const enAttente   = state.maListeAttente && state.maListeAttente.includes(ev.id);
+    const interesse   = state.mesInteresses && state.mesInteresses.includes(ev.id);
+    const nonDispo = state.mesNonDispos && state.mesNonDispos.includes(ev.id);
+    const debut       = ev.date_debut ? formatDatetime(ev.date_debut) : (ev.date ? new Date(ev.date).toLocaleDateString('fr-FR') : '—');
+    const fin         = ev.date_fin ? formatDatetime(ev.date_fin) : null;
+    const inscritsIci = (state.allInscriptionsData || []).filter(i => i.event_id === ev.id);
+    const annuaire = {};
+      (state.allProfils || []).forEach(p => {
+      annuaire[p.id] = (p.prenom && p.nom) ? `${p.prenom} ${p.nom}` : (p.prenom || p.email || "Aventurier");
+      });
+    const noms = inscritsIci.map(i => annuaire[i.user_id] || "Joueur Inconnu").join(', ');
+    const bulle = noms ? "Inscrits : " + noms : "Aucun inscrit";
+    let btnHtml = '';
+    if (ev.lien_billetterie) {
+      btnHtml = `<a href="${ev.lien_billetterie}" target="_blank" class="btn btn-sm" style="text-decoration:none">🎟 Billetterie</a>`;
+    } else if (inscrit) {
+      btnHtml = `<span class="badge-inscrit">✦ Inscrit·e</span>`;
+    } else if (enAttente) {
+      btnHtml = `<span class="badge-attente">⏳ Liste d'attente</span>`;
+    } else if (interesse) {
+      btnHtml = `<span class="badge-interesse">👀Intéressé·e</span>`;
+    } else if (nonDispo) {
+      btnHtml = `<span class="badge-pasdispo">❌ Pas disponible</span>`;
+    } else if (complet) {
+      btnHtml = `<button class="btn btn-sm btn-danger" onclick="handleInscriptionClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${placesDispo})">Liste d'attente</button>`;
+   } else {
+  btnHtml = `
+    <button class="btn btn-sm" onclick="handleInscriptionClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${placesDispo})">S'inscrire</button>
+    <button class="btn-ghost" onclick="handleInteresseClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">👀 Intéressé·e</button>
+    <button class="btn-ghost" onclick="handleNonDispoClick('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">❌ Pas dispo</button>`;
+}
+    return `
+    <div class="event-card">
+      <div class="event-card-header"><div class="event-card-titre">${ev.titre}</div><div class="event-card-type">${ev.type || '—'}</div></div>
+      <div class="event-card-body">
+        <div class="event-info-item"><span class="event-info-label">Début</span><span class="event-info-val"> ${debut}</span></div>
+        ${fin ? `<div class="event-info-item"><span class="event-info-label">Fin</span><span class="event-info-val"> ${fin}</span></div>` : '<div></div>'}
+        <div class="event-info-item">
+          <span class="event-info-label">Lieu</span>
+          <span class="event-info-val">📍 ${ev.lieu || '—'}</span>
+          ${ev.lien_maps ? `<a href="${ev.lien_maps}" target="_blank" style="display:inline-block; margin-top:4px; font-family:'Cinzel', serif; font-size:0.7rem; color:var(--ink-light); text-decoration:none; border:1px solid var(--border); padding:2px 8px; border-radius:3px; background:#f8fafc;">🗺️ Ouvrir la carte</a>` : ''}
+        </div>
+        <div class="event-info-item"><span class="event-info-label">Organisateurs</span><span class="event-info-val">${ev.organisateurs || '—'}</span></div>
+      </div>
+      ${ev.description ? `<div class="event-description">${ev.description}</div>` : ''}
+      <div class="event-card-footer">
+        <div class="jauge-wrap">
+          <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
+          <button type="button" class="slots-info-btn" onclick="voirParticipantsPublic('${ev.id}', '${ev.titre.replace(/'/g,"\\'").replace(/"/g,'')}')">${Math.max(0, placesDispo)} place${placesDispo > 1 ? 's' : ''} libre${placesDispo > 1 ? 's' : ''} sur ${placesTot}</button>
+          ${complet && !inscrit && !enAttente && !interesse ? '<span class="badge-attente">COMPLET</span>' : ''}
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${btnHtml}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+  async function handleInteresseClick(eventId, titre) {
+  if (!state.user) {
+    document.getElementById('auth-context').style.display = '';
+    document.getElementById('auth-context').textContent = `Pour marquer votre intérêt pour « ${titre} », connectez-vous ou créez un compte.`;
+    document.getElementById('modal-auth-titre').textContent = 'Connexion requise';
+    switchAuthTab('connexion'); openModal('modal-auth');
+    state.pendingEventId = eventId; state.pendingEventTitre = titre;
+    return;
+  }
+  try {
+    await sb.from('interesses').insert({ event_id: eventId, user_id: state.user.id });
+    showToast('👀 Intérêt enregistré !');
+    await loadPublicEvents();
+  } catch(e) {
+    if (e.message.includes('23505')) showToast('Déjà enregistré !');
+    else console.error(e);
+  }
+}
+
+// ════════════════════════════════════════════════════
+//  INSCRIPTION / DESINSCRIPTION
+// ════════════════════════════════════════════════════
+function handleInscriptionClick(eventId, titre, placesDispo) {
+  state.pendingEventId = eventId; state.pendingEventTitre = titre;
+  state.pendingEventDispo = placesDispo;
+  if (!state.user) {
+    document.getElementById('auth-context').style.display = '';
+    document.getElementById('auth-context').textContent = `Pour vous inscrire à « ${titre} », connectez-vous ou créez un compte.`;
+    document.getElementById('modal-auth-titre').textContent = 'Connexion requise';
+    switchAuthTab('connexion'); openModal('modal-auth');
+  } else { ouvrirConfirmInscription(); }
+}
+
+function ouvrirConfirmInscription() {
+  const detail = document.getElementById('modal-insc-detail');
+  const titre = document.getElementById('modal-insc-titre');
+  const footer = document.getElementById('modal-insc-footer');
+  titre.textContent = state.pendingEventTitre;
+  
+  if (state.pendingEventDispo > 0) {
+    detail.innerHTML = `Il reste <strong>${state.pendingEventDispo} place(s)</strong>.<br>Que souhaitez-vous faire ?`;
+    footer.innerHTML = `<button class="btn" onclick="confirmInscription('officielle')">S'inscrire</button>
+                        <button class="btn-ghost" onclick="confirmInscription('attente')">Liste d'attente</button>
+                        <button class="btn-ghost" onclick="closeModal('modal-inscription')">Annuler</button>`;
+  } else {
+    detail.innerHTML = `L'événement est <strong>complet</strong>. Voulez-vous rejoindre la liste d'attente ?`;
+    footer.innerHTML = `<button class="btn" onclick="confirmInscription('attente')">Rejoindre la liste d'attente</button>
+                        <button class="btn-ghost" onclick="closeModal('modal-inscription')">Annuler</button>`;
+  }
+  hideMsg('err-insc'); hideMsg('ok-insc'); openModal('modal-inscription');
+}
+
+async function confirmInscription(typeChoisi) {
+  try {
+    if (typeChoisi === 'officielle') {
+      const { error } = await sb.from('inscriptions').insert({ event_id: state.pendingEventId, user_id: state.user.id });
+      if (error) throw error;
+      showToast('✦ Inscription confirmée !');
+      // ENVOI DU MAIL DE CONFIRMATION
+      sendEmailViaGAS(
+        state.user.email, 
+        `Confirmation d'inscription : ${state.pendingEventTitre}`, 
+        `<h3>Félicitations !</h3><p>Ton inscription à l'événement <b>${state.pendingEventTitre}</b> est bien confirmée.</p><p>Prépare-toi bien pour <a href="https://www.xn--farie-csa.fr/%C3%A9v%C3%A9nements" style="background:#64748b; color:#fff; padding:8px 16px; text-decoration:none; border-radius:4px;">l'aventure</a> !</p>`
+      );
+    } else {
+      const { error } = await sb.from('liste_attente').insert({ event_id: state.pendingEventId, user_id: state.user.id });
+      if (error) throw error;
+      showToast("⚠ Ajouté·e à la liste d'attente");
+      // ENVOI DU MAIL DE LISTE D'ATTENTE
+      sendEmailViaGAS(
+        state.user.email, 
+        `Liste d'attente : ${state.pendingEventTitre}`, 
+        `<h3>Bonjour,</h3><p>Tu es bien inscrit·e sur la liste d'attente pour l'événement <b>${state.pendingEventTitre}</b>.</p><p>Nous te préviendrons par message si une place se libère !</p>`
+      );
+    }
+    closeModal('modal-inscription'); await loadPublicEvents(); await loadMesInscriptions();
+  } catch(e) { showMsg('err-insc', e.message.includes('23505') ? 'Déjà inscrit·e !' : e.message); }
+}
+
+async function seDesinscrire(eventId) {
+  if (!state.user) {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) state.user = session.user;
+    else { showToast('❌ Vous devez être connecté.'); return; }
+  }
+
+  // Modale de confirmation custom (pas de confirm() natif)
+  const ok = await new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.85);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px';
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:8px;padding:30px 34px;max-width:400px;width:100%;text-align:center;box-shadow:0 15px 50px rgba(0,0,0,0.4)">
+        <div style="font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;margin-bottom:12px;color:#1e293b">Confirmer la désinscription ?</div>
+        <p style="font-family:'Crimson Text',serif;color:#64748b;margin-bottom:24px">Cette action retirera votre inscription à cet événement.</p>
+        <div style="display:flex;gap:12px;justify-content:center">
+          <button id="confirm-oui" style="padding:10px 28px;background:#1e293b;color:#fff;border:none;border-radius:4px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:2px;cursor:pointer">Confirmer</button>
+          <button id="confirm-non" style="padding:10px 28px;background:transparent;border:1px solid #e2e8f0;color:#64748b;border-radius:4px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:2px;cursor:pointer">Annuler</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#confirm-oui').onclick = () => { document.body.removeChild(overlay); resolve(true); };
+    overlay.querySelector('#confirm-non').onclick = () => { document.body.removeChild(overlay); resolve(false); };
+  });
+
+  if (!ok) return;
+
+  try {
+    showToast('Sorcier à l\'œuvre...');
+    await Promise.all([
+      sb.from('inscriptions').delete().eq('event_id', eventId).eq('user_id', state.user.id),
+      sb.from('liste_attente').delete().eq('event_id', eventId).eq('user_id', state.user.id)
+    ]);
+    state.mesInscriptions = (state.mesInscriptions || []).filter(id => id !== eventId);
+    state.maListeAttente = (state.maListeAttente || []).filter(id => id !== eventId);
+    await loadMesInscriptions();
+    await loadPublicEvents();
+    showToast('✦ Désinscription réussie');
+  } catch (e) {
+    console.error("Erreur désinscription:", e);
+    showToast('❌ Erreur lors de la désinscription.');
+  }
+  await Promise.all([
+  sb.from('inscriptions').delete().eq('event_id', eventId).eq('user_id', state.user.id),
+  sb.from('liste_attente').delete().eq('event_id', eventId).eq('user_id', state.user.id),
+  sb.from('interesses').delete().eq('event_id', eventId).eq('user_id', state.user.id),
+  sb.from('non_dispos').delete().eq('event_id', eventId).eq('user_id', state.user.id)
+]);
+}
+
+// ════════════════════════════════════════════════════
+//  ESPACE JOUEUR
+// ════════════════════════════════════════════════════
+function ouvrirEspaceJoueur() {
+  const prenom = state.user.user_metadata?.prenom || state.user.email;
+  document.getElementById('joueur-screen-label').textContent = `⚔ Espace de ${prenom}`;
+  document.getElementById('public-screen').style.display = 'none';
+  document.getElementById('joueur-screen').style.display = '';
+  showJoueurTab('inscriptions', document.getElementById('jtab-inscriptions'));
+  loadMesInscriptions(); checkNouveauxMessages();
+}
+
+function retourAccueil() { document.getElementById('joueur-screen').style.display = 'none'; document.getElementById('public-screen').style.display = ''; }
+
+function showJoueurTab(tab, btn) {
+  document.querySelectorAll('.joueur-tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('joueur-tab-inscriptions').style.display = tab === 'inscriptions' ? '' : 'none';
+  document.getElementById('joueur-tab-messages').style.display = tab === 'messages' ? '' : 'none';
+  if (tab === 'messages') { loadMessages(); }
+}
+
+async function loadMesInscriptions() {
+  const grid = document.getElementById('mes-inscriptions-grid');
+  grid.innerHTML = '<div class="empty-state">Chargement…</div>';
+  try {
+    const { data: intData } = await sb.from('interesses').select('event_id').eq('user_id', state.user.id);
+    state.mesInteresses = (intData || []).map(i => i.event_id);
+
+    const allIds = [...new Set([...state.mesInscriptions, ...state.maListeAttente, ...state.mesInteresses])];
+    if (!allIds.length) {
+      grid.innerHTML = '<div class="empty-state">Vous n\'êtes inscrit·e à aucun événement pour l\'instant.</div>';
+      return;
+    }
+
+    const { data: evs } = await sb.from('evenements').select('*').in('id', allIds).order('date_debut', { ascending: true });
+    const { data: allInscriptions } = await sb.from('inscriptions').select('event_id, user_id');
+    const { data: profils } = await sb.from('profils_publics').select('id, prenom, nom');
+
+    const annuaire = {};
+    (profils || []).forEach(p => {
+      annuaire[p.id] = (p.prenom && p.nom) ? `${p.prenom} ${p.nom}` : (p.prenom || 'Aventurier');
+    });
+
+    // --- NOUVEAU : On filtre les événements de l'espace joueur (on cache le passé)
+    const aujourdhui = new Date();
+    aujourdhui.setHours(0, 0, 0, 0);
+
+    const evsFiltres = (evs || []).filter(ev => {
+      const dateEv = new Date(ev.date_debut);
+      dateEv.setHours(0, 0, 0, 0);
+      return dateEv >= aujourdhui;
+    });
+
+    if (!evsFiltres.length) {
+      grid.innerHTML = '<div class="empty-state">Vous n\'avez aucune inscription ou événement à venir.</div>';
+      return;
+    }
+
+    // On utilise "evsFiltres" au lieu de "evs" pour générer les cartes
+    grid.innerHTML = evsFiltres.map(ev => {
+      const occupes = (allInscriptions || []).filter(i => i.event_id === ev.id).length;
+      const placesDispo = ev.places_totales - occupes;
+      const placesTot   = ev.places_totales || 0;
+      const pct         = placesTot > 0 ? Math.round((1 - placesDispo / placesTot) * 100) : 100;
+      const complet     = placesDispo <= 0;
+      const enAttente   = state.maListeAttente.includes(ev.id);
+      const interesse   = state.mesInteresses.includes(ev.id);
+      const inscrit     = state.mesInscriptions.includes(ev.id);
+      const debut       = ev.date_debut ? formatDatetime(ev.date_debut) : '—';
+      const fin         = ev.date_fin ? formatDatetime(ev.date_fin) : null;
+
+      const inscritsIci = (allInscriptions || []).filter(i => i.event_id === ev.id);
+      const noms = inscritsIci.map(i => annuaire[i.user_id] || 'Joueur Inconnu').join(', ');
+      const bulle = noms ? 'Inscrits : ' + noms : 'Aucun inscrit';
+
+      let badge = '';
+      let actionBtn = '';
+      if (interesse) {
+        badge = '<span class="badge-interesse">👀 Intéressé·e</span>';
+        actionBtn = `<button class="btn btn-sm" onclick="confirmerDepuisInteret('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}', ${placesDispo})">Confirmer mon inscription</button>`;
+      } else if (enAttente) {
+        badge = '<span class="badge-attente">⏳ Liste d\'attente</span>';
+        if (placesDispo > 0) {
+          actionBtn = `<button class="btn btn-sm" onclick="confirmerDepuisAttente('${ev.id}', '${ev.titre.replace(/'/g,"\\'")}')">S'inscrire maintenant</button>`;
+        }
+      } else {
+        badge = '<span class="badge-inscrit">✦ Inscrit·e</span>';
+      }
+
+      return `
+      <div class="event-card">
+        <div class="event-card-header">
+          <div class="event-card-titre">${ev.titre}</div>
+          <div class="event-card-type">${ev.type || '—'}</div>
+        </div>
+        <div class="event-card-body">
+          <div class="event-info-item"><span class="event-info-label">Début</span><span class="event-info-val">${debut}</span></div>
+          ${fin ? `<div class="event-info-item"><span class="event-info-label">Fin</span><span class="event-info-val">${fin}</span></div>` : '<div></div>'}
+          <div class="event-info-item">
+            <span class="event-info-label">Lieu</span>
+            <span class="event-info-val">📍 ${ev.lieu || '—'}</span>
+            ${ev.lien_maps ? `<a href="${ev.lien_maps}" target="_blank" style="display:inline-block;margin-top:4px;font-family:'Cinzel',serif;font-size:0.7rem;color:var(--ink-light);text-decoration:none;border:1px solid var(--border);padding:2px 8px;border-radius:3px;background:#f8fafc;">🗺️ Ouvrir la carte</a>` : ''}
+          </div>
+          <div class="event-info-item"><span class="event-info-label">Organisateurs</span><span class="event-info-val">${ev.organisateurs || '—'}</span></div>
+        </div>
+        ${ev.description ? `<div class="event-description">${ev.description}</div>` : ''}
+        <div class="event-card-footer">
+          <div class="jauge-wrap">
+            <div class="jauge-bar"><div class="jauge-fill${complet ? ' complet' : ''}" style="width:${pct}%"></div></div>
+            <button type="button" class="slots-info-btn" onclick="voirParticipantsPublic('${ev.id}', '${ev.titre.replace(/'/g,"\\'").replace(/"/g,'')}')">${Math.max(0, placesDispo)} place${placesDispo > 1 ? 's' : ''} libre${placesDispo > 1 ? 's' : ''} sur ${placesTot}</button>
+            ${complet && !inscrit && !enAttente ? '<span class="badge-attente">COMPLET</span>' : ''}
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+            ${badge}${actionBtn}
+            ${(inscrit && !enAttente && !interesse) ? `<button class="btn-ghost btn-sm" onclick="passerEnInteresse('${ev.id}')">👀 Passer en intéressé·e</button>` : ''}
+            <button class="btn-ghost btn-sm" onclick="seDesinscrire('${ev.id}')">Se désinscrire</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) { console.error(e); }
+}
+async function confirmerDepuisInteret(eventId, titre, placesDispo) {
+  try {
+    await sb.from('interesses').delete().eq('event_id', eventId).eq('user_id', state.user.id);
+    state.pendingEventId = eventId;
+    state.pendingEventTitre = titre;
+    state.pendingEventDispo = placesDispo;
+    ouvrirConfirmInscription();
+  } catch(e) { console.error(e); }
+}
+  
+async function confirmerDepuisAttente(eventId, titre) {
+  try {
+    showToast('Sorcier à l\'œuvre...');
+    await sb.from('liste_attente').delete().eq('event_id', eventId).eq('user_id', state.user.id);
+    const { error } = await sb.from('inscriptions').insert({ event_id: eventId, user_id: state.user.id });
+    if (error) throw error;
+    showToast('✦ Inscription confirmée !');
+    await loadPublicEvents();
+    await loadMesInscriptions();
+  } catch(e) {
+    console.error(e);
+    showToast('❌ Erreur lors de l\'inscription.');
+  }
+}
+
+  async function passerEnInteresse(eventId) {
+  if (!state.user) return;
+
+  const ok = await new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.85);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px';
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:8px;padding:30px 34px;max-width:420px;width:100%;text-align:center;box-shadow:0 15px 50px rgba(0,0,0,0.4)">
+        <div style="font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;margin-bottom:12px;color:#1e293b">Passer en intéressé·e ?</div>
+        <p style="font-family:'Crimson Text',serif;color:#64748b;margin-bottom:24px">Votre inscription sera annulée et votre place libérée. Vous garderez l'événement dans votre espace pour vous inscrire de nouveau plus tard, s'il reste de la place.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+          <button id="interet-oui" style="padding:10px 24px;background:#58abbc;color:#fff;border:none;border-radius:4px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:1px;cursor:pointer">Confirmer</button>
+          <button id="interet-non" style="padding:10px 24px;background:transparent;border:1px solid #e2e8f0;color:#64748b;border-radius:4px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:1px;cursor:pointer">Annuler</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#interet-oui').onclick = () => { document.body.removeChild(overlay); resolve(true); };
+    overlay.querySelector('#interet-non').onclick = () => { document.body.removeChild(overlay); resolve(false); };
+  });
+  if (!ok) return;
+
+  try {
+    showToast('Sorcier à l\'œuvre...');
+
+    // 1. On enregistre d'abord l'intérêt (si ça échoue, l'inscription n'est pas touchée)
+    const { error } = await sb.from('interesses').insert({ event_id: eventId, user_id: state.user.id });
+    if (error && error.code !== '23505') throw error;
+
+    // 2. Puis on retire l'inscription et la liste d'attente
+    await Promise.all([
+      sb.from('inscriptions').delete().eq('event_id', eventId).eq('user_id', state.user.id),
+      sb.from('liste_attente').delete().eq('event_id', eventId).eq('user_id', state.user.id)
+    ]);
+
+    await loadPublicEvents();
+    await loadMesInscriptions();
+    showToast('👀 Inscription annulée, vous êtes intéressé·e');
+  } catch (e) {
+    console.error(e);
+    showToast('❌ Une erreur est survenue.');
+  }
+}
+  
+  function formatMessageText(rawText) {
+  if (!rawText) return '';
+  return rawText
+    .replace(/</g, "&lt;").replace(/>/g, "&gt;") // Sécurité contre l'injection de code [cite: 357]
+    .replace(/\n/g, '<br>')                      // Transformation des sauts de ligne [cite: 357]
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Gras [cite: 358]
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')             // Italique [cite: 358]
+    .replace(/__(.*?)__/g, '<u>$1</u>')               // Souligné [cite: 358]
+    .replace(/~~(.*?)~~/g, '<del>$1</del>');          // Barré [cite: 358]
+}
+
+// ════════════════════════════════════════════════════
+//  MESSAGERIES
+// ════════════════════════════════════════════════════
+async function loadMessages() {
+  const fil = document.getElementById('messages-fil');
+  fil.innerHTML = '<div class="empty-state">Chargement…</div>';
+  try {
+    const { data, error } = await sb.from('messages').select('*').eq('user_id', state.user.id).order('created_at', { ascending: true });
+    if (error) throw error;
+    if (!data.length) { fil.innerHTML = '<div class="empty-state">Aucun message pour l\'instant.</div>'; return; }
+    fil.innerHTML = data.map(m => {
+      const date = new Date(m.created_at).toLocaleString('fr-FR');
+      const side = m.auteur === 'orga' ? 'orga' : 'joueur';
+      const label = m.auteur === 'orga' ? '⚔ Organisateur' : '✦ Vous';
+      return `<div class="msg-bubble ${side}"><div class="msg-bubble-meta">${label} — ${date}</div>${formatMessageText(m.contenu)}</div>`;
+    }).join('');
+    fil.scrollTop = fil.scrollHeight;
+    await sb.from('messages').update({ lu_joueur: true }).eq('user_id', state.user.id).eq('lu_joueur', false);
+    document.getElementById('notif-msg-dot').style.display = 'none';
+  } catch(e) { console.error(e); }
+}
+
+async function checkNouveauxMessages() {
+  if (!state.user) return;
+  const { data } = await sb.from('messages').select('id').eq('user_id', state.user.id).eq('lu_joueur', false).eq('auteur', 'orga');
+  const dot = document.getElementById('notif-msg-dot');
+  if (dot) dot.style.display = (data && data.length > 0) ? '' : 'none';
+}
+
+async function envoyerMessage() {
+  const contenu = document.getElementById('msg-nouveau').value.trim();
+  if (!contenu) return;
+  try {
+    // Y a-t-il déjà un message de ce joueur que l'orga n'a pas encore lu ?
+    const { count } = await sb.from('messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', state.user.id).eq('auteur', 'joueur').eq('lu_orga', false);
+    const orgaDejaPrevenue = (count || 0) > 0;
+
+    await sb.from('messages').insert({ user_id: state.user.id, auteur: 'joueur', contenu, lu_orga: false, lu_joueur: true });
+    document.getElementById('msg-nouveau').value = '';
+    await loadMessages(); showToast('✦ Message envoyé !');
+
+    if (!orgaDejaPrevenue) {
+      const contenuSur = contenu.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+      sendEmailViaGAS(
+        "contact+messagesevents@xn--farie-csa.fr",
+        "Nouveau message de " + (state.user.user_metadata?.prenom || state.user.email),
+        `<p>Un joueur a envoyé un nouveau message sur l'espace Faérie :</p><blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #64748b;">${contenuSur}</blockquote><p>Connectez-vous à l'espace Organisateur pour lui répondre.</p>`
+      );
+    }
+  } catch(e) { console.error(e); }
+}
+
+async function loadOrgaMessagerie() {
+  // On récupère l'élément HTML tout de suite
+  const sel = document.getElementById('orga-joueur-select');
+  if (!sel) return;
+
+  try {
+    // 1. Récupération des profils (Thony et les autres)
+    const { data: profils, error: profError } = await sb.from('profils').select('id, prenom, nom, email');
+    if (profError) throw profError;
+
+    // 2. Récupération simple des messages non lus (on ne prend que l'essentiel)
+    const { data: messagesNonLus } = await sb.from('messages').select('user_id').eq('lu_orga', false);
+
+    // 3. On prépare la liste
+    let html = '<option value="">— Sélectionner un joueur —</option>';
+
+    if (profils && profils.length > 0) {
+      profils.forEach(p => {
+        // Déterminer le nom à afficher (Nom/Prénom ou Email)
+        const nomLabel = (p.prenom || p.nom) ? `${p.prenom || ''} ${p.nom || ''}`.trim() : p.email;
+        
+        // Compter les messages non lus pour ce profil précis
+        const nb = messagesNonLus ? messagesNonLus.filter(m => m.user_id === p.id).length : 0;
+        const badge = nb > 0 ? ` 🔴 (${nb})` : '';
+
+        html += `<option value="${p.id}">${nomLabel}${badge}</option>`;
+      });
+    } else {
+      html = '<option value="">Aucun profil trouvé</option>';
+    }
+
+    sel.innerHTML = html;
+
+    // 4. Pastille rouge sur l'onglet
+    const dot = document.getElementById('notif-orga-dot');
+    if (dot) {
+      dot.style.display = (messagesNonLus && messagesNonLus.length > 0) ? 'inline-block' : 'none';
+    }
+
+  } catch (err) {
+    // SI CA PLANTE : On affiche un message dans la liste mais ON NE BLOQUE PAS le reste du site
+    console.error("Bug messagerie :", err);
+    sel.innerHTML = '<option value="">Erreur de chargement des joueurs</option>';
+  }
+}
+async function loadOrgaConversation(userId) {
+  state.currentOrgaUserId = userId;
+  const fil = document.getElementById('orga-messages-fil');
+  const replyZone = document.getElementById('orga-reply-zone');
+  if (!userId) { fil.innerHTML = '<div class="empty-state">Sélectionnez un joueur.</div>'; replyZone.style.display = 'none'; return; }
+  fil.innerHTML = '<div class="empty-state">Chargement…</div>'; replyZone.style.display = '';
+  try {
+    // On récupère le nom du joueur pour l'afficher au-dessus de ses bulles
+    const { data: profil } = await sb.from('profils').select('prenom, nom').eq('id', userId).single();
+    const nomJoueur = profil ? `${profil.prenom} ${profil.nom}` : 'Joueur';
+
+    const { data } = await sb.from('messages').select('*').eq('user_id', userId).order('created_at', { ascending: true });
+    if (!data || !data.length) { fil.innerHTML = '<div class="empty-state">Aucun message.</div>'; return; }
+    fil.innerHTML = data.map(m => {
+      const date = new Date(m.created_at).toLocaleString('fr-FR');
+      const side = m.auteur === 'orga' ? 'orga' : 'joueur';
+      const label = m.auteur === 'orga' ? '⚔ Vous' : `✦ ${nomJoueur}`;
+      return `<div class="msg-bubble ${side}"><div class="msg-bubble-meta">${label} — ${date}</div>${formatMessageText(m.contenu)}</div>`;
+    }).join('');
+    fil.scrollTop = fil.scrollHeight;
+    await sb.from('messages').update({ lu_orga: true }).eq('user_id', userId).eq('auteur', 'joueur');
+    await loadOrgaMessagerie();
+  } catch(e) { console.error(e); }
+}
+
+async function envoyerMessageOrga() {
+  const contenu = document.getElementById('orga-msg-nouveau').value.trim();
+  if (!contenu || !state.currentOrgaUserId) return;
+  try {
+    // Le joueur a-t-il déjà une réponse de l'orga qu'il n'a pas encore lue ?
+    const { count } = await sb.from('messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', state.currentOrgaUserId).eq('auteur', 'orga').eq('lu_joueur', false);
+    const joueurDejaPrevenu = (count || 0) > 0;
+
+    await sb.from('messages').insert({ user_id: state.currentOrgaUserId, auteur: 'orga', contenu, lu_orga: true, lu_joueur: false });
+    document.getElementById('orga-msg-nouveau').value = '';
+    await loadOrgaConversation(state.currentOrgaUserId);
+    showToast('✦ Réponse envoyée !');
+
+    if (!joueurDejaPrevenu) {
+      const { data: profil } = await sb.from('profils').select('email, prenom').eq('id', state.currentOrgaUserId).single();
+      if (profil && profil.email) {
+        const prenom = profil.prenom || 'Joueur';
+        const contenuSur = contenu.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+        sendEmailViaGAS(
+          profil.email,
+          "Nouveau message de l'organisation - Faérie",
+          `<h3>Bonjour ${prenom},</h3><p>L'équipe d'orga de Faérie t'a répondu sur ton espace des événements :</p><blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #64748b;">${contenuSur}</blockquote><p><a href="https://www.xn--farie-csa.fr/%C3%A9v%C3%A9nements" style="background:#64748b; color:#fff; padding:8px 16px; text-decoration:none; border-radius:4px;">Connecte-toi à ton espace</a> pour poursuivre la conversation.</p>`
+        );
+      }
+    }
+  } catch(e) { console.error(e); }
+}
+
+// ════════════════════════════════════════════════════
+//  AUTH, LOGIN, REGISTER
+// ════════════════════════════════════════════════════
+function switchAuthTab(tab) {
+  document.getElementById('tab-connexion').classList.toggle('active', tab === 'connexion');
+  document.getElementById('tab-inscription').classList.toggle('active', tab === 'inscription');
+  document.getElementById('form-connexion').style.display = tab === 'connexion' ? '' : 'none';
+  document.getElementById('form-inscription').style.display = tab === 'inscription' ? '' : 'none';
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const mdp = document.getElementById('login-mdp').value;
+  hideMsg('err-login');
+  if (!email || !mdp) return;
+  
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: mdp });
+  if (error) {
+    showMsg('err-login', 'Email ou mot de passe incorrect. Si vous n\'avez pas encore de compte, cliquez sur "Créer un compte".');
+    return;
+  }
+  
+  // Vérification confirmation email
+  if (!data.user.email_confirmed_at) {
+    await sb.auth.signOut();
+    showMsg('err-login', '✉ Veuillez confirmer votre adresse email avant de vous connecter. Vérifiez votre boîte mail.');
+    return;
+  }
+  
+  state.user = data.user;
+  closeModal('modal-auth');
+  updateHeaderUserZone();
+  await loadPublicEvents();
+  if (state.pendingEventId && !state.mesInscriptions.includes(state.pendingEventId)) ouvrirConfirmInscription();
+}
+
+async function doRegister() {
+  const prenom = document.getElementById('reg-prenom').value.trim(); 
+  const nom = document.getElementById('reg-nom').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const mdp = document.getElementById('reg-mdp').value;
+  const mdpConfirm = document.getElementById('reg-mdp-confirm').value; hideMsg('err-reg'); hideMsg('ok-reg');
+  
+  
+  if (!prenom || !nom || !email || !mdp) { showMsg('err-reg', 'Champs obligatoires.'); return; }
+  if (mdp !== mdpConfirm) { showMsg('err-reg', 'Les mots de passe ne correspondent pas.'); return; }
+  
+  try {
+    const { data, error } = await sb.auth.signUp({ email, password: mdp, options: { data: { prenom, nom } } });
+    if (error) throw error;
+    
+    showMsg('ok-reg', '✦ Compte créé ! Vérifie tes mails pour confirmer avant de te connecter.', 'success');
+    
+  } catch (err) { 
+    showMsg('err-reg', err.message); 
+  }
+}
+
+async function doLoginDirect(email, password) {
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (!error) { state.user = data.user; closeModal('modal-auth'); updateHeaderUserZone(); await loadPublicEvents(); }
+}
+
+async function logoutJoueur() { await sb.auth.signOut(); state.user = null; state.mesInscriptions = []; state.maListeAttente = []; document.getElementById('joueur-screen').style.display = 'none'; document.getElementById('public-screen').style.display = ''; updateHeaderUserZone(); renderPublicEvents(state.events); }
+
+function updateHeaderUserZone() {
+  const zone = document.getElementById('header-user-zone');
+  if (state.user) {
+        sb.rpc('noter_activite').then(() => {});
+    const estAdmin = state.user.app_metadata?.is_admin === true;
+    const boutonOrga = estAdmin
+      ? `<button class="btn-ghost" style="border-color:#58abbc;color:#58abbc" onclick="entrerEspaceOrga()">⚔ Organisation</button>`
+      : '';
+    zone.innerHTML = `${boutonOrga}<button class="btn-ghost" onclick="ouvrirEspaceJoueur()" style="position:relative">✦ ${state.user.user_metadata?.prenom || 'Moi'}<span id="header-notif-dot" style="display:none;position:absolute;top:2px;right:2px;width:8px;height:8px;background:var(--red-blood);border-radius:50%"></span></button><button class="btn-ghost" onclick="logoutJoueur()">Déconnexion</button>`;
+    checkNouveauxMessages().then(() => { const dot = document.getElementById('notif-msg-dot'); const hdot = document.getElementById('header-notif-dot'); if (hdot && dot) hdot.style.display = dot.style.display; });
+  } else { zone.innerHTML = `<button class="btn btn-sm" onclick="openAuthModal()">Se connecter</button>`; }
+}
+function openAuthModal() { document.getElementById('auth-context').style.display = 'none'; document.getElementById('modal-auth-titre').textContent = 'Rejoindre Faérie'; state.pendingEventId = null; switchAuthTab('connexion'); openModal('modal-auth'); }
+async function openOrgaLogin() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session && session.user.app_metadata && session.user.app_metadata.is_admin === true) {
+    await entrerEspaceOrga();
+    return;
+  }
+  document.getElementById('orga-email').value = '';
+  document.getElementById('orga-pwd').value = '';
+  hideMsg('err-orga');
+  openModal('modal-orga-auth');
+}
+
+async function doLoginOrga() {
+  const email = document.getElementById('orga-email').value.trim();
+  const mdp = document.getElementById('orga-pwd').value;
+  hideMsg('err-orga');
+  if (!email || !mdp) { showMsg('err-orga', 'Adresse e-mail et mot de passe requis.'); return; }
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: mdp });
+  if (error) { showMsg('err-orga', 'Adresse e-mail ou mot de passe incorrect.'); return; }
+
+  if (data.user.app_metadata?.is_admin !== true) {
+    await sb.auth.signOut();
+    showMsg('err-orga', "Ce compte n'a pas les droits organisateur.");
+    return;
+  }
+
+  state.user = data.user;
+  updateHeaderUserZone();
+  closeModal('modal-orga-auth');
+  await entrerEspaceOrga();
+}
+
+async function entrerEspaceOrga() {
+  document.getElementById('public-screen').style.display = 'none';
+  document.getElementById('joueur-screen').style.display = 'none';
+  document.getElementById('orga-screen').style.display = 'block';
+  showOrgaTab('events', document.getElementById('otab-events'));
+  await loadOrgaEvents();
+  await loadOrgaMessagerie();
+}
+function logoutOrga() { document.getElementById('orga-screen').style.display = 'none'; document.getElementById('public-screen').style.display = ''; }
+function showOrgaTab(tab, btn) { 
+  document.querySelectorAll('#orga-screen .joueur-tab-btn').forEach(b => b.classList.remove('active')); 
+  btn.classList.add('active'); 
+  document.getElementById('orga-tab-events').style.display = tab === 'events' ? '' : 'none';
+  document.getElementById('orga-tab-messages').style.display = tab === 'messages' ? '' : 'none'; 
+  document.getElementById('orga-tab-missives').style.display = tab === 'missives' ? '' : 'none';
+  // Ligne ci-dessous pour le nouvel onglet
+  document.getElementById('orga-tab-profils').style.display = tab === 'profils' ? '' : 'none';
+  
+  if (tab === 'missives') loadOrgaMissives();
+  if (tab === 'profils') loadOrgaProfils(); // Charger les joueurs au clic
+}
+  
+// ════════════════════════════════════════════════════
+//  VUE ORGA ÉVÉNEMENTS
+// ════════════════════════════════════════════════════
+async function loadOrgaEvents() {
+  const tbody = document.getElementById('orga-events-body');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Chargement…</td></tr>';
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  try {
+    // 1. On récupère les événements ET les inscriptions pour faire le compte exact
+    const [eventsRes, inscrRes] = await Promise.all([
+      sb.from('evenements').select('*').gte('date_debut', today.toISOString()).order('date_debut', { ascending: true, nullsFirst: false }),
+      sb.from('inscriptions').select('event_id')
+    ]);
+
+    if (eventsRes.error) throw eventsRes.error;
+
+    const allInscriptions = inscrRes.data || [];
+
+    // 2. On calcule les places dispo en direct
+    state.orgaEvents = (eventsRes.data || []).map(ev => {
+      const occupes = allInscriptions.filter(i => i.event_id === ev.id).length;
+      ev.places_reelles_dispo = (ev.places_totales || 0) - occupes;
+      return ev;
+    });
+
+    renderOrgaTable(state.orgaEvents);
+  } catch (error) {
+    console.error("Erreur Orga Events:", error);
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Erreur de chargement.</td></tr>';
+  }
+}
+
+function renderOrgaTable(list) {
+  const tbody = document.getElementById('orga-events-body');
+  if (!list.length) { 
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Aucun événement.</td></tr>'; 
+    return; 
+  }
+  
+  tbody.innerHTML = list.map(ev => {
+    // On protège le titre pour les boutons
+    const safeTitre = ev.titre.replace(/'/g, "\\'").replace(/"/g, '');
+    
+    // On utilise le calcul en direct qu'on vient de faire
+    const placesDispo = ev.places_reelles_dispo !== undefined ? ev.places_reelles_dispo : (ev.places_disponibles || 0);
+
+    return `<tr>
+      <td><strong>${ev.titre}</strong></td>
+      <td>${ev.date_debut ? new Date(ev.date_debut).toLocaleString('fr-FR') : '—'}</td>
+      <td>${ev.lieu || '—'}</td>
+      <td>${ev.type || '—'}</td>
+      <td>${placesDispo}/${ev.places_totales || 0}</td>
+      <td>
+        <div class="orga-action-btns">
+          <button class="btn btn-sm" onclick="voirParticipants('${ev.id}', '${safeTitre}')">👁 Inscrits</button> 
+          <button class="btn btn-sm" onclick="openModalEditEvent('${ev.id}')">✏ Modif</button> 
+          <button class="btn btn-sm btn-danger" onclick="supprimerEvent('${ev.id}')">🗑 Supprimer</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function retirerParticipant(eventId, userId, table, titre) {
+  // On remplace le confirm() natif (bloqué par Google Sites) par notre propre modale
+  const ok = await new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:8px;padding:30px 34px;max-width:400px;width:100%;text-align:center;box-shadow:0 15px 50px rgba(0,0,0,0.4)">
+        <div style="font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;margin-bottom:12px;color:#1e293b">Retirer ce joueur ?</div>
+        <p style="font-family:'Crimson Text',serif;color:#64748b;margin-bottom:24px">Voulez-vous vraiment retirer ce participant de la liste ?</p>
+        <div style="display:flex;gap:12px;justify-content:center">
+          <button id="btn-oui-retirer" style="padding:10px 24px;background:#b91c1c;color:#fff;border:none;border-radius:4px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:1px;cursor:pointer">Retirer</button>
+          <button id="btn-non-retirer" style="padding:10px 24px;background:transparent;border:1px solid #e2e8f0;color:#64748b;border-radius:4px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:1px;cursor:pointer">Annuler</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#btn-oui-retirer').onclick = () => { document.body.removeChild(overlay); resolve(true); };
+    overlay.querySelector('#btn-non-retirer').onclick = () => { document.body.removeChild(overlay); resolve(false); };
+  });
+
+  if (!ok) return;
+
+  try {
+    const { error } = await sb.from(table).delete().eq('event_id', eventId).eq('user_id', userId);
+    if (error) throw error;
+    
+    showToast('✦ Joueur retiré');
+    voirParticipants(eventId, titre); // Recharge la modale des participants en temps réel
+    loadOrgaEvents(); // Met à jour le nombre de places dans le tableau derrière
+  } catch (e) {
+    showToast("Erreur : " + e.message);
+  }
+}
+
+async function supprimerEvent(eventId) {
+  const ok = await new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:8px;padding:30px 34px;max-width:420px;width:100%;text-align:center;box-shadow:0 15px 50px rgba(0,0,0,0.4)">
+        <div style="font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;margin-bottom:12px;color:#1e293b">Supprimer cet événement ?</div>
+        <p style="font-family:'Crimson Text',serif;color:#64748b;margin-bottom:24px">Cette action est irréversible et supprimera toutes les inscriptions associées.</p>
+        <div style="display:flex;gap:12px;justify-content:center">
+          <button id="suppr-oui" style="padding:10px 24px;background:#b91c1c;color:#fff;border:none;border-radius:4px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:1px;cursor:pointer">Supprimer</button>
+          <button id="suppr-non" style="padding:10px 24px;background:transparent;border:1px solid #e2e8f0;color:#64748b;border-radius:4px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:1px;cursor:pointer">Annuler</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#suppr-oui').onclick = () => { document.body.removeChild(overlay); resolve(true); };
+    overlay.querySelector('#suppr-non').onclick = () => { document.body.removeChild(overlay); resolve(false); };
+  });
+
+  if (!ok) return;
+
+  try {
+    showToast('Sorcier à l\'œuvre...');
+    await sb.from('inscriptions').delete().eq('event_id', eventId);
+    await sb.from('liste_attente').delete().eq('event_id', eventId);
+    await sb.from('interesses').delete().eq('event_id', eventId);
+    const { error } = await sb.from('evenements').delete().eq('id', eventId);
+    if (error) throw error;
+    showToast('✦ Événement supprimé');
+    loadOrgaEvents();
+    loadPublicEvents();
+  } catch (e) {
+    showToast('❌ Erreur : ' + e.message);
+  }
+}
+
+async function voirParticipantsPublic(eventId, titre) {
+  const content = document.getElementById('liste-participants-content');
+  document.getElementById('view-event-titre').textContent = titre;
+  content.innerHTML = '<div class="empty-state">Chargement...</div>';
+  openModal('modal-liste-participants');
+
+  try {
+    const { data: inscr } = await sb.from('inscriptions').select('user_id').eq('event_id', eventId);
+    const { data: profils } = await sb.from('profils_publics').select('id, prenom, nom');
+    const annuaire = {};
+    if (profils) profils.forEach(p => annuaire[p.id] = `${p.prenom} ${p.nom}`);
+
+    let html = '<ul style="list-style:none; padding:0;">';
+    if (inscr && inscr.length > 0) {
+      html += inscr.map(i => {
+        const nom = annuaire[i.user_id] || 'Aventurier';
+        return `<li style="padding:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; margin-bottom:8px;">👤 ${nom}</li>`;
+      }).join('');
+    } else {
+      html += '<li style="text-align:center; padding:20px; font-style:italic; color:var(--ink-light);">Aucun inscrit.</li>';
+    }
+    content.innerHTML = html + '</ul>';
+  } catch (e) { content.innerHTML = "Erreur de chargement."; }
+}
+  
+async function voirParticipants(eventId, titre) {
+  document.getElementById('view-event-titre').textContent = titre; 
+  const content = document.getElementById('liste-participants-content'); 
+  content.innerHTML = 'Chargement...'; 
+  openModal('modal-liste-participants');
+  try {
+    const { data: inscr } = await sb.from('inscriptions').select('user_id').eq('event_id', eventId);
+    const { data: attente } = await sb.from('liste_attente').select('user_id').eq('event_id', eventId);
+    const { data: interData } = await sb.from('interesses').select('user_id').eq('event_id', eventId);
+
+    const { data: profils } = await sb.from('profils_publics').select('id, prenom, nom');
+    const annuaire = {}; 
+    if (profils) profils.forEach(p => annuaire[p.id] = `${p.prenom} ${p.nom}`);
+    
+    let html = '<h3 style="margin-bottom:10px;">⚔ Inscrits officiels</h3><ul style="list-style:none; padding:0; margin-bottom:20px;">';
+    html += (inscr && inscr.length > 0) ?
+    inscr.map(i => {
+      const nom = annuaire[i.user_id] || `Joueur Inconnu (${i.user_id.substring(0,5)})`;
+      return `<li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:6px; background:#f8fafc; border-radius:4px; border:1px solid #e2e8f0;">
+                <span>👤 ${nom}</span>
+                <button class="btn-ghost" style="padding:2px 8px; color:var(--red-blood); border-color:var(--red-blood);" onclick="retirerParticipant('${eventId}', '${i.user_id}', 'inscriptions', '${titre.replace(/'/g,"\\'")}')">✕</button>
+              </li>`;
+    }).join('') : '<li style="padding:6px;">Personne</li>';
+    
+    html += '</ul><h3 style="margin-bottom:10px;">⏳ Liste d\'attente</h3><ul style="list-style:none; padding:0; margin-bottom:20px;">';
+    html += (attente && attente.length > 0) ?
+    attente.map(a => {
+      const nom = annuaire[a.user_id] || `Joueur Inconnu (${a.user_id.substring(0,5)})`;
+      return `<li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:6px; background:#f8fafc; border-radius:4px; border:1px solid #e2e8f0;">
+                <span>👤 ${nom}</span>
+                <button class="btn-ghost" style="padding:2px 8px; color:var(--red-blood); border-color:var(--red-blood);" onclick="retirerParticipant('${eventId}', '${a.user_id}', 'liste_attente', '${titre.replace(/'/g,"\\'")}')">✕</button>
+              </li>`;
+    }).join('') : '<li style="padding:6px;">Vide</li>';
+
+    html += '</ul><h3 style="margin-bottom:10px;">👀 Intéressé·e·s</h3><ul style="list-style:none; padding:0;">';
+    html += (interData && interData.length > 0) ?
+    interData.map(i => {
+      const nom = annuaire[i.user_id] || `Joueur Inconnu (${i.user_id.substring(0,5)})`;
+      return `<li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:6px; background:#f8fafc; border-radius:4px; border:1px solid #e2e8f0;">
+                <span>👀 ${nom}</span>
+                <button class="btn-ghost" style="padding:2px 8px; color:var(--red-blood); border-color:var(--red-blood);" onclick="retirerParticipant('${eventId}', '${i.user_id}', 'interesses', '${titre.replace(/'/g,"\\'")}')">✕</button>
+              </li>`;
+    }).join('') : '<li style="padding:6px;">Personne</li>';
+
+    content.innerHTML = html + '</ul>';
+  } catch (e) { content.innerHTML = "Erreur : " + e.message; }
+}
+
+function filterOrgaEvents(q) { renderOrgaTable(state.orgaEvents.filter(ev => (ev.titre + (ev.lieu||'') + (ev.type||'')).toLowerCase().includes(q.toLowerCase()))); }
+function openModalCreateEvent() {
+  document.getElementById('modal-event-title').textContent = '+ Nouvel événement';
+  document.getElementById('e-id').value = '';
+  ['e-titre','e-lieu','e-lien-maps','e-organisateurs','e-description','e-date-debut','e-date-fin'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('row-places-dispo').style.display = 'none';
+  document.getElementById('e-mode-billetterie').checked = false;
+  document.getElementById('e-lien-billetterie').value = 'https://www.xn--farie-csa.fr/billetteries';
+  document.getElementById('row-billetterie').style.display = 'none';
+  document.getElementById('e-places-totales').closest('.form-group').parentElement.style.display = '';
+  openModal('modal-event');
+}
+
+function openModalEditEvent(id) { 
+  const ev = state.orgaEvents.find(e => e.id === id); 
+  if (!ev) return; 
+  
+  document.getElementById('modal-event-title').textContent = '✏ Modifier';
+  document.getElementById('e-id').value = ev.id; 
+  document.getElementById('e-titre').value = ev.titre || ''; 
+  
+  // Correction des dates (utilise le nouveau toLocalInput)
+  document.getElementById('e-date-debut').value = toLocalInput(ev.date_debut); 
+  document.getElementById('e-date-fin').value = toLocalInput(ev.date_fin); 
+  
+  document.getElementById('e-lieu').value = ev.lieu || ''; 
+  document.getElementById('e-lien-maps').value = ev.lien_maps || ''; 
+  document.getElementById('e-organisateurs').value = ev.organisateurs || '';
+  document.getElementById('e-type').value = ev.type || 'Grandeur nature'; 
+  document.getElementById('e-description').value = ev.description || ''; 
+  
+  // Gestion des places (Important pour ne pas casser les inscriptions en cours)
+  document.getElementById('e-places-totales').value = ev.places_totales || ''; 
+  document.getElementById('e-places-dispo').value = ev.places_disponibles || ''; 
+  
+  // On affiche la ligne des places disponibles uniquement en mode "Modification"
+  document.getElementById('row-places-dispo').style.display = ''; 
+
+const lienBill = ev.lien_billetterie || '';
+  document.getElementById('e-lien-billetterie').value = lienBill || 'https://www.xn--farie-csa.fr/billetteries';
+  document.getElementById('e-mode-billetterie').checked = !!lienBill;
+  toggleModeBilletterie(!!lienBill);
+  
+  openModal('modal-event'); 
+}
+
+  function toggleModeBilletterie(checked) {
+  document.getElementById('row-billetterie').style.display = checked ? '' : 'none';
+  document.getElementById('e-places-totales').closest('.form-group').parentElement.style.display = checked ? 'none' : '';
+}
+
+async function saveEvent() { 
+  const id = document.getElementById('e-id').value; 
+  const titre = document.getElementById('e-titre').value.trim();
+  
+  const lien_billetterie = document.getElementById('e-mode-billetterie').checked 
+    ? (document.getElementById('e-lien-billetterie').value.trim() || null) 
+    : null;
+
+  const rawDebut = document.getElementById('e-date-debut').value;
+  const rawFin = document.getElementById('e-date-fin').value;
+  
+  const date_debut = rawDebut ? new Date(rawDebut).toISOString() : null;
+  const date_fin = rawFin ? new Date(rawFin).toISOString() : null;
+
+  const lieu = document.getElementById('e-lieu').value.trim(); 
+  const lien_maps = document.getElementById('e-lien-maps').value.trim() || null;
+  const organisateurs = document.getElementById('e-organisateurs').value.trim();
+  const type = document.getElementById('e-type').value; 
+  const description = document.getElementById('e-description').value.trim() || null; 
+  const places_totales = parseInt(document.getElementById('e-places-totales').value) || 0;
+
+  if (!titre || !date_debut) return; 
+  
+  const date = date_debut.split('T')[0];
+
+  if (id) { 
+    const places_disponibles = parseInt(document.getElementById('e-places-dispo').value) || 0;
+    await sb.from('evenements').update({ 
+      titre, date, date_debut, date_fin, lieu, lien_maps, 
+      organisateurs, type, description, places_totales, 
+      places_disponibles, lien_billetterie 
+    }).eq('id', id);
+
+    // On note la modification dans le carnet (le récap partira le soir)
+    await sb.from('notifications_evenements').insert({
+      event_id: id, type: 'modifie', titre, date_debut, lieu
+    });
+
+  } else { 
+    const { data: nouvelEv } = await sb.from('evenements').insert({ 
+      titre, date, date_debut, date_fin, lieu, lien_maps, 
+      organisateurs, type, description, places_totales, 
+      places_disponibles: places_totales, lien_billetterie 
+    }).select('id').single();
+
+    // On note la création dans le carnet
+    await sb.from('notifications_evenements').insert({
+      event_id: nouvelEv?.id ?? null, type: 'cree', titre, date_debut, lieu
+    });
+  }
+  
+  closeModal('modal-event'); 
+  loadOrgaEvents();
+  showToast('✦ Enregistré'); 
+}
+
+// ==========================================
+// CHAT PUBLIC (LA TAVERNE)
+// ==========================================
+
+async function openChatPublic() {
+  localStorage.setItem('faerie_chat_derniere_visite', new Date().toISOString());
+  if (document.getElementById('notif-chat-dot')) document.getElementById('notif-chat-dot').style.display = 'none';
+  
+  openModal('modal-chat-public');
+  
+  // Gérer l'affichage : Cacher la saisie si non connecté
+  if (state.user) {
+    document.getElementById('chat-public-input-zone').style.display = 'flex';
+    document.getElementById('chat-public-login-msg').style.display = 'none';
+  } else {
+    document.getElementById('chat-public-input-zone').style.display = 'none';
+    document.getElementById('chat-public-login-msg').style.display = 'block';
+  }
+
+  await loadChatPublic();
+}
+
+async function loadChatPublic() {
+  const fil = document.getElementById('chat-public-fil');
+  
+  // On récupère les 50 derniers messages de la table
+  const { data, error } = await sb.from('chat_public')
+    .select('*')
+    .order('created_at', { ascending: true })
+    .limit(50);
+  
+  if (error) { 
+    fil.innerHTML = '<div class="msg-error" style="display:block">Erreur de connexion aux archives de la Taverne.</div>'; 
+    return; 
+  }
+  
+  if (!data || data.length === 0) { 
+    fil.innerHTML = '<div class="empty-state" style="margin-top: 100px;">La Taverne est bien silencieuse... Soyez le premier à parler !</div>'; 
+    return; 
+  }
+
+  fil.innerHTML = data.map(m => {
+    // Vérifier si c'est "mon" message pour l'aligner à droite
+    const isMe = state.user && state.user.id === m.user_id;
+    const bubbleClass = isMe ? 'msg-bubble joueur' : 'msg-bubble orga'; // On recycle tes styles CSS existants
+    const alignStyle = isMe ? 'text-align: right;' : 'text-align: left;';
+    
+    // Formatage de la date (Ex: "Aujourd'hui à 14:30" ou "12/04/2026 à 14:30")
+    const dateMsg = new Date(m.created_at);
+    const dateStr = dateMsg.toLocaleDateString('fr-FR') + ' à ' + dateMsg.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+
+    return `
+      <div style="${alignStyle} margin-bottom: 12px;">
+        <div class="msg-bubble-meta" style="font-weight: 600; color: #58abbc;">
+          ${m.prenom} <span style="font-weight: normal; color: var(--ink-light); font-size: 0.6rem;">- ${dateStr}</span>
+        </div>
+        <div class="${bubbleClass}" style="display: inline-block; text-align: left; margin-top: 2px;">
+          ${m.message
+  .replace(/</g, "&lt;").replace(/>/g, "&gt;") // Sécurité pour empêcher les piratages
+  .replace(/\n/g, '<br>')                      // Active les sauts de ligne
+  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Transforme **texte** en gras
+  .replace(/\*(.*?)\*/g, '<em>$1</em>')             // Transforme *texte* en italique
+  .replace(/__(.*?)__/g, '<u>$1</u>')               // Transforme __texte__ en souligné
+  .replace(/~~(.*?)~~/g, '<del>$1</del>')           // Transforme ~~texte~~ en barré
+            
+}
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  // Scroller automatiquement tout en bas pour voir le dernier message
+  fil.scrollTop = fil.scrollHeight;
+}
+
+async function verifierNouveauxMessagesTaverne() {
+  // On récupère la date de la dernière visite enregistrée sur cet ordinateur/téléphone
+  const derniereVisite = localStorage.getItem('faerie_chat_derniere_visite');
+  
+  // On prépare la question pour Supabase : "Y a-t-il des messages ?"
+  let query = sb.from('chat_public').select('*', { count: 'exact', head: true });
+  
+  // S'il est déjà venu, on ne compte QUE les messages créés APRÈS sa dernière visite
+  if (derniereVisite) {
+    query = query.gt('created_at', derniereVisite);
+  }
+  
+  const { count, error } = await query;
+  
+  const pastille = document.getElementById('notif-chat-dot');
+  if (pastille) {
+    // S'il y a au moins 1 nouveau message, on affiche la pastille rouge
+    if (!error && count > 0) {
+      pastille.style.display = 'block';
+    } else {
+      pastille.style.display = 'none';
+    }
+  }
+}
+
+async function envoyerMessageChatPublic() {
+  if (!state.user) return;
+  
+  const input = document.getElementById('chat-public-nouveau');
+  const message = input.value.trim();
+  if (!message) return;
+
+  // On récupère le prénom du joueur connecté
+  const prenom = state.user.user_metadata?.prenom || 'Anonyme';
+
+  // On enregistre dans Supabase
+  const { error } = await sb.from('chat_public').insert({
+    user_id: state.user.id,
+    prenom: prenom,
+    message: message
+  });
+
+  if (error) {
+    showToast("Erreur lors de l'envoi du message.");
+  } else {
+    // On vide la case et on recharge les messages
+    input.value = '';
+    await loadChatPublic();
+
+    // ALERTE EMAIL POUR TOI SEUL — sauf si c'est toi qui postes
+    if (state.user.email !== EMAIL_NOTIF_TAVERNE) {
+      sendEmailViaGAS(
+        EMAIL_NOTIF_TAVERNE,
+        `Nouveau message à la Taverne de ${prenom}`,
+        `<p><b>${prenom}</b> a posté un nouveau message dans La Taverne :</p><blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #58abbc;">${message.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</blockquote>`
+      );
+    }
+  }
+}
+  
+// --- FONCTIONS BARRE D'OUTILS TAVERNE ---
+
+function insertFormat(tag) {
+  const textarea = document.getElementById('chat-public-nouveau');
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const text = textarea.value;
+  const selectedText = text.substring(start, end);
+
+  // Insère la balise avant et après le texte sélectionné (ou juste la balise si rien n'est sélectionné)
+  const newText = text.substring(0, start) + tag + selectedText + tag + text.substring(end);
+  textarea.value = newText;
+
+  // Replace le curseur au bon endroit
+  textarea.focus();
+  if (selectedText.length === 0) {
+    textarea.selectionStart = textarea.selectionEnd = start + tag.length;
+  } else {
+    textarea.selectionStart = textarea.selectionEnd = start + tag.length * 2 + selectedText.length;
+  }
+}
+
+function insertEmoji(emoji) {
+  const textarea = document.getElementById('chat-public-nouveau');
+  const start = textarea.selectionStart;
+  const text = textarea.value;
+  
+  // Insère l'emoji à la position du curseur
+  textarea.value = text.substring(0, start) + emoji + text.substring(start);
+  textarea.focus();
+  textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+}
+ function toggleEmojiPanel(panelId = 'emoji-panel-taverne') {
+  const panel = document.getElementById(panelId);
+  panel.style.display = (panel.style.display === 'none') ? 'flex' : 'none';
+}
+
+  function insertFormatMessagerie(tag, targetId) {
+  const textarea = document.getElementById(targetId);
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const text = textarea.value;
+  const selectedText = text.substring(start, end);
+  textarea.value = text.substring(0, start) + tag + selectedText + tag + text.substring(end);
+  textarea.focus();
+  textarea.selectionStart = textarea.selectionEnd = start + tag.length + (selectedText.length ? selectedText.length + tag.length : 0);
+}
+
+function insertEmojiMessagerie(emoji, targetId) {
+  const textarea = document.getElementById(targetId);
+  const start = textarea.selectionStart;
+  const text = textarea.value;
+  textarea.value = text.substring(0, start) + emoji + text.substring(start);
+  textarea.focus();
+  textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+}
+  
+  // ════════════════════════════════════════════════════
+//  CALENDRIER
+// ════════════════════════════════════════════════════
+let calDate = new Date();
+
+function openCalendrier() {
+  calDate = new Date();
+  renderCalendrier();
+  openModal('modal-calendrier');
+}
+
+function changeMonth(delta) {
+  calDate.setMonth(calDate.getMonth() + delta);
+  renderCalendrier();
+}
+
+function renderCalendrier() {
+  const mois = calDate.getMonth();
+  const annee = calDate.getFullYear();
+  const titre = new Date(annee, mois, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  document.getElementById('cal-titre').textContent = titre.charAt(0).toUpperCase() + titre.slice(1);
+
+  const jours = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+  const today = new Date();
+
+  // Premier jour du mois (0=dim, ajusté pour lundi=0)
+  let premierJour = new Date(annee, mois, 1).getDay();
+  premierJour = (premierJour + 6) % 7; // Lundi en premier
+
+  const dernierJour = new Date(annee, mois + 1, 0).getDate();
+
+  // Événements du mois
+  const evsDuMois = state.allEvents.filter(ev => {
+    if (!ev.date_debut) return false;
+    const d = new Date(ev.date_debut);
+    return d.getMonth() === mois && d.getFullYear() === annee;
+  });
+
+  let html = '<div class="cal-grid">';
+
+  // En-têtes jours
+  jours.forEach(j => { html += `<div class="cal-header-day">${j}</div>`; });
+
+  // Cases vides avant le 1er
+  for (let i = 0; i < premierJour; i++) { html += '<div class="cal-day vide"></div>'; }
+
+  // Jours du mois
+  for (let d = 1; d <= dernierJour; d++) {
+    const isToday = d === today.getDate() && mois === today.getMonth() && annee === today.getFullYear();
+    const evsJour = evsDuMois.filter(ev => new Date(ev.date_debut).getDate() === d);
+    html += `<div class="cal-day${isToday ? ' today' : ''}">
+      <div class="cal-day-num">${d}</div>
+      ${evsJour.map(ev => `<div class="cal-event-pill" title="${ev.titre.replace(/"/g, '&quot;')}" onclick="ouvrirDetailEvenement('${ev.id}')" style="cursor:pointer">${ev.titre}</div>`).join('')}
+    </div>`;
+  }
+  
+  html += '</div>';
+  document.getElementById('cal-grid').innerHTML = html;
+}
+
+  function ouvrirDetailEvenement(eventId) {
+  // On cherche l'événement dans la liste complète que nous avons stockée
+  const ev = state.allEvents.find(e => e.id === eventId);
+  if (!ev) return;
+
+  // ⚡ LA MAGIE EST ICI : On ferme le calendrier pour laisser la place !
+  closeModal('modal-calendrier');
+
+  const content = document.getElementById('modal-event-detail-content');
+  const debut = ev.date_debut ? formatDatetime(ev.date_debut) : '—'; 
+  const fin = ev.date_fin ? formatDatetime(ev.date_fin) : null;
+
+  // On injecte le HTML type "fiche" comme sur l'accueil
+  content.innerHTML = `
+    <div class="event-card" style="border:none; box-shadow:none;">
+      <div class="event-card-header">
+        <div class="event-card-titre" style="font-size:1.4rem;">${ev.titre}</div>
+        <div class="event-card-type">${ev.type || '—'}</div>
+      </div>
+      <div class="event-card-body" style="grid-template-columns: 1fr;">
+        <div class="event-info-item"><span class="event-info-label">Début</span><span class="event-info-val">${debut}</span></div>
+        ${fin ? `<div class="event-info-item"><span class="event-info-label">Fin</span><span class="event-info-val">${fin}</span></div>` : ''}
+        <div class="event-info-item">
+          <span class="event-info-label">Lieu</span>
+          <span class="event-info-val">📍 ${ev.lieu || '—'}</span>
+          ${ev.lien_maps ? `<a href="${ev.lien_maps}" target="_blank" style="display:inline-block; margin-top:4px; font-family:'Cinzel', serif; font-size:0.7rem; color:var(--ink-light); text-decoration:none; border:1px solid var(--border); padding:2px 8px; border-radius:3px; background:#f8fafc;">🗺️ Ouvrir la carte</a>` : ''}
+        </div>
+        <div class="event-info-item"><span class="event-info-label">Organisateurs</span><span class="event-info-val">${ev.organisateurs || '—'}</span></div>
+      </div>
+      ${ev.description ? `<div class="event-description" style="border-bottom:none; margin-top:15px; background:#f8fafc; border-radius:6px; padding:15px;">${ev.description}</div>` : ''}
+    </div>
+  `;
+  
+  openModal('modal-event-detail');
+}
+
+  async function handleNonDispoClick(eventId, titre) {
+  if (!state.user) {
+    document.getElementById('auth-context').style.display = '';
+    document.getElementById('auth-context').textContent = `Pour indiquer votre indisponibilité pour « ${titre} », connectez-vous.`;
+    document.getElementById('modal-auth-titre').textContent = 'Connexion requise';
+    switchAuthTab('connexion'); openModal('modal-auth');
+    state.pendingEventId = eventId; state.pendingEventTitre = titre;
+    return;
+  }
+  try {
+    await sb.from('non_dispos').insert({ event_id: eventId, user_id: state.user.id });
+    showToast('❌ Indisponibilité enregistrée');
+    await loadPublicEvents();
+  } catch(e) {
+    if (e.message.includes('23505')) showToast('Déjà enregistré !');
+    else console.error(e);
+  }
+}
+
+// ════════════════════════════════════════════════════
+//  UI & INIT
+// ════════════════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); } function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function showMsg(id, txt, type='error') { const el = document.getElementById(id); if(el){ el.textContent=txt; el.style.display='block'; el.className = type==='success'?'msg-success':'msg-error'; } }
+function hideMsg(id) { const el = document.getElementById(id); if(el) el.style.display='none'; }
+let toastTimer; function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),3200); }
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  if (el.id === 'modal-event' || el.id === 'modal-missive' || el.id === 'modal-orga-auth') return; // Pas de fermeture au clic extérieur
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+  window.addEventListener('load', async () => {
+  setTimeout(() => { const s = document.getElementById('search-input'); if(s) s.value=''; const o = document.getElementById('orga-search'); if(o) o.value=''; }, 500);
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) state.user = session.user;
+  } catch(e) {
+    console.warn('Session inaccessible (iframe ?) :', e);
+  }
+  updateHeaderUserZone();
+  await loadPublicEvents();
+  await loadAnnonces();
+  try { await verifierNouveauxMessagesTaverne(); } catch(e) {}
+});
+
+async function supprimerCompteJoueur() {
+  if (!state.user) return;
+
+  // Modale personnalisée
+  const ok = await new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.85);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px';
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:8px;padding:30px 34px;max-width:400px;width:100%;text-align:center;box-shadow:0 15px 50px rgba(0,0,0,0.4)">
+        <div style="font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;margin-bottom:12px;color:#b91c1c">⚠️ Supprimer le compte ?</div>
+        <p style="font-family:'Crimson Text',serif;color:#64748b;margin-bottom:24px">Voulez-vous vraiment supprimer définitivement votre compte, vos messages et toutes vos inscriptions ? Cette action est irréversible.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+          <button id="btn-oui-suppr" style="padding:10px 20px;background:#b91c1c;color:#fff;border:none;border-radius:4px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:1px;cursor:pointer">Oui, supprimer</button>
+          <button id="btn-non-suppr" style="padding:10px 20px;background:transparent;border:1px solid #e2e8f0;color:#64748b;border-radius:4px;font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:1px;cursor:pointer">Annuler</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#btn-oui-suppr').onclick = () => { document.body.removeChild(overlay); resolve(true); };
+    overlay.querySelector('#btn-non-suppr').onclick = () => { document.body.removeChild(overlay); resolve(false); };
+  });
+
+  if (!ok) return;
+
+  try {
+    showToast('Sorcier à l\'œuvre... Suppression en cours');
+
+    // ⚡️ LA MAGIE EST ICI : On appelle la fonction côté serveur
+    const { error } = await sb.rpc('supprimer_mon_compte');
+    
+    if (error) throw error;
+
+    // On déconnecte le joueur et on vide la mémoire du site
+    await sb.auth.signOut();
+    state.user = null;
+    state.mesInscriptions = [];
+    state.maListeAttente = [];
+    state.mesInteresses = [];
+
+    // On le renvoie à l'accueil
+    document.getElementById('joueur-screen').style.display = 'none';
+    document.getElementById('public-screen').style.display = '';
+    updateHeaderUserZone();
+    await loadPublicEvents();
+
+    showToast('✦ Compte et données supprimés avec succès.');
+
+  } catch (e) {
+    console.error(e);
+    showToast("❌ Erreur lors de la suppression de vos données.");
+  }
+}
+// ════════════════════════════════════════════════════
+//  MISSIVES ORGA
+// ════════════════════════════════════════════════════
+async function loadAnnonces() {
+  const container = document.getElementById('annonces-container');
+  if (!container) return;
+  try {
+    const { data, error } = await sb.from('annonces').select('*').order('date_creation', { ascending: false }).limit(8);
+    if (error) throw error;
+    
+    state.missivesAffichees = 8;
+    
+    if (data.length === 0) {
+      container.innerHTML = `<div style="text-align:center; color:var(--ink-light); font-style:italic; font-size:0.9rem;">Aucune missive pour le moment.</div>`;
+      return;
+    }
+    
+    container.innerHTML = data.map(a => `
+      <div style="background: white; padding: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #58abbc; position: relative;">
+        <h3 style="margin: 0 0 8px 0; font-size: 1.05rem; color: var(--ink); font-family: 'Cinzel', serif;">${a.titre}</h3>
+        <p style="margin: 0 0 12px 0; font-size: 0.9rem; color: #475569; line-height: 1.5; white-space: pre-wrap;">${a.contenu}</p>
+        <div style="font-size: 0.75rem; color: var(--ink-light); text-align: right; border-top: 1px dashed var(--border); padding-top: 8px;">
+          Par <b>${a.auteur_nom}</b> le ${new Date(a.date_creation).toLocaleDateString('fr-FR')}
+        </div>
+      </div>
+    `).join('');
+
+    // On affiche le bouton "Voir plus" seulement s'il y a potentiellement plus de missives
+    const btnPlus = document.getElementById('btn-plus-missives');
+    if (btnPlus) btnPlus.style.display = (data.length === 8) ? '' : 'none';
+    
+  } catch (err) {
+    console.error("Erreur missives :", err);
+    container.innerHTML = `<div style="color:var(--red-blood); font-size:0.8rem;">Impossible de lire les parchemins.</div>`;
+  }
+}
+
+async function chargerPlusMissives() {
+  const container = document.getElementById('annonces-container');
+  const btnPlus = document.getElementById('btn-plus-missives');
+  try {
+    const { data, error } = await sb.from('annonces').select('*').order('date_creation', { ascending: false }).range(state.missivesAffichees, state.missivesAffichees + 7);
+    if (error) throw error;
+
+    if (data.length === 0) {
+      if (btnPlus) btnPlus.style.display = 'none';
+      return;
+    }
+
+    container.insertAdjacentHTML('beforeend', data.map(a => `
+      <div style="background: white; padding: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #58abbc; position: relative;">
+        <h3 style="margin: 0 0 8px 0; font-size: 1.05rem; color: var(--ink); font-family: 'Cinzel', serif;">${a.titre}</h3>
+        <p style="margin: 0 0 12px 0; font-size: 0.9rem; color: #475569; line-height: 1.5; white-space: pre-wrap;">${a.contenu}</p>
+        <div style="font-size: 0.75rem; color: var(--ink-light); text-align: right; border-top: 1px dashed var(--border); padding-top: 8px;">
+          Par <b>${a.auteur_nom}</b> le ${new Date(a.date_creation).toLocaleDateString('fr-FR')}
+        </div>
+      </div>
+    `).join(''));
+
+    state.missivesAffichees += data.length;
+
+    // Cache le bouton s'il n'y a plus rien à charger
+    if (btnPlus && data.length < 8) btnPlus.style.display = 'none';
+
+  } catch (err) {
+    console.error("Erreur chargement missives supplémentaires :", err);
+  }
+}
+
+// --- CHARGER LA TABLE ORGA ---
+// 2. Table Organisateur (Version spéciale Google Sites)
+async function loadOrgaMissives() {
+  const tbody = document.getElementById('orga-missives-body');
+  if (!tbody) return;
+  const { data, error } = await sb.from('annonces').select('*').order('date_creation', { ascending: false });
+  if (error || !data) return;
+  state.orgaMissives = data;
+  
+  tbody.innerHTML = data.map(m => `
+    <tr>
+      <td>${new Date(m.date_creation).toLocaleDateString('fr-FR')}</td>
+      <td><strong>${m.titre}</strong></td>
+      <td>${m.auteur_nom}</td>
+      <td>
+        <button class="btn btn-sm" onclick="openModalEditMissive('${m.id}')">MODIFIER</button>
+        <button class="btn btn-sm btn-danger" onclick="supprimerMissive('${m.id}')">SUPPRIMER</button>
+      </td>
+    </tr>`).join('');
+}
+
+// --- OUVRIR LA MODALE (CRÉATION) ---
+function ouvrirModaleMissive() {
+  document.getElementById('m-id').value = '';
+  document.getElementById('m-titre').value = '';
+  document.getElementById('m-auteur').value = 'L\'équipe Orga';
+  document.getElementById('m-contenu').value = '';
+  hideMsg('err-missive');
+  openModal('modal-missive');
+}
+
+function switchHomeTab(tab) {
+  const layout = document.getElementById('main-home-layout');
+  const buttons = document.querySelectorAll('#home-mobile-tabs button');
+  
+  if (!layout) return; // Sécurité si le layout n'est pas trouvé
+  
+  layout.setAttribute('data-active', tab);
+  
+  buttons.forEach(btn => {
+    // On vérifie si le bouton cliqué correspond à l'onglet (missives ou dates)
+    if (btn.getAttribute('onclick').includes(tab)) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+}
+  
+// --- OUVRIR LA MODALE (MODIFICATION) ---
+function openModalEditMissive(id) {
+  const m = state.orgaMissives.find(x => x.id === id);
+  if (!m) return;
+  document.getElementById('m-id').value = m.id;
+  document.getElementById('m-titre').value = m.titre;
+  document.getElementById('m-auteur').value = m.auteur_nom;
+  document.getElementById('m-contenu').value = m.contenu;
+  hideMsg('err-missive');
+  openModal('modal-missive');
+}
+
+// --- SAUVEGARDER (CRÉATION OU UPDATE) ---
+async function sauvegarderMissive() {
+  const id = document.getElementById('m-id').value;
+  const titre = document.getElementById('m-titre').value.trim();
+  const auteur_nom = document.getElementById('m-auteur').value.trim();
+  const contenu = document.getElementById('m-contenu').value.trim();
+
+  if (!titre || !contenu) { 
+    showMsg('err-missive', 'Le titre et le message sont obligatoires.'); return; 
+  }
+
+  try {
+    showToast(id ? 'Modification...' : 'Publication...');
+    
+    if (id) {
+      // MISE À JOUR
+      const { error } = await sb.from('annonces').update({ titre, contenu, auteur_nom }).eq('id', id);
+      if (error) throw error;
+    } else {
+      // NOUVELLE MISSIVE
+      const { error } = await sb.from('annonces').insert({ titre, contenu, auteur_nom });
+      if (error) throw error;
+
+      // On n'envoie les emails QU'À LA CRÉATION
+      const { data: profils } = await sb.from('profils').select('email');
+      if (profils && profils.length > 0) {
+        const sujetMail = "📜 Nouvelle Missive : " + titre;
+        const corpsMail = `
+          <div style="font-family: serif; color: #1e293b; max-width: 600px; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px;">
+            <h2 style="color: #58abbc;">Oyez, oyez !</h2>
+            <p>Une nouvelle missive a été publiée par <b>${auteur_nom}</b> :</p>
+            <div style="background: #f8fafc; padding: 15px; border-left: 4px solid #58abbc; font-style: italic; margin: 15px 0;">
+              ${contenu.replace(/\n/g, '<br>')}
+            </div>
+            <p><a href="https://www.xn--farie-csa.fr/%C3%A9v%C3%A9nements" style="display: inline-block; background: #58abbc; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">Lire et répondre sur le site</a></p>
+          </div>`;
+        for (const p of profils) {
+          if (p.email) await sendEmailViaGAS(p.email, sujetMail, corpsMail);
+        }
+      }
+    }
+
+    closeModal('modal-missive');
+    showToast(id ? '✦ Missive modifiée !' : '✦ Missive publiée et e-mails envoyés !');
+    await loadAnnonces(); // Maj page d'accueil
+    await loadOrgaMissives(); // Maj onglet
+  } catch (err) {
+    console.error(err);
+    showMsg('err-missive', "Erreur lors de la sauvegarde.");
+  }
+}
+
+// --- SUPPRIMER ---
+async function supprimerMissive(id) {
+  // On enlève le "confirm" qui bloque peut-être sur faerie.fr
+  try {
+    showToast('Magie en cours... Suppression de la missive');
+    const { error } = await sb.from('annonces').delete().eq('id', id);
+
+    if (error) throw error;
+
+    showToast('✦ La missive a été vaporisée.');
+    await loadAnnonces(); 
+    await loadOrgaMissives(); 
+  } catch (err) {
+    console.error(err);
+    showToast("❌ Erreur lors de la suppression.");
+  }
+}
+
+function togglePwd(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
+  else { input.type = 'password'; btn.textContent = '👁'; }
+}
+
+function ouvrirMotDePasseOublie() {
+  const email = document.getElementById('login-email').value.trim();
+  if (!email) { showMsg('err-login', 'Entre ton adresse e-mail d\'abord.'); return; }
+  sb.auth.resetPasswordForEmail(email, { redirectTo: 'https://faerieorga.github.io/evenements/reinitialisation.html' })
+    .then(({ error }) => {
+      if (error) showMsg('err-login', error.message);
+      else showMsg('ok-login', '✦ Un lien de réinitialisation a été envoyé !', 'success');
+    });
+}
+
+state.profilsTri = { cle: 'nom', sens: 1 };
+
+function echapperHtml(t) {
+  return String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+async function loadOrgaProfils() {
+  const tbody = document.getElementById('orga-profils-body');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Chargement...</td></tr>';
+  try {
+    const { data, error } = await sb.rpc('liste_membres_admin');
+    if (error) throw error;
+    state.allProfilsList = data || [];
+    appliquerFiltreTriProfils();
+  } catch (e) {
+    console.error(e);
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--red-blood);">Erreur de lecture des profils.</td></tr>';
+  }
+}
+
+function trierProfils(cle) {
+  if (state.profilsTri.cle === cle) state.profilsTri.sens *= -1;
+  else state.profilsTri = { cle, sens: 1 };
+  appliquerFiltreTriProfils();
+}
+
+function appliquerFiltreTriProfils() {
+  const q = (document.getElementById('profils-search')?.value || '').toLowerCase();
+  const { cle, sens } = state.profilsTri;
+  const liste = (state.allProfilsList || [])
+    .filter(p => (p.prenom || '').toLowerCase().includes(q) || (p.nom || '').toLowerCase().includes(q) || (p.email || '').toLowerCase().includes(q))
+    .sort((a, b) => {
+      if (cle === 'date_inscription' || cle === 'derniere_connexion' || cle === 'derniere_activite') {
+        const va = a[cle] ? new Date(a[cle]).getTime() : 0;
+        const vb = b[cle] ? new Date(b[cle]).getTime() : 0;
+        return (va - vb) * sens;
+      }
+      if (cle === 'nb_inscriptions') return ((a[cle] || 0) - (b[cle] || 0)) * sens;
+      return String(a[cle] || '').localeCompare(String(b[cle] || ''), 'fr', { sensitivity: 'base' }) * sens;
+    });
+  renderProfilsTable(liste);
+}
+
+function renderProfilsTable(list) {
+  const tbody = document.getElementById('orga-profils-body');
+  const fmt = iso => iso ? new Date(iso).toLocaleDateString('fr-FR') : '—';
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Aucun résultat.</td></tr>'; return; }
+  tbody.innerHTML = list.map(p => `
+    <tr>
+      <td>${echapperHtml(p.prenom) || '—'}</td>
+      <td>${echapperHtml(p.nom) || '—'}</td>
+      <td><small>${echapperHtml(p.email) || '—'}</small></td>
+      <td>${fmt(p.date_inscription)}</td>
+      <td>${p.derniere_connexion ? fmt(p.derniere_connexion) : 'Jamais'}</td>
+      <td>${p.derniere_activite ? fmt(p.derniere_activite) : '—'}</td>
+      <td>${p.nb_inscriptions ?? 0}</td>
+      <td><button class="btn btn-sm" onclick="ouvrirConvDepuisProfil('${p.id}')">💬 Message</button></td>
+    </tr>`).join('');
+}
+
+function filterProfils() { appliquerFiltreTriProfils(); }
+  
+function ouvrirConvDepuisProfil(userId) {
+  const select = document.getElementById('orga-joueur-select');
+  if (select) {
+    select.value = userId;
+    loadOrgaConversation(userId);
+    showOrgaTab('messages', document.getElementById('otab-messages'));
+  }
+}
+  
+</script>
+</body>
+</html>
