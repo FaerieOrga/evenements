@@ -85,16 +85,6 @@
       lien.textContent = '🍪 Gérer les cookies';
       lien.onclick = afficherBandeau;
       pied.appendChild(lien);
-
-      var separateur = document.createElement('span');
-      separateur.textContent = ' | ';
-      pied.appendChild(separateur);
-
-      var lienConfidentialite = document.createElement('a');
-      lienConfidentialite.href = '/confidentialites'; // adaptez l'URL de votre page
-      lienConfidentialite.className = 'footer-orga-link';
-      lienConfidentialite.textContent = 'Confidentialités';
-      pied.appendChild(lienConfidentialite);
     }
     var choix = lireChoix();
     if (choix === 'oui') chargerAnalytics();
