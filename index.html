@@ -2081,7 +2081,8 @@ async function doRegister() {
   const nom = document.getElementById('reg-nom').value.trim();
   const email = document.getElementById('reg-email').value.trim();
   const mdp = document.getElementById('reg-mdp').value;
-  const mdpConfirm = document.getElementById('reg-mdp-confirm').value;
+  const mdpConfirm = document.getElementById('reg-mdp-confirm').value; hideMsg('err-reg'); hideMsg('ok-reg');
+  
   
   if (!prenom || !nom || !email || !mdp) { showMsg('err-reg', 'Champs obligatoires.'); return; }
   if (mdp !== mdpConfirm) { showMsg('err-reg', 'Les mots de passe ne correspondent pas.'); return; }
@@ -2089,8 +2090,6 @@ async function doRegister() {
   try {
     const { data, error } = await sb.auth.signUp({ email, password: mdp, options: { data: { prenom, nom } } });
     if (error) throw error;
-    
-    await sb.from('profils').upsert({ id: data.user.id, prenom, nom, email: email });
     
     showMsg('ok-reg', '✦ Compte créé ! Vérifie tes mails pour confirmer avant de te connecter.', 'success');
     
