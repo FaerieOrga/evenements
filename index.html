@@ -661,15 +661,19 @@ input:-webkit-autofill:focus {
 .site-footer { text-align: center; margin-top: 36px; padding-bottom: 10px; }
 .footer-orga-link {
   font-family: 'Cinzel', serif;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   letter-spacing: 1px;
-  color: rgba(255,255,255,0.5);
+  color: #ffffff; /* Texte en blanc pur */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); /* Ombre portée pour la netteté */
   cursor: pointer;
   border: none;
   background: none;
   transition: color 0.2s;
 }
-.footer-orga-link:hover { color: #ffffff; }
+.footer-orga-link:hover { 
+  color: #bae6fd; /* Petit bleu clair au survol */
+  text-decoration: underline; 
+}
 
 /* ── ÉTAT VIDE ── */
 .empty-state {
